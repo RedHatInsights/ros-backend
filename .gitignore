@@ -103,13 +103,16 @@ celerybeat.pid
 
 # Environments
 .env
-!scripts/.env
+!scripts/.env-minio
 .venv
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Code Editor
+.vscode
 
 # Spyder project settings
 .spyderproject

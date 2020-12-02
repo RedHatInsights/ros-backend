@@ -19,7 +19,7 @@ mkdir -p /usr/share/minio/{minio-conf,minio-data}
 # git clone https://github.com/RedHatInsights/ros-backend.git
 # cd scripts
 # docker login quay.io
-# . .env
+# . .env-minio
 # docker-compose up
 ```
 
