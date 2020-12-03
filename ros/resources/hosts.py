@@ -55,6 +55,7 @@ class Hosts(Resource):
 
         return jsonify(dummy_systems)
 
+
 class HostDetails(Resource):
     profile_fields = {
         'host_id': fields.String,
