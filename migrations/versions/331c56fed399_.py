@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 221edcc12d5c
+Revision ID: 331c56fed399
 Revises: 
-Create Date: 2020-12-04 12:57:02.775745
+Create Date: 2020-12-07 14:30:12.324375
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '221edcc12d5c'
+revision = '331c56fed399'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -21,8 +21,8 @@ def upgrade():
     op.create_table('performance_profile',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('host_id', postgresql.UUID(as_uuid=True), nullable=False),
-    sa.Column('avg_memory_used', sa.String(length=25), nullable=True),
-    sa.Column('avg_memory', sa.String(length=25), nullable=True),
+    sa.Column('performance_record', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
+    sa.Column('performance_score', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
     sa.Column('report_date', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('host_id')
