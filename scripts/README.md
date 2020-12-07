@@ -20,7 +20,7 @@ mkdir -p /usr/share/minio/{minio-conf,minio-data}
 # cd scripts
 # docker login quay.io
 # . .env-minio
-# docker-compose up
+# docker-compose --env-file .env-minio  up
 ```
 
 ## Usage

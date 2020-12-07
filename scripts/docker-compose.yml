@@ -51,7 +51,7 @@ services:
     environment:
       - INGRESS_STAGEBUCKET=insights-upload-perma
         # VALIDTOPICS is required. This is derived from content type. ex: vnd.redhat.advisor.thing+tgz
-      - INGRESS_VALIDTOPICS=testareno,advisor,qpc,resource-optimization
+      - INGRESS_VALIDTOPICS=testareno,advisor,compliance,qpc,resource-optimization
       - OPENSHIFT_BUILD_COMMIT=somestring
       - INGRESS_MAXSIZE=104857600
       - INGRESS_MINIODEV=true
@@ -69,4 +69,44 @@ services:
       POSTGRES_DB: postgres
     ports:
           - "15432:5432"
-
+  db-host-inventory:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: insights
+      POSTGRES_USER: insights
+      POSTGRES_DB: insights
+    ports:
+        - "15433:5432"
+  insights-inventory:
+    image: quay.io/cloudservices/insights-inventory:latest
+    ports:
+      - 8081:8081
+    environment:
+      - APP_NAME=inventory
+      - PATH_PREFIX=api
+      - INVENTORY_DB_USER=insights
+      - INVENTORY_DB_PASS=insights
+      - INVENTORY_DB_HOST=db-host-inventory
+      - INVENTORY_DB_NAME=insights
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - PAYLOAD_TRACKER_ENABLED=false
+      - LISTEN_PORT=8081
+    depends_on:
+       - kafka
+       - db-host-inventory
+       - puptoo
+       - zookeeper
+  puptoo:
+    image: quay.io/cloudservices/insights-puptoo:latest
+    ports:
+      - 8000:8000
+    environment:
+      - LOG_LEVEL=DEBUG
+      - ACG_CONFIG=/cdappconfig.json
+      - INVENTORY_TOPIC=platform.inventory.host-ingress
+    depends_on:
+      - kafka
+      - ingress
+    volumes:
+        - '~/cdappconfig.json:/cdappconfig.json'

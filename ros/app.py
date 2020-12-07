@@ -5,6 +5,7 @@ from ros.models import db
 from ros.resources.hosts import Hosts, HostDetails
 from ros.resources.status import Status
 from ros.config import Config
+import threading
 
 app = Flask(__name__)
 CORS(app)
@@ -19,6 +20,17 @@ db.init_app(app)
 api.add_resource(Status, '/api/status')
 api.add_resource(Hosts, '/api/systems')
 api.add_resource(HostDetails, '/api/systems/<host_id>')
+
+
+def initialize_report_processor():
+    from ros.processors.report_processor import ReportProcessor
+    processor = ReportProcessor()
+    processor.init_consumer()
+
+
+report_processor_thread = threading.Thread(
+    target=initialize_report_processor, name='ReportProcessor', daemon=True)
+report_processor_thread.start()
 
 if __name__ == "__main__":
     app.run(debug=True)
