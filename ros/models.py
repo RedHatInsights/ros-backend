@@ -12,4 +12,3 @@ class PerformanceProfile(db.Model):
     performance_record = db.Column(JSONB)
     performance_score = db.Column(JSONB)
     report_date = db.Column(db.Date, default=date.today())
-
