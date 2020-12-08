@@ -17,7 +17,7 @@ class Hosts(Resource):
                     'state': 'Oversized',
                     'recommendation_count': 4,
                     'organization_id': 1,
-                    'performance_profile': {
+                    'performance_score': {
                         'cpu_score': 70,
                         'memory_score': 20,
                         'io_score': 80
@@ -58,9 +58,9 @@ class Hosts(Resource):
 
 class HostDetails(Resource):
     profile_fields = {
-        'host_id': fields.String,
-        'avg_memory': fields.String(attribute='avg_memory'),
-        'avg_memory_used': fields.String(attribute='avg_memory_used')
+        'host_id': fields.String(attribute='inventory_id'),
+        'performance_record': fields.String,
+        'performance_score': fields.String
     }
 
     @marshal_with(profile_fields)
@@ -68,7 +68,8 @@ class HostDetails(Resource):
         if not is_valid_uuid(host_id):
             abort(404, message='Invalid host_id,'
                                ' Id should be in form of UUID4')
-        profile = PerformanceProfile.query.filter_by(host_id=host_id).first()
+        profile = PerformanceProfile.query.filter_by(
+                  inventory_id=host_id).first()
         if not profile:
             abort(404, message="Performance Profile {} doesn't exist"
                   .format(host_id))
