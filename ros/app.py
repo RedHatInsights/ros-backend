@@ -18,7 +18,7 @@ db.init_app(app)
 # Routes
 api.add_resource(Status, '/api/status')
 api.add_resource(Hosts, '/api/systems')
-api.add_resource(HostDetails, '/api/system/<host_id>')
+api.add_resource(HostDetails, '/api/systems/<host_id>')
 
 if __name__ == "__main__":
     app.run(debug=True)
