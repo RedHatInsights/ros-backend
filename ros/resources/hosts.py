@@ -23,7 +23,7 @@ class Hosts(Resource):
                         'io_score': 20
                     },
                     'facts': {
-                        'provider': 'AWS',
+                        'cloud_provider': 'AWS',
                         'instance_type': 'm4large',
                         'idling_time': '20',
                         'io_wait': '180'
@@ -44,7 +44,7 @@ class Hosts(Resource):
                         'io_score': 60
                     },
                     'facts': {
-                        'provider': 'AWS',
+                        'cloud_provider': 'AWS',
                         'instance_type': 'm1small',
                         'idling_time': '38',
                         'io_wait': '180'
@@ -65,7 +65,7 @@ class Hosts(Resource):
                         'io_score': 90
                     },
                     'facts': {
-                        'provider': 'AWS',
+                        'cloud_provider': 'AWS',
                         'instance_type': 'm1small',
                         'idling_time': '38',
                         'io_wait': '180'
@@ -86,7 +86,7 @@ class Hosts(Resource):
                         'io_score': 90
                     },
                     'facts': {
-                        'provider': 'AWS',
+                        'cloud_provider': 'AWS',
                         'instance_type': 'm1large',
                         'idling_time': '38',
                         'io_wait': '180'
