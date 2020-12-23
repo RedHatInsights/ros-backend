@@ -14,18 +14,18 @@ class Hosts(Resource):
                     'id': '12345-57575757',
                     'account': '12345',
                     'vm_uuid': '12345a1',
-                    'state': 'Oversized',
-                    'recommendation_count': 4,
+                    'state': 'Crashloop',
+                    'recommendation_count': 5,
                     'organization_id': 1,
                     'performance_score': {
-                        'cpu_score': 70,
+                        'cpu_score': 20,
                         'memory_score': 20,
-                        'io_score': 80
+                        'io_score': 20
                     },
                     'facts': {
-                        'provider': 'AWS',
+                        'cloud_provider': 'AWS',
                         'instance_type': 'm4large',
-                        'idling_type': '20',
+                        'idling_time': '20',
                         'io_wait': '180'
                     }
                 },
@@ -38,15 +38,57 @@ class Hosts(Resource):
                     'state': 'Undersized',
                     'recommendation_count': 3,
                     'organization_id': 1,
-                    'performance_profile': {
+                    'performance_score': {
                         'cpu_score': 30,
                         'memory_score': 50,
                         'io_score': 60
                     },
                     'facts': {
-                        'provider': 'AWS',
+                        'cloud_provider': 'AWS',
                         'instance_type': 'm1small',
-                        'idling_type': '38',
+                        'idling_time': '38',
+                        'io_wait': '180'
+                    }
+                },
+                {
+                    'fqdn': 'machine3.local.company.com',
+                    'display_name': 'machine3-rhel_test789',
+                    'id': '12345-59595959',
+                    'account': '12345',
+                    'vm_uuid': '12345a3',
+                    'state': 'Optimized',
+                    'recommendation_count': 1,
+                    'organization_id': 1,
+                    'performance_score': {
+                        'cpu_score': 80,
+                        'memory_score': 90,
+                        'io_score': 90
+                    },
+                    'facts': {
+                        'cloud_provider': 'AWS',
+                        'instance_type': 'm1small',
+                        'idling_time': '38',
+                        'io_wait': '180'
+                    }
+                },
+                {
+                    'fqdn': 'machine4.local.company.com',
+                    'display_name': 'machine4-rhel_test101',
+                    'id': '12345-60606060',
+                    'account': '12345',
+                    'vm_uuid': '12345a4',
+                    'state': 'Optimized',
+                    'recommendation_count': 0,
+                    'organization_id': 1,
+                    'performance_score': {
+                        'cpu_score': 90,
+                        'memory_score': 90,
+                        'io_score': 90
+                    },
+                    'facts': {
+                        'cloud_provider': 'AWS',
+                        'instance_type': 'm1large',
+                        'idling_time': '38',
                         'io_wait': '180'
                     }
                 }
