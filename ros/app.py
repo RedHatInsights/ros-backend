@@ -4,16 +4,15 @@ from flask_cors import CORS
 from ros.models import db
 from ros.resources.hosts import Hosts, HostDetails
 from ros.resources.status import Status
-from ros.config import Config
+from ros.config import DB_URI
 import threading
 
 app = Flask(__name__)
 CORS(app)
 api = Api(app)
-config = Config()
 
 # Initalize database connection
-app.config['SQLALCHEMY_DATABASE_URI'] = config.db_uri
+app.config['SQLALCHEMY_DATABASE_URI'] = DB_URI
 db.init_app(app)
 
 # Routes
