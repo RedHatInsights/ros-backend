@@ -2,23 +2,20 @@ from flask import Flask
 from flask_restful import Api
 from flask_cors import CORS
 from ros.models import db
-from ros.resources.hosts import Hosts, HostDetails
-from ros.resources.status import Status
 from ros.config import DB_URI
 import threading
+from ros.resources.routes import initialize_routes
 
 app = Flask(__name__)
 CORS(app)
+
 api = Api(app)
 
 # Initalize database connection
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_URI
 db.init_app(app)
 
-# Routes
-api.add_resource(Status, '/api/ros/status')
-api.add_resource(Hosts, '/api/ros/systems')
-api.add_resource(HostDetails, '/api/ros/systems/<host_id>')
+initialize_routes(api)
 
 
 def initialize_report_processor():
