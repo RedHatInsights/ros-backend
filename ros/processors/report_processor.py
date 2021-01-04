@@ -37,7 +37,7 @@ class ReportProcessor:
             except json.decoder.JSONDecodeError:
                 print(f"Unable to decode kafka message - {msg.value()}")
             except Exception as err:
-                print(f"An error occurred during message processing - {err}")
+                print(f"An error occurred during message processing - {repr(err)}")
             finally:
                 consumer.commit()
 
@@ -46,21 +46,19 @@ class ReportProcessor:
     def handle_message(self):
         self.report_url = self.msg.get('url', None)
         metadata = self.msg.get('metadata', None)
-        if not metadata:
+        if not metadata or not metadata['insights_id']:
             return None
         insights_id = metadata['insights_id']
-        if not insights_id:
-            return None
         rh_identity = self.msg.get('b64_identity', None)
         host = fetch_host_from_inventory(insights_id, rh_identity)
         if not host['results']:
             print("No record found. Make sure system is registered in insights")
             return None
-        host_id = host['results'][0]['id']
         if not self.report_url:
             print("kafka message missing report url")
-        report_tar_gz = self._download_report()
-        performance_record = self._extract_performance_record(report_tar_gz)
+        host_id = host['results'][0]['id']
+        report_tar = self._download_report()
+        performance_record = self._extract_performance_record(report_tar)
 
         with app.app_context():
             if performance_record:
@@ -88,8 +86,8 @@ class ReportProcessor:
             print("Unable to download the report")
         return download_response.content
 
-    def _extract_performance_record(self, report_tar_gz):
-        tar = tarfile.open(fileobj=BytesIO(report_tar_gz), mode='r:gz')
+    def _extract_performance_record(self, report_tar):
+        tar = tarfile.open(fileobj=BytesIO(report_tar), mode='r:*')
         files = tar.getmembers()
         metrics_file = None
         for file in files:
