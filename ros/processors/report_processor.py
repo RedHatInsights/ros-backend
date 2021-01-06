@@ -5,7 +5,7 @@ import tarfile
 from io import BytesIO
 from http import HTTPStatus
 from confluent_kafka import Consumer
-from ros.lib.host_inventory import fetch_host_from_inventory
+from ros.lib.host_inventory_interface import fetch_host_from_inventory
 from ros.app import app, db
 from ros.config import INSIGHTS_KAFKA_ADDRESS
 from ros.models import PerformanceProfile
