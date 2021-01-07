@@ -16,6 +16,8 @@ Afterwards you can activate the virtual environment by running:
 pipenv shell
 ```
 
+A list of configurable environment variables is present inside `.env.example` file.
+
 ## Initialize the database
 Run the following commands to excute the db migration scripts.
 ```bash
