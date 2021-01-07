@@ -38,11 +38,15 @@ pipenv install --dev
 FLASK_APP=ros/app.py flask run
 ```
 
-### Sending data to ingress/kafka topic(platform.upload.resource-optimization)
+### Sending report to ingress/kafka topic(platform.upload.advisor) and registering system in host inventory. 
 ```
 make insights-upload-data
 ```
 
+### Sending report(pcp metrics data) to ingress/kafka topic(platform.upload.resource-optimization). 
+```
+make ros-upload-data
+```
 
 ## Useful commands.
 
