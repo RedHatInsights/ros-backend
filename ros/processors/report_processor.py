@@ -1,6 +1,5 @@
 import json
 import requests
-import logging
 import tarfile
 from io import BytesIO
 from http import HTTPStatus
@@ -10,7 +9,6 @@ from ros.app import app, db
 from ros.config import INSIGHTS_KAFKA_ADDRESS
 from ros.models import PerformanceProfile
 
-LOG = logging.getLogger(__name__)
 running = True
 
 
@@ -104,7 +102,4 @@ class ReportProcessor:
 
 def check_kafka_connection():
     topics = consumer.list_topics().topics
-    if "platform.upload.resource-optimization" in topics:
-        return True
-    else:
-        return False
+    return ("platform.upload.resource-optimization" in topics)
