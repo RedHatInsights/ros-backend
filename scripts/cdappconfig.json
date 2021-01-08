@@ -1,0 +1,44 @@
+{
+    "webPort": 8000,
+    "metricsPort": 9000,
+    "metricsPath": "/metircs",
+    "logging": {
+        "type": "cloudwatch",
+        "cloudwatch": {
+            "accessKeyId": "ACCESS_KEY",
+            "secretAccessKey": "SECRET_ACCESS_KEY",
+            "region": "EU",
+            "logGroup": "base_app"
+            }
+        },
+    "kafka": {
+        "brokers": [
+            {
+                "hostname": "kafka",
+                "port": 29092
+            }
+        ],
+        "topics": [
+            {
+                "requestedName": "platform.upload.advisor",
+                "name": "platform.upload.advisor"
+            },
+            {
+                "requestedName": "platform.upload.compliance",
+                "name": "platform.upload.compliance"
+            },
+            {
+                "requestedName": "platform.inventory.host-ingress",
+                "name": "platform.inventory.host-ingress"
+            },
+            {
+                "requestedName": "platform.upload.validation",
+                "name": "platform.upload.validation"
+            },
+            {
+                "requestedName": "platform.payload-status",
+                "name": "platform.payload-status"
+            }
+        ]
+    }
+}

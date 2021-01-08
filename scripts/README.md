@@ -20,7 +20,13 @@ mkdir -p /usr/share/minio/{minio-conf,minio-data}
 # cd scripts
 # docker login quay.io
 # . .env-minio
-# docker-compose up
+# docker-compose --env-file .env-minio  up
+```
+
+4) Wait for insights-inventory container to get started and after that follow the below steps to start inventory API server.
+```
+# docker exec -it <insights-inventory-container-id> bash
+# python run_gunicorn.py
 ```
 
 ## Usage
@@ -32,11 +38,15 @@ pipenv install --dev
 FLASK_APP=ros/app.py flask run
 ```
 
-### Sending data to ingress/kafka topic(platform.upload.resource-optimization)
+### Sending report to ingress/kafka topic(platform.upload.advisor) and registering system in host inventory. 
 ```
 make insights-upload-data
 ```
 
+### Sending report(pcp metrics data) to ingress/kafka topic(platform.upload.resource-optimization). 
+```
+make ros-upload-data
+```
 
 ## Useful commands.
 
