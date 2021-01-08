@@ -1,4 +1,4 @@
-FROM registry.redhat.io/ubi8/python-38
+FROM registry.redhat.io/rhscl/python-38-rhel7
 COPY Pipfile Pipfile.lock manage.py run.py ${APP_ROOT}/src/
 COPY ros ${APP_ROOT}/src/ros/
 COPY migrations ${APP_ROOT}/src/migrations/
