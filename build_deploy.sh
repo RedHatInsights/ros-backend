@@ -2,7 +2,7 @@
 
 set -exv
 
-IMAGE_NAME="quay.io/cloudservices/resource-optimization"
+IMAGE_NAME="quay.io/cloudservices/ros-backend"
 IMAGE_TAG=$(git rev-parse --short=7 HEAD)
 
 if [[ -z "$QUAY_USER" || -z "$QUAY_TOKEN" ]]; then
