@@ -16,9 +16,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = DB_URI
 db.init_app(app)
 
 # Routes
-api.add_resource(Status, '/api/status')
-api.add_resource(Hosts, '/api/systems')
-api.add_resource(HostDetails, '/api/systems/<host_id>')
+api.add_resource(Status, '/api/ros/status')
+api.add_resource(Hosts, '/api/ros/systems')
+api.add_resource(HostDetails, '/api/ros/systems/<host_id>')
 
 
 def initialize_report_processor():
