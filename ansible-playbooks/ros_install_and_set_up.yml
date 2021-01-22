@@ -1,0 +1,49 @@
+---
+# Steps required to get system ready for the Insights resource-optimization service:
+# 1. Install pcp package on your system.
+# 2. Create configuration file for PCP
+# 3. Start and enable pmcd service
+# 4. Start and enable pmlogger service
+
+- hosts: all
+  tasks:
+    - name: Enabling required repository
+      rhsm_repository:
+        name: rhel-8-for-x86_64-baseos-rpms,rhel-8-for-x86_64-appstream-rpms
+        state: enabled
+    - name: Install pcp packages for ROS service
+      yum:
+        name: pcp
+        state: latest
+    - name: Configure pmlogger
+      lineinfile:
+        dest: /etc/pcp/pmlogger/control.d/local
+        regexp: "LOCALHOSTNAME	n   y	PCP_LOG_DIR/pmlogger/ros	-r -T24h10m -c config.ros -v 100Mb"
+        line: "LOCALHOSTNAME	n   y	PCP_LOG_DIR/pmlogger/ros	-r -T24h10m -c config.ros -v 100Mb"
+        create: yes
+    - name: Create pcp ros configuration file. 
+      copy:
+        dest: /var/lib/pcp/config/pmlogger/config.ros
+        content: |
+          log mandatory on default {
+            mem.util.used
+            mem.physmem
+            kernel.all.cpu.user
+            kernel.all.cpu.sys
+            kernel.all.cpu.nice
+            kernel.all.cpu.steal
+            kernel.all.cpu.idle
+            disk.all.total
+          }
+          [access]
+          disallow .* : all;
+          disallow :* : all;
+          allow local:* : enquire;
+    - name: Make sure a pcp service is running
+      systemd:
+        state: started
+        enabled: yes
+        name: "{{ item }}"
+      with_items:
+        - 'pmcd'
+        - 'pmlogger'
