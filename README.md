@@ -30,18 +30,77 @@ python manage.py db upgrade
 python run.py
 ```
 
-## v0 API endpoints available
+## Available v0 API endpoints
 
-| API endpoint                  | description                                                                |
-| ------------                  | -----------                                                                |
-| /api/v0/ros/systems           | Shows list of all systems from Host Inventory having a Performance Profile |
-| /api/v0/ros/systems/<host_id> | Shows the Performance Profile of the selected <host_id>                    |
-| /api/v0/ros/status            | Shows the status of the server                                             |
+### Request
+`GET /api/ros/v0/systems` Shows list of all systems from Host Inventory having a Performance Profile
 
-To run via API:
-```
-curl -v -H "x-rh-identity: <identity-header-value>" -H "Content-Type: application/json" http://localhost:8080/api/ros/v0/systems
-curl -v -H "x-rh-identity: <identity-header-value>" -H "Content-Type: application/json" http://localhost:8080/api/ros/v0/status
-curl -v -H "x-rh-identity: <identity-header-value>" -H "Content-Type: application/json" http://localhost:8080/api/ros/v0/systems/<host_id>
-```
-For local dev setup, please note that use the x-rh-identity header encoded from your account number, the one used while running `make insights-upload-data` and `make ros-upload-data` commands.
+    curl -v -H "Content-Type: application/json" https://cloud.redhat.com/api/ros/v0/systems -u rhn-username:redhat
+
+### Response
+
+    HTTP/1.1 200 OK
+    Date: Thu, 24 Feb 2011 12:36:30 GMT
+    Status: 200 OK
+    Connection: close
+    Content-Type: application/json
+    Content-Length: 2
+
+    [{
+        'fqdn': 'machine1.local.company.com',
+        'display_name': 'machine1-rhel_test123',
+        'id': '12345-57575757',
+        'account': '12345',
+        'vm_uuid': '12345a1',
+        'state': 'Crashloop',
+        'recommendation_count': 5,
+        'organization_id': 1,
+        'performance_score': {
+            'cpu_score': 20,
+            'memory_score': 20,
+            'io_score': 20
+        },
+        'facts': {
+            'cloud_provider': 'AWS',
+            'instance_type': 'm4large',
+            'idling_time': '20',
+            'io_wait': '180'
+        }
+    }]
+
+
+### Request
+`GET /api/ros/v0/systems/<host_id>` To get the individual system details using their <host_id>
+
+    curl -v -H "Content-Type: application/json" https://cloud.redhat.com/api/ros/v0/systems/<host_id>
+
+### Response
+
+    HTTP/1.1 200 OK
+    Date: Thu, 24 Feb 2011 12:36:30 GMT
+    Status: 200 OK
+    Connection: close
+    Content-Type: application/json
+    Content-Length: 2
+
+    {"host_id": "12345-57575757", "performance_record": "{'avg_memory': '3998008.000', 'avg_memory_used': '2487908.973'}", "performance_score": "{'memory_score': 62}"}
+
+
+### Request
+`GET /api/ros/v0/status` Shows the status of the server
+
+    curl -v -H "Content-Type: application/json" https://cloud.redhat.com/api/ros/v0/status
+
+### Response
+
+    HTTP/1.1 200 OK
+    Date: Thu, 24 Feb 2011 12:36:30 GMT
+    Status: 200 OK
+    Connection: close
+    Content-Type: application/json
+    Content-Length: 2
+
+    {"status": "Application is running!"}
+
+
+For local dev setup, please remember to use the x-rh-identity header encoded from your account number, the one used while running `make insights-upload-data` and `make ros-upload-data` commands.
