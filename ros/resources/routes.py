@@ -1,5 +1,5 @@
 from .v0.hosts import HostsApi, HostDetailsApi
-from .status import Status
+from .v0.status import Status
 
 
 # Initialize Routes
