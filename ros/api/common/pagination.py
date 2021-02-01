@@ -1,6 +1,6 @@
 """Module to construct response for paginated list."""
 from urllib.parse import urlencode
-from flask import request, jsonify
+from flask import request
 
 
 def _create_link(path, limit, offset, args_dict):
@@ -57,4 +57,4 @@ def build_paginated_system_list_response(
         },
         "data": json_list,
     }
-    return jsonify(output)
+    return output
