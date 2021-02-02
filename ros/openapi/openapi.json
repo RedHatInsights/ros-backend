@@ -1,0 +1,248 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "Ros-backend API",
+        "description": "Flask Backend API for Resource Optimization Service",
+        "contact": {},
+        "license": {
+            "name": "GPLv3",
+            "url": "https://www.gnu.org/licenses/gpl-3.0.en.html"
+        },
+        "version": "v0.1"
+    },
+    "servers": [
+        {
+            "url": "{{ PATH_PREFIX }}/{{ APP_NAME }}/v0"
+        }
+    ],
+    "paths": {
+        "/status": {
+            "get": {
+                "summary": "Health check liveness call",
+                "description": "A small JSON indicating the application is deployed. This serves as both the liveness and readiness call.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Status"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/systems": {
+            "get": {
+                "summary": "Lists all systems from cloud having performance profile",
+                "description": "Lists all systems from cloud having performance profile",
+                "operationId": "listSystems",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Number of items to return, set -1 to return all",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "description": "Number of items to skip before starting to collect the result set",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Sort field",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "id",
+                                "display_name",
+                                "cpu_score",
+                                "memory_score",
+                                "io_score",
+                                "recommendations",
+                                "state"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Find matching text",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "filter[display_name]",
+                        "in": "query",
+                        "description": "Filter systems based on display name",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Systems"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "RhIdentity": []
+                    }
+                ]
+            }
+        },
+        "/systems/{inventory_id}": {
+            "get": {
+                "summary": "Show the system details by given inventory id",
+                "description": "Show the system details by given inventory id",
+                "parameters": [
+                    {
+                        "name": "inventory_id",
+                        "in": "path",
+                        "description": "Inventory ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SystemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Systems": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SystemItem"
+                        }
+                    }
+                }
+            },
+            "SystemItem": {
+                "type": "object",
+                "properties": {
+                    "fqdn": {
+                        "type": "string"
+                    },
+                    "display_name": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "recommendation_count": {
+                        "type": "integer"
+                    },
+                    "state": {
+                        "type": "string"
+                    },
+                    "performance_score": {
+                        "type": "object",
+                        "properties": {
+                            "memory_score": {
+                                "type": "number"
+                            },
+                            "cpu_score": {
+                                "type": "number"
+                            },
+                            "io_score": {
+                                "type": "number"
+                            }
+                        }
+                    },
+                    "facts": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "Status": {
+                "required": [
+                    "status"
+                ],
+                "properties": {
+                    "status": {
+                        "type": "string"
+                    }
+                }
+            },
+            "SystemDetails": {
+                "type": "object",
+                "properties": {
+                    "host_id": {
+                        "type": "string"
+                    },
+                    "performance_record": {
+                        "type": "object",
+                        "properties": {
+                            "avg_memory": {
+                                "type": "number"
+                            },
+                            "avg_memory_used": {
+                                "type": "number"
+                            }
+                        }
+                    },
+                    "performance_score": {
+                        "type": "object",
+                        "properties": {
+                            "memory_score": {
+                                "type": "number"
+                            },
+                            "cpu_score": {
+                                "type": "number"
+                            },
+                            "io_score": {
+                                "type": "number"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "RhIdentity": {
+                "in": "header",
+                "name": "x-rh-identity",
+                "description": "Base64-encoded JSON identity header provided by 3Scale. Contains an account number of the user issuing the request. Format of the JSON{'identity': {'account_number': '12345678'}}",
+                "type": "apiKey"
+            }
+        }
+    }
+}
