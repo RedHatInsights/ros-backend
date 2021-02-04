@@ -88,6 +88,9 @@ class HostsApi(Resource):
                     {'cpu_score': 60, 'io_score': 30}
                 )
                 host['id'] = i.__dict__['id']
+                host['performance_score']['memory_score'] //= 20
+                host['performance_score']['cpu_score'] //= 20
+                host['performance_score']['io_score'] //= 20
                 host['recommendation_count'] = 5
                 host['state'] = 'Undersized'
                 hosts.append(host)
@@ -112,7 +115,13 @@ class HostDetailsApi(Resource):
 
         profile = PerformanceProfile.query.filter_by(
                   inventory_id=host_id).first()
-        if not profile:
+        if profile:
+            p_score_calc = profile.performance_score
+            p_score_calc['memory_score'] //= 20
+            p_score_calc['cpu_score'] //= 20
+            p_score_calc['io_score'] //= 20
+
+        else:
             abort(404, message="Performance Profile {} doesn't exist"
                   .format(host_id))
 
