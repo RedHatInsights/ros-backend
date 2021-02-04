@@ -7,7 +7,7 @@ from ros.utils import is_valid_uuid
 from ros.lib.host_inventory_interface import fetch_all_hosts_from_inventory
 from ros.api.common.pagination import build_paginated_system_list_response
 
-MAX_HOSTS_PER_REP = 1000
+DEFAULT_HOSTS_PER_REP = 10
 DEFAULT_OFFSET = 0
 
 
@@ -53,7 +53,7 @@ class HostsApi(Resource):
 
     @marshal_with(output_fields)
     def get(self):
-        limit = int(request.args.get('limit') or MAX_HOSTS_PER_REP)
+        limit = int(request.args.get('limit') or DEFAULT_HOSTS_PER_REP)
         offset = int(request.args.get('offset') or DEFAULT_OFFSET)
 
         auth_key = request.headers.get('X-RH-IDENTITY')
