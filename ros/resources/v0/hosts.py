@@ -4,11 +4,14 @@ from flask_restful import Resource, abort, fields, marshal_with
 
 from ros.models import PerformanceProfile
 from ros.utils import is_valid_uuid
+from ros.app import db
 from ros.lib.host_inventory_interface import fetch_all_hosts_from_inventory
 from ros.api.common.pagination import build_paginated_system_list_response
 
 DEFAULT_HOSTS_PER_REP = 10
 DEFAULT_OFFSET = 0
+
+from sqlalchemy import func
 
 
 class HostsApi(Resource):
@@ -65,30 +68,38 @@ class HostsApi(Resource):
         inv_hosts = fetch_all_hosts_from_inventory(auth_key)
         inv_host_ids = [host['id'] for host in inv_hosts['results']]
 
+        sub_query = (
+            db.session.query(PerformanceProfile.inventory_id, func.max(PerformanceProfile.report_date).label('max_date')
+                             )
+            .filter(PerformanceProfile.inventory_id.in_(inv_host_ids))
+            .group_by(PerformanceProfile.inventory_id)
+            .subquery()
+        )
+
         # Note that When using LIMIT, it is important to use an ORDER BY clause
         # that constrains the result rows into a unique order.
         # Otherwise you will get an unpredictable subset of the query's rows.
         # Refer - https://www.postgresql.org/docs/13/queries-limit.html
 
-        query = PerformanceProfile.query.filter(
-            PerformanceProfile.inventory_id.in_(inv_host_ids)).order_by(
-                PerformanceProfile.report_date.desc()).order_by(
-                    PerformanceProfile.id.asc())
+        query = (
+            db.session.query(PerformanceProfile)
+            .join(sub_query, (sub_query.c.max_date == PerformanceProfile.report_date) &
+                  (PerformanceProfile.inventory_id == sub_query.c.inventory_id))
+            .asc()
+        )
+
         count = query.count()
         query = query.limit(limit).offset(offset)
         query_results = query.all()
 
         hosts = []
-        for profile in query_results:
-            if len(list(filter(lambda host: host['id'] == str(profile.inventory_id), hosts))):
-                continue
-            else:
-                host = list(filter(lambda host: host['id'] == str(profile.inventory_id), inv_hosts['results']))[0]
-                host['id'] = profile.__dict__['id']
-                host['recommendation_count'] = 5
-                host['state'] = 'Undersized'
-                host['display_performance_score'] = profile.display_performance_score
-                hosts.append(host)
+        for i in profile_result:
+            host = list(filter(lambda host: host['id'] == str(i.inventory_id), inv_hosts['results']))[0]
+            host['id'] = profile.__dict__['id']
+            host['recommendation_count'] = 5
+            host['state'] = 'Undersized'
+            host['display_performance_score'] = profile.display_performance_score
+            hosts.append(host)
 
         return build_paginated_system_list_response(
             limit, offset, hosts, count
