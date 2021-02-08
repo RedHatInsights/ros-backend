@@ -13,15 +13,15 @@ logging.basicConfig(
 LOG = logging.getLogger(__name__)
 
 
-class InventoryEventsListener:
-    """Inventory events listener."""
+class InventoryEventsConsumer:
+    """Inventory events consumer."""
 
     def __init__(self):
-        """Create a Inventory Events Listener."""
+        """Create a Inventory Events Consumer."""
         self.running = True
         self.consumer = Consumer({
             'bootstrap.servers': INSIGHTS_KAFKA_ADDRESS,
-            'group.id': 'inventory-event-lisener',
+            'group.id': 'inventory-events-consumer',
             'enable.auto.commit': False
         })
 
@@ -35,7 +35,7 @@ class InventoryEventsListener:
         self.prefix = 'PROCESSING INVENTORY EVENTS'
 
     def run(self):
-        """Initialize consumer."""
+        """Initialize Consumer."""
         while self.running:
             msg = self.consumer.poll(1.0)
             if msg is None:
@@ -84,33 +84,26 @@ class InventoryEventsListener:
         host_id = msg['id']
         insights_id = msg['insights_id']
         with app.app_context():
-            pp_record = PerformanceProfile.query.filter_by(
-                inventory_id=host_id).first()
-            if pp_record:
-                LOG.info(
-                    'Deleting performance profile of host with insights_id %s - %s',
-                    insights_id,
-                    self.prefix
-                )
-                db.session.delete(pp_record)
-                db.session.commit()
-            else:
-                LOG.info(
-                    'Not found any performance profile of host with host_id %s'
-                    ' & insights_id %s - %s',
-                    host_id, insights_id, self.prefix
-                )
+            LOG.info(
+                'Deleting performance profile of host with insights_id %s - %s',
+                insights_id,
+                self.prefix
+            )
+            db.session.query(PerformanceProfile).filter(
+                PerformanceProfile.inventory_id == host_id
+            ).delete()
+            db.session.commit()
 
 
 # FIXUP: app context so don't need to add it to app.py
 # def inventory_target():
-#     """Initalize inventory events listerner."""
-#     inventory_events_processor = InventoryEventsListener()
+#     """Initalize inventory events consumer."""
+#     inventory_events_processor = InventoryEventsConsumer()
 #     inventory_events_processor.run()
 
 
 # def start_inventory_events_listener_thread():
-#     """Start inventory events listener thread."""
+#     """Start inventory events consumer thread."""
 #     inventory_processor_thread = threading.Thread(
-#         target=inventory_target, name='InventoryEventsListener', daemon=True)
+#         target=inventory_target, name='InventoryEventsConsumer', daemon=True)
 #     inventory_processor_thread.start()
