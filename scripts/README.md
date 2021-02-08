@@ -20,7 +20,7 @@ mkdir -p /usr/share/minio/{minio-conf,minio-data}
 # cd scripts
 # docker login quay.io
 # . .env-minio
-# docker-compose --env-file .env-minio  up
+# docker-compose up
 ```
 
 4) Wait for insights-inventory container to get started and after that follow the below steps to start inventory API server.
