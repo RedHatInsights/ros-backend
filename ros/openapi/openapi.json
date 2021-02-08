@@ -55,39 +55,6 @@
                         "schema": {
                             "type": "integer"
                         }
-                    },
-                    {
-                        "name": "sort",
-                        "in": "query",
-                        "description": "Sort field",
-                        "schema": {
-                            "type": "string",
-                            "enum": [
-                                "id",
-                                "display_name",
-                                "cpu_score",
-                                "memory_score",
-                                "io_score",
-                                "recommendations",
-                                "state"
-                            ]
-                        }
-                    },
-                    {
-                        "name": "search",
-                        "in": "query",
-                        "description": "Find matching text",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "filter[display_name]",
-                        "in": "query",
-                        "description": "Filter systems based on display name",
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ],
                 "responses": {
@@ -141,6 +108,37 @@
     },
     "components": {
         "schemas": {
+            "Links": {
+                "type": "object",
+                "properties": {
+                    "first": {
+                        "type": "string"
+                    },
+                    "last": {
+                        "type": "string"
+                    },
+                    "next": {
+                        "type": "string"
+                    },
+                    "previous": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ListMeta": {
+                "type": "object",
+                "properties": {
+                    "limit": {
+                        "type": "integer"
+                    },
+                    "offset" : {
+                        "type": "integer"
+                    },
+                    "count": {
+                        "type": "integer"
+                    }
+                }
+            },
             "Systems": {
                 "type": "object",
                 "properties": {
@@ -149,6 +147,12 @@
                         "items": {
                             "$ref": "#/components/schemas/SystemItem"
                         }
+                    },
+                    "links": {
+                        "$ref": "#/components/schemas/Links"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/ListMeta"
                     }
                 }
             },
