@@ -10,10 +10,10 @@ ros-upload-data:
 	curl -vvvv -F "upload=@sample-files/ros-sample.tar.gz;type=application/vnd.redhat.resource-optimization.sample+tgz" -F 'metadata=${metadata}' \
 		-H "x-rh-identity: eyJpZGVudGl0eSI6IHsiYWNjb3VudF9udW1iZXIiOiAiMDAwMDAwMSIsICJ0eXBlIjogIlVzZXIiLCAiaW50ZXJuYWwiOiB7Im9yZ19pZCI6ICIwMDAwMDEifX19Cg==" \
 		-H "x-rh-request_id: testtesttest" \
-		localhost:8080/api/ingress/v1/upload
+		localhost:3000/api/ingress/v1/upload
 
 insights-upload-data:
 	curl -vvvv -F "upload=@sample-files/insights-aws-sample.tar.gz;type=application/vnd.redhat.advisor.collection+tgz" \
 	    -H "x-rh-identity: eyJpZGVudGl0eSI6IHsiYWNjb3VudF9udW1iZXIiOiAiMDAwMDAwMSIsICJ0eXBlIjogIlVzZXIiLCAiaW50ZXJuYWwiOiB7Im9yZ19pZCI6ICIwMDAwMDEifX19Cg==" \
 		-H "x-rh-request_id: testtesttest" \
-		localhost:8080/api/ingress/v1/upload
+		localhost:3000/api/ingress/v1/upload
