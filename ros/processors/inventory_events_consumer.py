@@ -2,7 +2,7 @@
 import json
 import logging
 from confluent_kafka import Consumer, KafkaException
-from ros.config import INSIGHTS_KAFKA_ADDRESS, INVENTORY_EGRESS_TOPIC
+from ros.config import INSIGHTS_KAFKA_ADDRESS, INVENTORY_EGRESS_TOPIC, GROUP_ID
 from ros.app import app, db
 from ros.models import PerformanceProfile
 
@@ -21,7 +21,7 @@ class InventoryEventsConsumer:
         self.running = True
         self.consumer = Consumer({
             'bootstrap.servers': INSIGHTS_KAFKA_ADDRESS,
-            'group.id': 'inventory-events-consumer',
+            'group.id': GROUP_ID,
             'enable.auto.commit': False
         })
 
