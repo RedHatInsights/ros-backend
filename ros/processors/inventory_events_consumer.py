@@ -28,8 +28,6 @@ class InventoryEventsConsumer:
         # Subscribe to topic
         self.consumer.subscribe([INVENTORY_EGRESS_TOPIC])
         self.event_type_map = {
-            'created': self.host_create_update_event,
-            'updated': self.host_create_update_event,
             'delete': self.host_delete_event,
         }
         self.prefix = 'PROCESSING INVENTORY EVENTS'
@@ -69,14 +67,6 @@ class InventoryEventsConsumer:
                 self.consumer.commit()
 
         self.consumer.close()
-
-    def host_create_update_event(self, _msg):
-        """Process create/update message."""
-        self.prefix = "PROCESSING CREATE/UPDATE EVENT"
-        LOG.info(
-            'Not listening to created/updated events - %s',
-            self.prefix
-        )
 
     def host_delete_event(self, msg):
         """Process delete message."""
