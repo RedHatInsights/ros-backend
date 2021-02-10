@@ -6,7 +6,7 @@ from http import HTTPStatus
 from confluent_kafka import Consumer
 from ros.lib.host_inventory_interface import fetch_host_from_inventory
 from ros.app import app, db
-from ros.config import INSIGHTS_KAFKA_ADDRESS
+from ros.config import INSIGHTS_KAFKA_ADDRESS, GROUP_ID
 from ros.models import PerformanceProfile
 
 running = True
@@ -14,7 +14,7 @@ running = True
 
 consumer = Consumer({
     'bootstrap.servers': INSIGHTS_KAFKA_ADDRESS,
-    'group.id': 'ros-consumers',
+    'group.id': GROUP_ID,
     "enable.auto.commit": False
 })
 
