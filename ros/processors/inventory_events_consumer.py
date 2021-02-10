@@ -83,17 +83,3 @@ class InventoryEventsConsumer:
                 PerformanceProfile.inventory_id == host_id
             ).delete()
             db.session.commit()
-
-
-# FIXUP: app context so don't need to add it to app.py
-# def inventory_target():
-#     """Initalize inventory events consumer."""
-#     inventory_events_processor = InventoryEventsConsumer()
-#     inventory_events_processor.run()
-
-
-# def start_inventory_events_listener_thread():
-#     """Start inventory events consumer thread."""
-#     inventory_processor_thread = threading.Thread(
-#         target=inventory_target, name='InventoryEventsConsumer', daemon=True)
-#     inventory_processor_thread.start()

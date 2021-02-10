@@ -35,11 +35,7 @@ def inventory_target():
     inventory_events_processor = InventoryEventsConsumer()
     inventory_events_processor.run()
 
+
 inventory_processor_thread = threading.Thread(
     target=inventory_target, name='InventoryEventsConsumer', daemon=True)
 inventory_processor_thread.start()
-
-
-# TODO: remove this dead code. implement create_app - flask to use current_app
-if __name__ == "__main__":
-    app.run(debug=True)
