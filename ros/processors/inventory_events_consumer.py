@@ -75,11 +75,17 @@ class InventoryEventsConsumer:
         insights_id = msg['insights_id']
         with app.app_context():
             LOG.info(
-                'Deleting performance profile of host with insights_id %s - %s',
+                'Deleting performance profile records with insights_id %s - %s',
                 insights_id,
                 self.prefix
             )
-            db.session.query(PerformanceProfile).filter(
+            rows_deleted = db.session.query(PerformanceProfile).filter(
                 PerformanceProfile.inventory_id == host_id
             ).delete()
+            if rows_deleted > 0:
+                LOG.info(
+                    'Deleted %d performance profile record(s) - %s',
+                    rows_deleted,
+                    self.prefix
+                )
             db.session.commit()
