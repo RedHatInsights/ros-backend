@@ -1,9 +1,9 @@
+import threading
 from flask import Flask
 from flask_restful import Api
 from flask_cors import CORS
 from ros.models import db
 from ros.config import DB_URI
-import threading
 from ros.resources.routes import initialize_routes
 
 app = Flask(__name__)
@@ -28,5 +28,14 @@ report_processor_thread = threading.Thread(
     target=initialize_report_processor, name='ReportProcessor', daemon=True)
 report_processor_thread.start()
 
-if __name__ == "__main__":
-    app.run(debug=True)
+
+def inventory_target():
+    """Initalize inventory events consumer."""
+    from ros.processors.inventory_events_consumer import InventoryEventsConsumer
+    inventory_events_processor = InventoryEventsConsumer()
+    inventory_events_processor.run()
+
+
+inventory_processor_thread = threading.Thread(
+    target=inventory_target, name='InventoryEventsConsumer', daemon=True)
+inventory_processor_thread.start()
