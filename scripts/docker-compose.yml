@@ -61,6 +61,7 @@ services:
       - INGRESS_MINIOSECRETKEY=$MINIO_SECRET_KEY
       - INGRESS_MINIOENDPOINT=minio:9000
     depends_on:
+       - createbuckets
        - kafka
   db-ros:
     image: postgres
@@ -70,7 +71,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: postgres
     ports:
-          - "15432:5432"
+      - "15432:5432"
   db-host-inventory:
     image: postgres
     restart: always
@@ -79,14 +80,13 @@ services:
       POSTGRES_USER: insights
       POSTGRES_DB: insights
     ports:
-        - "15433:5432"
-  insights-inventory:
+      - "15433:5432"
+
+  insights-inventory-mq: &inventory
     image: quay.io/cloudservices/insights-inventory:latest
     restart: always
-    ports:
-      - 8081:8081
+    command: "make upgrade_db run_inv_mq_service"
     environment:
-      - APP_FILE=run_gunicorn.py
       - APP_NAME=inventory
       - PATH_PREFIX=api
       - INVENTORY_DB_USER=insights
@@ -94,23 +94,55 @@ services:
       - INVENTORY_DB_HOST=db-host-inventory
       - INVENTORY_DB_NAME=insights
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - KAFKA_TOPIC=platform.system-profile
+      - KAFKA_GROUP=inventory
       - PAYLOAD_TRACKER_ENABLED=false
       - LISTEN_PORT=8081
     depends_on:
        - kafka
        - db-host-inventory
        - puptoo
-       - zookeeper
+
+  insights-inventory-web:
+    <<: *inventory
+    command: "make upgrade_db run_inv_web_service"
+    depends_on:
+      - insights-inventory-mq
+    ports:
+      - 8081:8080
+
   puptoo:
     image: quay.io/cloudservices/insights-puptoo:latest
     ports:
       - 8000:8000
     environment:
-      - LOG_LEVEL=DEBUG
-      - ACG_CONFIG=/cdappconfig.json
-      - INVENTORY_TOPIC=platform.inventory.host-ingress
+      - LOG_LEVEL=INFO
+      - FACT_EXTRACT_LOGLEVEL=ERROR
+      - KAFKA_ALLOW_CREATE_TOPICS=True
+      - DISABLE_PROMETHEUS=True
     depends_on:
       - kafka
       - ingress
+    # Not yet used, we are not running clowder ATM
     volumes:
-        - '~/cdappconfig.json:/cdappconfig.json'
+      - './cdappconfig.json:/cdappconfig.json:Z'
+
+  # Allows us to run the application in the form it's going to be deployed, will be needed for tests
+  ros-processor: &ros
+    build:
+      context: ..
+    command: [ "python", "-m", "ros.processor.main" ]
+    depends_on:
+      - insights-inventory-web
+      - kafka
+      - createbuckets
+    environment:
+      - INSIGHTS_KAFKA_HOST=kafka
+      - INSIGHTS_KAFKA_PORT=29092
+      - INVENTORY_HOST=insights-inventory-web
+      - INVENTORY_PORT=8080
+      - ROS_DB_HOST=db-ros
+      - ROS_DB_PORT=5432
+  ros-api:
+    <<: *ros
+    command: ["bash", "-c", "python -m manage db upgrade && python -m ros.api.main"]
