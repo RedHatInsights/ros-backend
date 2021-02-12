@@ -8,10 +8,10 @@ from ros.app import db
 from ros.lib.host_inventory_interface import fetch_all_hosts_from_inventory
 from ros.api.common.pagination import build_paginated_system_list_response
 
+from sqlalchemy import func
+
 DEFAULT_HOSTS_PER_REP = 10
 DEFAULT_OFFSET = 0
-
-from sqlalchemy import func
 
 
 class HostsApi(Resource):
@@ -68,7 +68,7 @@ class HostsApi(Resource):
         inv_hosts = fetch_all_hosts_from_inventory(auth_key)
         inv_host_ids = [host['id'] for host in inv_hosts['results']]
 
-        sub_query = (
+        last_reported = (
             db.session.query(PerformanceProfile.inventory_id, func.max(PerformanceProfile.report_date).label('max_date')
                              )
             .filter(PerformanceProfile.inventory_id.in_(inv_host_ids))
@@ -83,9 +83,9 @@ class HostsApi(Resource):
 
         query = (
             db.session.query(PerformanceProfile)
-            .join(sub_query, (sub_query.c.max_date == PerformanceProfile.report_date) &
-                  (PerformanceProfile.inventory_id == sub_query.c.inventory_id))
-            .asc()
+            .join(last_reported, (last_reported.c.max_date == PerformanceProfile.report_date) &
+                  (PerformanceProfile.inventory_id == last_reported.c.inventory_id))
+            .order_by(PerformanceProfile.id.asc())
         )
 
         count = query.count()
@@ -93,8 +93,8 @@ class HostsApi(Resource):
         query_results = query.all()
 
         hosts = []
-        for i in profile_result:
-            host = list(filter(lambda host: host['id'] == str(i.inventory_id), inv_hosts['results']))[0]
+        for profile in query_results:
+            host = list(filter(lambda host: host['id'] == str(profile.inventory_id), inv_hosts['results']))[0]
             host['id'] = profile.__dict__['id']
             host['recommendation_count'] = 5
             host['state'] = 'Undersized'
