@@ -19,7 +19,7 @@ class HostsApi(Resource):
         'idling_time': fields.String,
         'io_wait': fields.String
     }
-    performance_score_fields = {
+    display_performance_score_fields = {
         'cpu_score': fields.Integer,
         'memory_score': fields.Integer,
         'io_score': fields.Integer
@@ -31,7 +31,7 @@ class HostsApi(Resource):
         'account': fields.String,
         'recommendation_count': fields.Integer,
         'state': fields.String,
-        'performance_score': fields.Nested(performance_score_fields),
+        'display_performance_score': fields.Nested(display_performance_score_fields),
         'facts': fields.Nested(facts_fields)
     }
     meta_fields = {
@@ -69,6 +69,7 @@ class HostsApi(Resource):
         # that constrains the result rows into a unique order.
         # Otherwise you will get an unpredictable subset of the query's rows.
         # Refer - https://www.postgresql.org/docs/13/queries-limit.html
+
         query = PerformanceProfile.query.filter(
             PerformanceProfile.inventory_id.in_(inv_host_ids)).order_by(
                 PerformanceProfile.report_date.desc()).order_by(
@@ -78,18 +79,15 @@ class HostsApi(Resource):
         query_results = query.all()
 
         hosts = []
-        for i in query_results:
-            if len(list(filter(lambda host: host['id'] == str(i.inventory_id), hosts))):
+        for profile in query_results:
+            if len(list(filter(lambda host: host['id'] == str(profile.inventory_id), hosts))):
                 continue
             else:
-                host = list(filter(lambda host: host['id'] == str(i.inventory_id), inv_hosts['results']))[0]
-                host['performance_score'] = i.__dict__['performance_score']
-                host['performance_score'].update(
-                    {'cpu_score': 60, 'io_score': 30}
-                )
-                host['id'] = i.__dict__['id']
+                host = list(filter(lambda host: host['id'] == str(profile.inventory_id), inv_hosts['results']))[0]
+                host['id'] = profile.__dict__['id']
                 host['recommendation_count'] = 5
                 host['state'] = 'Undersized'
+                host['display_performance_score'] = profile.display_performance_score
                 hosts.append(host)
 
         return build_paginated_system_list_response(
@@ -101,7 +99,7 @@ class HostDetailsApi(Resource):
     profile_fields = {
         'host_id': fields.String(attribute='inventory_id'),
         'performance_record': fields.String,
-        'performance_score': fields.String
+        'display_performance_score': fields.String
     }
 
     @marshal_with(profile_fields)
@@ -112,7 +110,10 @@ class HostDetailsApi(Resource):
 
         profile = PerformanceProfile.query.filter_by(
                   inventory_id=host_id).first()
-        if not profile:
+        if profile:
+            record = {}
+            record['display_performance_score'] = profile.display_performance_score
+        else:
             abort(404, message="Performance Profile {} doesn't exist"
                   .format(host_id))
 
