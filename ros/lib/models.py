@@ -6,12 +6,15 @@ db = SQLAlchemy()
 
 
 class PerformanceProfile(db.Model):
-    __table_args__ = (db.UniqueConstraint('inventory_id', 'report_date'), )
     id = db.Column(db.Integer, primary_key=True)
-    inventory_id = db.Column(UUID(as_uuid=True), nullable=False)
     performance_record = db.Column(JSONB)
     performance_score = db.Column(JSONB)
     report_date = db.Column(db.Date, default=date.today())
+    system_id = db.Column(db.Integer, primary_key=True)
+    __table_args__ = (
+        db.PrimaryKeyConstraint('system_id', 'report_date'),
+        db.ForeignKeyConstraint(['system_id'], ['systems.id'], name='performance_profile_system_id_fkey'),
+    )
 
     @property
     def display_performance_score(self):
@@ -25,3 +28,20 @@ class PerformanceProfile(db.Model):
             # 'io_score': self.performance_score['io_score'] // 20
         }
         return display_performance_score
+
+
+class System(db.Model):
+    __tablename__ = 'systems'
+    id = db.Column(db.Integer, primary_key=True)
+    account_id = db.Column(db.Integer)
+    inventory_id = db.Column(UUID(as_uuid=True), nullable=False)
+    __table_args__ = (db.UniqueConstraint('inventory_id'),)
+
+
+class RhAccount(db.Model):
+    __tablename__ = 'rh_accounts'
+    id = db.Column(db.Integer, primary_key=True)
+    account = db.Column(db.Text, nullable=False)
+    __table_args__ = (
+        db.CheckConstraint('NOT(account IS NULL)'),
+    )
