@@ -21,7 +21,7 @@ initialize_routes(api)
 def initialize_report_processor():
     from ros.processors.report_processor import ReportProcessor
     processor = ReportProcessor()
-    processor.init_consumer()
+    processor.run()
 
 
 report_processor_thread = threading.Thread(

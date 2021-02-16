@@ -2,9 +2,10 @@
 import json
 import logging
 from confluent_kafka import Consumer, KafkaException
-from ros.config import INSIGHTS_KAFKA_ADDRESS, INVENTORY_EGRESS_TOPIC, GROUP_ID
+from ros.config import INSIGHTS_KAFKA_ADDRESS, INVENTORY_EVENTS_TOPIC, GROUP_ID
 from ros.app import app, db
 from ros.models import PerformanceProfile
+from .archive_processor import process_message
 
 logging.basicConfig(
     level='INFO',
@@ -18,7 +19,6 @@ class InventoryEventsConsumer:
 
     def __init__(self):
         """Create a Inventory Events Consumer."""
-        self.running = True
         self.consumer = Consumer({
             'bootstrap.servers': INSIGHTS_KAFKA_ADDRESS,
             'group.id': GROUP_ID,
@@ -26,18 +26,26 @@ class InventoryEventsConsumer:
         })
 
         # Subscribe to topic
-        self.consumer.subscribe([INVENTORY_EGRESS_TOPIC])
+        self.consumer.subscribe([INVENTORY_EVENTS_TOPIC])
         self.event_type_map = {
             'delete': self.host_delete_event,
+            'created': self.host_create_update_events,
+            'updated': self.host_create_update_events
         }
         self.prefix = 'PROCESSING INVENTORY EVENTS'
 
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        msg = self.consumer.poll()
+        if msg is None:
+            raise StopIteration
+        return msg
+
     def run(self):
         """Initialize Consumer."""
-        while self.running:
-            msg = self.consumer.poll(1.0)
-            if msg is None:
-                continue
+        for msg in iter(self):
             if msg.error():
                 print(msg.error())
                 raise KafkaException(msg.error())
@@ -89,3 +97,21 @@ class InventoryEventsConsumer:
                     self.prefix
                 )
             db.session.commit()
+
+    def host_create_update_events(self, msg):
+        """ Process created/updated message ( create system record, store new report )"""
+        self.prefix = "PROCESSING Create/Update EVENT"
+        with app.app_context() as ctx:
+            system_id = self.process_system_details(msg, ctx)
+            self.process_archive(msg, system_id, ctx)
+
+    def process_system_details(self, msg, ctx):
+        """ Store new system information (stale, stale_warning timestamp) and return internal DB id"""
+        return 0
+
+    def process_archive(self, msg, system_id, ctx):
+        """ Store archive information ( the actual report )"""
+        data = process_message(msg)
+        with app.app_context():
+            LOG.info('Updating system report %s', data)
+
