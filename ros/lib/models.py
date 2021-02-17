@@ -6,13 +6,12 @@ db = SQLAlchemy()
 
 
 class PerformanceProfile(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
     performance_record = db.Column(JSONB)
     performance_score = db.Column(JSONB)
     report_date = db.Column(db.Date, default=date.today())
-    system_id = db.Column(db.Integer, primary_key=True)
+    system_id = db.Column(db.Integer)
     __table_args__ = (
-        db.PrimaryKeyConstraint('system_id', 'report_date'),
+        db.PrimaryKeyConstraint('system_id', 'report_date', name='performance_profile_pkey'),
         db.ForeignKeyConstraint(['system_id'], ['systems.id'], name='performance_profile_system_id_fkey'),
     )
 
@@ -35,7 +34,10 @@ class System(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     account_id = db.Column(db.Integer)
     inventory_id = db.Column(UUID(as_uuid=True), nullable=False)
-    __table_args__ = (db.UniqueConstraint('inventory_id'),)
+    __table_args__ = (
+        db.UniqueConstraint('inventory_id'),
+        db.ForeignKeyConstraint(['account_id'], ['rh_accounts.id'], name='systems_account_id_fkey'),
+    )
 
 
 class RhAccount(db.Model):
