@@ -2,6 +2,7 @@
 
 Backend for Resource Optimization Service
 
+
 ## Getting Started
 
 This project uses pipenv to manage the development and production environments.
@@ -18,16 +19,41 @@ pipenv shell
 
 A list of configurable environment variables is present inside `.env.example` file.
 
-## Initialize the database
+### Dependencies
+The application depends on several parts of the insights platform. These dependencies are provided by the 
+`docker-compose.yml` file in the *scripts* directory.
+
+To run the dependencies, just run following command:
+```bash
+cd scripts && docker-compose up insights-inventory-web db-ros
+```
+## Running the ROS application
+### Within docker
+To run the full application ( With ros components within docker)
+```bash
+docker-compose up ros-processor ros-api
+```
+
+### On host machine
+In order to properly run the application from the host machine, you need to have modified your `/etc/hosts` file. Check the
+README.md file in scripts directory.
+
+#### Initialize the database
 Run the following commands to excute the db migration scripts.
 ```bash
 python manage.py db upgrade
 ```
 
-## Running the server locally
-
+#### Running the processor locally
+The processor component connects to kafka, and listens on topics for system archive uploads/ system deletion messages.
 ```bash
-python run.py
+python -m ros.processor.main
+```
+
+#### Running the web api locally
+The web api component provides a REST api view of the app database.
+```bash
+python -m ros.api.main
 ```
 
 ## Available v0 API endpoints

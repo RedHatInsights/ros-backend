@@ -5,9 +5,9 @@ from io import BytesIO
 from http import HTTPStatus
 from confluent_kafka import Consumer
 from ros.lib.host_inventory_interface import fetch_host_from_inventory
-from ros.app import app, db
-from ros.config import INSIGHTS_KAFKA_ADDRESS, GROUP_ID
-from ros.models import PerformanceProfile
+from ros.lib.app import app, db
+from ros.lib.config import INSIGHTS_KAFKA_ADDRESS, GROUP_ID
+from ros.lib.models import PerformanceProfile
 
 running = True
 
@@ -49,7 +49,7 @@ class ReportProcessor:
         insights_id = metadata['insights_id']
         rh_identity = self.msg.get('b64_identity', None)
         host = fetch_host_from_inventory(insights_id, rh_identity)
-        if not host['results']:
+        if not host.get('results', None):
             print("No record found. Make sure system is registered in insights")
             return None
         if not self.report_url:

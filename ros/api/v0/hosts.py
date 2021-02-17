@@ -2,8 +2,8 @@ from flask import jsonify, make_response
 from flask import request
 from flask_restful import Resource, abort, fields, marshal_with
 
-from ros.models import PerformanceProfile
-from ros.utils import is_valid_uuid
+from ros.lib.models import PerformanceProfile
+from ros.lib.utils import is_valid_uuid
 from ros.lib.host_inventory_interface import fetch_all_hosts_from_inventory
 from ros.api.common.pagination import build_paginated_system_list_response
 

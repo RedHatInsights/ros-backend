@@ -1,5 +1,5 @@
 import requests
-from ros.config import INVENTORY_URL
+from .config import INVENTORY_URL
 
 
 def fetch_host_from_inventory(insights_id, rh_identity):
