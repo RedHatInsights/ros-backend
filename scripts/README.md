@@ -3,39 +3,41 @@ Below are the instructions to setup ROS development environment
 
 ## Setup
 
-1. Update /etc/hosts
+1. If you want to access the containers from host machine, update /etc/hosts
 
 ```
 127.0.0.1       kafka
 127.0.0.1       minio
 ```
-2. Create require directories for minio.
-```
-mkdir -p /usr/share/minio/{minio-conf,minio-data}
+
+3. Clone ros-backend repository.
+```bash
+git clone https://github.com/RedHatInsights/ros-backend.git
+cd scripts
+docker login quay.io
 ```
 
-3. Clone ros-backend repository and start necessary services in container.
-```
-# git clone https://github.com/RedHatInsights/ros-backend.git
-# cd scripts
-# docker login quay.io
-# . .env-minio
-# docker-compose up
-```
-
-4) Wait for insights-inventory container to get started and after that follow the below steps to start inventory API server.
-```
-# docker exec -it <insights-inventory-container-id> bash
-# python run_gunicorn.py
+4. Start dependency containers (insight-sinventory-web has dependency on all platform containers, so they can be started with a single command).
+The db-ros container just provides a PostgreSQL database for the ROS application
+```bash
+docker-compose up --build insights-inventory-web db-ros
 ```
 
 ## Usage
-
-### Run ros-backend flask application.
-
+Following commands are expected to be run from the repository root (not within the *scripts* directory).
+### Enter the pipenv environment
+```bash
+pipenv install --dev 
+pipenv shell
 ```
-pipenv install --dev
-FLASK_APP=ros/app.py flask run
+### Run ros-api application
+```
+python -m ros.api.main
+```
+
+### Run the ros-processor application
+```bash
+python -m ros.processor.main
 ```
 
 ### Sending report to ingress/kafka topic(platform.upload.advisor) and registering system in host inventory. 

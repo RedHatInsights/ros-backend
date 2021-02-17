@@ -2,9 +2,9 @@
 import json
 import logging
 from confluent_kafka import Consumer, KafkaException
-from ros.config import INSIGHTS_KAFKA_ADDRESS, INVENTORY_EGRESS_TOPIC, GROUP_ID
-from ros.app import app, db
-from ros.models import PerformanceProfile
+from ros.lib.config import INSIGHTS_KAFKA_ADDRESS, INVENTORY_EGRESS_TOPIC, GROUP_ID
+from ros.lib.app import app, db
+from ros.lib.models import PerformanceProfile
 
 logging.basicConfig(
     level='INFO',
