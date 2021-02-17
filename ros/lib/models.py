@@ -45,5 +45,6 @@ class RhAccount(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     account = db.Column(db.Text, nullable=False)
     __table_args__ = (
+        db.UniqueConstraint('account'),
         db.CheckConstraint('NOT(account IS NULL)'),
     )

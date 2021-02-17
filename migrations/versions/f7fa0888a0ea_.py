@@ -21,6 +21,7 @@ def upgrade():
     op.create_table('rh_accounts',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('account', sa.Text(), nullable=False),
+    sa.UniqueConstraint('account'),
     sa.CheckConstraint('NOT(account IS NULL)'),
     sa.PrimaryKeyConstraint('id')
     )
