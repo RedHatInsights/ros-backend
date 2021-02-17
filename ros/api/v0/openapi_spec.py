@@ -4,4 +4,4 @@ from flask_restful import Resource
 
 class OpenAPISpec(Resource):
     def get(self):
-        return send_file("openapi/openapi.json")
+        return send_file("../openapi/openapi.json")
