@@ -1,10 +1,10 @@
-# import threading
 import json
 import logging
 from confluent_kafka import Consumer, KafkaException
-from ros.lib.config import INSIGHTS_KAFKA_ADDRESS, INVENTORY_EGRESS_TOPIC, GROUP_ID
+from ros.lib.config import INSIGHTS_KAFKA_ADDRESS, INVENTORY_EVENTS_TOPIC, GROUP_ID
 from ros.lib.app import app, db
-from ros.lib.models import PerformanceProfile
+from ros.lib.models import PerformanceProfile, RhAccount, System
+from ros.lib.utils import get_or_create
 
 logging.basicConfig(
     level='INFO',
@@ -18,7 +18,6 @@ class InventoryEventsConsumer:
 
     def __init__(self):
         """Create a Inventory Events Consumer."""
-        self.running = True
         self.consumer = Consumer({
             'bootstrap.servers': INSIGHTS_KAFKA_ADDRESS,
             'group.id': GROUP_ID,
@@ -26,18 +25,26 @@ class InventoryEventsConsumer:
         })
 
         # Subscribe to topic
-        self.consumer.subscribe([INVENTORY_EGRESS_TOPIC])
+        self.consumer.subscribe([INVENTORY_EVENTS_TOPIC])
         self.event_type_map = {
             'delete': self.host_delete_event,
+            'created': self.host_create_update_events,
+            'updated': self.host_create_update_events
         }
         self.prefix = 'PROCESSING INVENTORY EVENTS'
 
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        msg = self.consumer.poll()
+        if msg is None:
+            raise StopIteration
+        return msg
+
     def run(self):
         """Initialize Consumer."""
-        while self.running:
-            msg = self.consumer.poll(1.0)
-            if msg is None:
-                continue
+        for msg in iter(self):
             if msg.error():
                 print(msg.error())
                 raise KafkaException(msg.error())
@@ -65,7 +72,7 @@ class InventoryEventsConsumer:
                 )
             finally:
                 self.consumer.commit()
-
+        LOG.warning("Stopping inventory consumer")
         self.consumer.close()
 
     def host_delete_event(self, msg):
@@ -79,9 +86,11 @@ class InventoryEventsConsumer:
                 insights_id,
                 self.prefix
             )
-            rows_deleted = db.session.query(PerformanceProfile).filter(
-                PerformanceProfile.inventory_id == host_id
-            ).delete()
+            system_id_query = db.session.query(System.id).filter(System.inventory_id == host_id).subquery()
+            rows_deleted = db.session.query(PerformanceProfile) \
+                .filter(PerformanceProfile.system_id.in_(system_id_query)) \
+                .delete()
+
             if rows_deleted > 0:
                 LOG.info(
                     'Deleted %d performance profile record(s) - %s',
@@ -89,3 +98,29 @@ class InventoryEventsConsumer:
                     self.prefix
                 )
             db.session.commit()
+
+    def host_create_update_events(self, msg):
+        """ Process created/updated message ( create system record, store new report )"""
+        self.prefix = "PROCESSING Create/Update EVENT"
+        with app.app_context():
+            print(msg)
+            self.process_system_details(msg)
+
+    def process_system_details(self, msg):
+        """ Store new system information (stale, stale_warning timestamp) and return internal DB id"""
+        host = msg['host']
+
+        account = get_or_create(
+            db.session, RhAccount, 'account',
+            account=host['account']
+        )
+
+        system = get_or_create(
+            db.session, System, 'inventory_id',
+            account_id=account.id,
+            inventory_id=host['id']
+        )
+        # Commit changes
+        db.session.commit()
+        LOG.warning("Refreshed system %s (%s) belonging to account: %s (%s)",
+                    system.inventory_id, system.id, account.account, account.id)
