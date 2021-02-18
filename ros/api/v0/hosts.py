@@ -2,8 +2,8 @@ from flask import jsonify, make_response
 from flask import request
 from flask_restful import Resource, abort, fields, marshal_with
 
-from ros.lib.models import PerformanceProfile
-from ros.lib.utils import is_valid_uuid
+from ros.lib.models import PerformanceProfile, RhAccount, System, db
+from ros.lib.utils import is_valid_uuid, identity
 from ros.lib.host_inventory_interface import fetch_all_hosts_from_inventory
 from ros.api.common.pagination import build_paginated_system_list_response
 
@@ -56,24 +56,20 @@ class HostsApi(Resource):
         limit = int(request.args.get('limit') or DEFAULT_HOSTS_PER_REP)
         offset = int(request.args.get('offset') or DEFAULT_OFFSET)
 
-        auth_key = request.headers.get('X-RH-IDENTITY')
-        if not auth_key:
-            response = make_response(
-                jsonify({"Error": "Authentication token not provided"}), 401)
-            abort(response)
-
-        inv_hosts = fetch_all_hosts_from_inventory(auth_key)
-        inv_host_ids = [host['id'] for host in inv_hosts['results']]
-
+        ident = identity(request)['identity']
         # Note that When using LIMIT, it is important to use an ORDER BY clause
         # that constrains the result rows into a unique order.
         # Otherwise you will get an unpredictable subset of the query's rows.
         # Refer - https://www.postgresql.org/docs/13/queries-limit.html
 
+        account_query = db.session.query(RhAccount.id).filter(RhAccount.account == ident['account_number']).subquery()
+        system_query = db.session.query(System.id)\
+            .filter(System.account_id.in_(account_query)).subquery()
+
         query = PerformanceProfile.query.filter(
-            PerformanceProfile.inventory_id.in_(inv_host_ids)).order_by(
-                PerformanceProfile.report_date.desc()).order_by(
-                    PerformanceProfile.id.asc())
+            PerformanceProfile.system_id.in_(system_query)
+        ).order_by(PerformanceProfile.report_date.desc())
+
         count = query.count()
         query = query.limit(limit).offset(offset)
         query_results = query.all()
@@ -105,11 +101,17 @@ class HostDetailsApi(Resource):
     @marshal_with(profile_fields)
     def get(self, host_id):
         if not is_valid_uuid(host_id):
-            abort(404, message='Invalid host_id,'
-                               ' Id should be in form of UUID4')
+            abort(404, message='Invalid host_id, Id should be in form of UUID4')
 
-        profile = PerformanceProfile.query.filter_by(
-                  inventory_id=host_id).first()
+        ident = identity(request)['identity']
+        account_query = db.session.query(RhAccount.id).filter(RhAccount.account == ident['account_number']).subquery()
+        system_query = db.session.query(System.id) \
+            .filter(System.account_id.in_(account_query)).filter(System.inventory_id == host_id).subquery()
+
+        profile = PerformanceProfile.query.filter(
+            PerformanceProfile.system_id.in_(system_query)
+        ).order_by(PerformanceProfile.report_date.desc()).first()
+
         if profile:
             record = {}
             record['display_performance_score'] = profile.display_performance_score
