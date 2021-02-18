@@ -1,5 +1,6 @@
 import uuid
-
+import base64
+import json
 
 def is_valid_uuid(val):
     try:
@@ -7,3 +8,8 @@ def is_valid_uuid(val):
         return True
     except ValueError:
         return False
+
+
+def identity(request):
+    ident = request.headers.get('X-RH-IDENTITY')
+    return json.loads(base64.b64decode(ident))
