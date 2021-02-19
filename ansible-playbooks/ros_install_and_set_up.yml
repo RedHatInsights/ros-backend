@@ -34,6 +34,9 @@
             kernel.all.cpu.steal
             kernel.all.cpu.idle
             disk.all.total
+            mem.util.cached
+            mem.util.bufmem
+            mem.util.free
           }
           [access]
           disallow .* : all;
