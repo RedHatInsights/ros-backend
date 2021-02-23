@@ -34,6 +34,11 @@ class System(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     account_id = db.Column(db.Integer)
     inventory_id = db.Column(UUID(as_uuid=True), nullable=False)
+    display_name = db.Column(db.String(100))
+    fqdn = db.Column(db.String(100))
+    cloud_provider = db.Column(db.String(25))
+    instance_type = db.Column(db.String(25))
+    state = db.Column(db.String(25))
     __table_args__ = (
         db.UniqueConstraint('inventory_id'),
         db.ForeignKeyConstraint(['account_id'], ['rh_accounts.id'], name='systems_account_id_fkey'),
