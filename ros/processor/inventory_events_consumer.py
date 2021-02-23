@@ -118,7 +118,10 @@ class InventoryEventsConsumer:
         system = get_or_create(
             db.session, System, 'inventory_id',
             account_id=account.id,
-            inventory_id=host['id']
+            inventory_id=host['id'],
+            display_name=host['display_name'],
+            fqdn=host['fqdn'],
+            cloud_provider=host['system_profile']['cloud_provider']
         )
         # Commit changes
         db.session.commit()
