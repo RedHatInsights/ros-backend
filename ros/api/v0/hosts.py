@@ -1,11 +1,11 @@
-from flask import jsonify, make_response
 from flask import request
 from flask_restful import Resource, abort, fields, marshal_with
 
 from ros.lib.models import PerformanceProfile, RhAccount, System, db
 from ros.lib.utils import is_valid_uuid, identity
-from ros.lib.host_inventory_interface import fetch_all_hosts_from_inventory
 from ros.api.common.pagination import build_paginated_system_list_response
+
+from sqlalchemy import func
 
 DEFAULT_HOSTS_PER_REP = 10
 DEFAULT_OFFSET = 0
@@ -66,9 +66,22 @@ class HostsApi(Resource):
         system_query = db.session.query(System.id)\
             .filter(System.account_id.in_(account_query)).subquery()
 
-        query = PerformanceProfile.query.filter(
-            PerformanceProfile.system_id.in_(system_query)
-        ).order_by(PerformanceProfile.report_date.desc())
+        last_reported = (
+            db.session.query(PerformanceProfile.system_id, func.max(PerformanceProfile.report_date).label('max_date')
+                             )
+            .filter(PerformanceProfile.system_id.in_(system_query))
+            .group_by(PerformanceProfile.system_id)
+            .subquery()
+        )
+
+        query = (
+            db.session.query(PerformanceProfile, System, RhAccount)
+            .join(last_reported, (last_reported.c.max_date == PerformanceProfile.report_date) &
+                  (PerformanceProfile.system_id == last_reported.c.system_id))
+            .join(System, System.id == last_reported.c.system_id)
+            .join(RhAccount, RhAccount.id == System.account_id)
+            .order_by(PerformanceProfile.system_id.asc())
+        )
 
         count = query.count()
         query = query.limit(limit).offset(offset)
@@ -76,15 +89,18 @@ class HostsApi(Resource):
 
         hosts = []
         for profile in query_results:
-            if len(list(filter(lambda host: host['id'] == str(profile.inventory_id), hosts))):
-                continue
-            else:
-                host = list(filter(lambda host: host['id'] == str(profile.inventory_id), inv_hosts['results']))[0]
-                host['id'] = profile.__dict__['id']
-                host['recommendation_count'] = 5
-                host['state'] = 'Undersized'
-                host['display_performance_score'] = profile.display_performance_score
-                hosts.append(host)
+            host = {}
+            host['id'] = profile.PerformanceProfile.system_id
+            host['recommendation_count'] = 5
+            host['state'] = 'Undersized'
+            host['fqdn'] = profile.System.fqdn
+            host['display_name'] = profile.System.display_name
+            host['account'] = profile.RhAccount.account
+            host['facts'] = {}
+            host['facts']['cloud_provider'] = profile.System.cloud_provider
+            host['facts']['instance_type'] = profile.System.instance_type
+            host['display_performance_score'] = profile.PerformanceProfile.display_performance_score
+            hosts.append(host)
 
         return build_paginated_system_list_response(
             limit, offset, hosts, count
