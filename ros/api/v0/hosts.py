@@ -27,7 +27,7 @@ class HostsApi(Resource):
     hosts_fields = {
         'fqdn': fields.String,
         'display_name': fields.String,
-        'id': fields.Integer,
+        'inventory_id': fields.String,
         'account': fields.String,
         'recommendation_count': fields.Integer,
         'state': fields.String,
@@ -90,7 +90,7 @@ class HostsApi(Resource):
         hosts = []
         for profile in query_results:
             host = {}
-            host['id'] = profile.PerformanceProfile.system_id
+            host['inventory_id'] = profile.System.inventory_id
             host['recommendation_count'] = 5
             host['state'] = 'Undersized'
             host['fqdn'] = profile.System.fqdn
