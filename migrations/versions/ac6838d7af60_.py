@@ -1,7 +1,7 @@
 """empty message
 
 Revision ID: ac6838d7af60
-Revises: 0158f7c00beb
+Revises: 7a2f8d6f27fc
 Create Date: 2021-02-24 01:03:02.685857
 
 """
@@ -12,7 +12,7 @@ from ros.lib.models import RatingChoicesEnum
 
 # revision identifiers, used by Alembic.
 revision = 'ac6838d7af60'
-down_revision = '0158f7c00beb'
+down_revision = '7a2f8d6f27fc'
 branch_labels = None
 depends_on = None
 
