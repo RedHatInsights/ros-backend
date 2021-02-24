@@ -13,12 +13,6 @@ DEFAULT_OFFSET = 0
 
 class HostsApi(Resource):
 
-    facts_fields = {
-        'cloud_provider': fields.String,
-        'instance_type': fields.String,
-        'idling_time': fields.String,
-        'io_wait': fields.String
-    }
     display_performance_score_fields = {
         'cpu_score': fields.Integer,
         'memory_score': fields.Integer,
@@ -32,7 +26,11 @@ class HostsApi(Resource):
         'recommendation_count': fields.Integer,
         'state': fields.String,
         'display_performance_score': fields.Nested(display_performance_score_fields),
-        'facts': fields.Nested(facts_fields)
+        'cloud_provider': fields.String,
+        'instance_type': fields.String
+        # TODO - idling_time, io_wait
+        # 'idling_time': fields.String,
+        # 'io_wait': fields.String
     }
     meta_fields = {
         'count': fields.Integer,
