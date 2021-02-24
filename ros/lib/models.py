@@ -1,6 +1,9 @@
 from datetime import date
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.postgresql import UUID, JSONB
+from ros.lib.custom_types import IntEnum
+import datetime
+import enum
 
 db = SQLAlchemy()
 
@@ -42,6 +45,30 @@ class System(db.Model):
     __table_args__ = (
         db.UniqueConstraint('inventory_id'),
         db.ForeignKeyConstraint(['account_id'], ['rh_accounts.id'], name='systems_account_id_fkey'),
+    )
+
+
+class RatingChoicesEnum(enum.IntEnum):
+    Dislike = -1
+    Neutral = 0
+    Like = 1
+
+
+class RecommendationRating(db.Model):
+    __tablename__ = 'recommendation_rating'
+    id = db.Column(db.Integer, primary_key=True)
+    system_id = db.Column(db.Integer)
+    rated_by = db.Column(db.Text, nullable=False)
+    rating = db.Column(IntEnum(RatingChoicesEnum), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
+    __table_args__ = (
+        db.ForeignKeyConstraint(
+            ['system_id'], ['systems.id'],
+            name='recommendation_rating_system_id_fkey',
+            ondelete='CASCADE'
+        ),
     )
 
 
