@@ -86,18 +86,14 @@ class HostsApi(Resource):
         query_results = query.all()
 
         hosts = []
-        for profile in query_results:
-            host = {}
-            host['inventory_id'] = profile.System.inventory_id
+        system_columns = ['inventory_id', 'fqdn', 'display_name', 'instance_type', 'cloud_provider']
+        for row in query_results:
+            system_dict = row.System.__dict__
+            host = {skey: system_dict[skey] for skey in system_columns}
             host['recommendation_count'] = 5
             host['state'] = 'Undersized'
-            host['fqdn'] = profile.System.fqdn
-            host['display_name'] = profile.System.display_name
-            host['account'] = profile.RhAccount.account
-            host['facts'] = {}
-            host['facts']['cloud_provider'] = profile.System.cloud_provider
-            host['facts']['instance_type'] = profile.System.instance_type
-            host['display_performance_score'] = profile.PerformanceProfile.display_performance_score
+            host['account'] = row.RhAccount.account
+            host['display_performance_score'] = row.PerformanceProfile.display_performance_score
             hosts.append(host)
 
         return build_paginated_system_list_response(
