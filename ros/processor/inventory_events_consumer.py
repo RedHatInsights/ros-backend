@@ -1,5 +1,10 @@
 import json
 import logging
+import requests
+from http import HTTPStatus
+import tarfile
+from io import BytesIO
+from datetime import date
 from confluent_kafka import Consumer, KafkaException
 from ros.lib.config import INSIGHTS_KAFKA_ADDRESS, INVENTORY_EVENTS_TOPIC, GROUP_ID
 from ros.lib.app import app, db
@@ -103,27 +108,79 @@ class InventoryEventsConsumer:
         """ Process created/updated message ( create system record, store new report )"""
         self.prefix = "PROCESSING Create/Update EVENT"
         with app.app_context():
-            print(msg)
-            self.process_system_details(msg)
+            if 'is_ros' in msg['platform_metadata']:
+                self.process_system_details(msg)
 
     def process_system_details(self, msg):
         """ Store new system information (stale, stale_warning timestamp) and return internal DB id"""
         host = msg['host']
+        insights_report_tar = self._download_report(msg['platform_metadata']['url'])
+        performance_record = self._extract_performance_record(insights_report_tar)
+        if performance_record:
+            performance_score = self._calculate_performance_score(performance_record)
 
-        account = get_or_create(
-            db.session, RhAccount, 'account',
-            account=host['account']
-        )
+            account = get_or_create(
+                db.session, RhAccount, 'account',
+                account=host['account']
+            )
 
-        system = get_or_create(
-            db.session, System, 'inventory_id',
-            account_id=account.id,
-            inventory_id=host['id'],
-            display_name=host['display_name'],
-            fqdn=host['fqdn'],
-            cloud_provider=host['system_profile']['cloud_provider']
-        )
-        # Commit changes
-        db.session.commit()
-        LOG.warning("Refreshed system %s (%s) belonging to account: %s (%s)",
-                    system.inventory_id, system.id, account.account, account.id)
+            system = get_or_create(
+                db.session, System, 'inventory_id',
+                account_id=account.id,
+                inventory_id=host['id'],
+                display_name=host['display_name'],
+                fqdn=host['fqdn'],
+                cloud_provider=host['system_profile']['cloud_provider']
+            )
+
+            get_or_create(
+                db.session, PerformanceProfile, ['system_id', 'report_date'],
+                system_id=system.id,
+                performance_record=performance_record,
+                performance_score=performance_score,
+                report_date=date.today()
+            )
+
+            # Commit changes
+            db.session.commit()
+            LOG.warning("Refreshed system %s (%s) belonging to account: %s (%s)",
+                        system.inventory_id, system.id, account.account, account.id)
+
+    def _download_report(self, report_url):
+        download_response = requests.get(report_url)
+        if download_response.status_code != HTTPStatus.OK:
+            print("Unable to download the report")
+        return download_response.content
+
+    def _extract_performance_record(self, report_tar):
+        tar = tarfile.open(fileobj=BytesIO(report_tar), mode='r:*')
+        files = tar.getmembers()
+        performance_record = {}
+        spec_count = 0
+        for file in files:
+            if 'data/insights_commands/pmlogsummary' in file.name:
+                spec_count += 1
+                extracted_pmlogsummary_file = tar.extractfile(file)
+                record_string = extracted_pmlogsummary_file.read().decode('utf-8')
+                records = record_string.split('\n')
+                for record in records:
+                    key, value, _ = record.split(None, 2)
+                    performance_record[key] = value
+
+            if 'data/insights_commands/lscpu' in file.name:
+                spec_count += 1
+                extracted_lscpu_file = tar.extractfile(file)
+                record_string = extracted_lscpu_file.read().decode('utf-8')
+                lines = record_string.split('\n')
+                for line in lines:
+                    if line.startswith("CPU(s):"):
+                        cpus = line.split()[1]
+                        performance_record['total_cpus'] = cpus
+
+            if spec_count == 2:
+                return performance_record
+
+    def _calculate_performance_score(self, performance_record):
+        memory_score = (float(performance_record['mem.util.used']) / float(performance_record['mem.physmem'])) * 100
+        performance_score = {'memory_score': int(memory_score)}
+        return performance_score
