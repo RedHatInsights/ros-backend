@@ -1,7 +1,6 @@
 from datetime import date
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.postgresql import UUID, JSONB
-from ros.lib.custom_types import IntEnum
 import datetime
 import enum
 
@@ -59,7 +58,7 @@ class RecommendationRating(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     system_id = db.Column(db.Integer)
     rated_by = db.Column(db.Text, nullable=False)
-    rating = db.Column(IntEnum(RatingChoicesEnum), nullable=False)
+    rating = db.Column(db.SmallInteger, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 

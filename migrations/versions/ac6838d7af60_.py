@@ -7,8 +7,6 @@ Create Date: 2021-02-24 01:03:02.685857
 """
 from alembic import op
 import sqlalchemy as sa
-from ros.lib.custom_types import IntEnum
-from ros.lib.models import RatingChoicesEnum
 
 # revision identifiers, used by Alembic.
 revision = 'ac6838d7af60'
@@ -23,7 +21,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('system_id', sa.Integer(), nullable=True),
     sa.Column('rated_by', sa.Text(), nullable=False),
-    sa.Column('rating', IntEnum(RatingChoicesEnum), nullable=False),
+    sa.Column('rating', sa.SmallInteger(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['system_id'], ['systems.id'], name='recommendation_rating_system_id_fkey', ondelete='CASCADE'),
