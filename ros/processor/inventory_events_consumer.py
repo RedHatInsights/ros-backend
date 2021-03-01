@@ -107,9 +107,8 @@ class InventoryEventsConsumer:
     def host_create_update_events(self, msg):
         """ Process created/updated message ( create system record, store new report )"""
         self.prefix = "PROCESSING Create/Update EVENT"
-        with app.app_context():
-            if 'is_ros' in msg['platform_metadata']:
-                self.process_system_details(msg)
+        if 'is_ros' in msg['platform_metadata']:
+            self.process_system_details(msg)
 
     def process_system_details(self, msg):
         """ Store new system information (stale, stale_warning timestamp) and return internal DB id"""
@@ -118,38 +117,38 @@ class InventoryEventsConsumer:
         performance_record = self._extract_performance_record(insights_report_tar)
         if performance_record:
             performance_score = self._calculate_performance_score(performance_record)
+            with app.app_context():
+                account = get_or_create(
+                    db.session, RhAccount, 'account',
+                    account=host['account']
+                )
 
-            account = get_or_create(
-                db.session, RhAccount, 'account',
-                account=host['account']
-            )
+                system = get_or_create(
+                    db.session, System, 'inventory_id',
+                    account_id=account.id,
+                    inventory_id=host['id'],
+                    display_name=host['display_name'],
+                    fqdn=host['fqdn'],
+                    cloud_provider=host['system_profile']['cloud_provider']
+                )
 
-            system = get_or_create(
-                db.session, System, 'inventory_id',
-                account_id=account.id,
-                inventory_id=host['id'],
-                display_name=host['display_name'],
-                fqdn=host['fqdn'],
-                cloud_provider=host['system_profile']['cloud_provider']
-            )
+                get_or_create(
+                    db.session, PerformanceProfile, ['system_id', 'report_date'],
+                    system_id=system.id,
+                    performance_record=performance_record,
+                    performance_score=performance_score,
+                    report_date=date.today()
+                )
 
-            get_or_create(
-                db.session, PerformanceProfile, ['system_id', 'report_date'],
-                system_id=system.id,
-                performance_record=performance_record,
-                performance_score=performance_score,
-                report_date=date.today()
-            )
-
-            # Commit changes
-            db.session.commit()
-            LOG.warning("Refreshed system %s (%s) belonging to account: %s (%s)",
-                        system.inventory_id, system.id, account.account, account.id)
+                # Commit changes
+                db.session.commit()
+                LOG.info("Refreshed system %s (%s) belonging to account: %s (%s)",
+                         system.inventory_id, system.id, account.account, account.id)
 
     def _download_report(self, report_url):
         download_response = requests.get(report_url)
         if download_response.status_code != HTTPStatus.OK:
-            print("Unable to download the report")
+            LOG.error("Unable to download the report. ERROR - %s", download_response.reason)
         return download_response.content
 
     def _extract_performance_record(self, report_tar):
@@ -160,18 +159,16 @@ class InventoryEventsConsumer:
         for file in files:
             if 'data/insights_commands/pmlogsummary' in file.name:
                 spec_count += 1
-                extracted_pmlogsummary_file = tar.extractfile(file)
-                record_string = extracted_pmlogsummary_file.read().decode('utf-8')
-                records = record_string.split('\n')
-                for record in records:
-                    key, value, _ = record.split(None, 2)
+                file_data = self._extract_spec_file_data(tar, file)
+                lines = file_data.split('\n')
+                for line in lines:
+                    key, value, _ = line.split(None, 2)
                     performance_record[key] = value
 
             if 'data/insights_commands/lscpu' in file.name:
                 spec_count += 1
-                extracted_lscpu_file = tar.extractfile(file)
-                record_string = extracted_lscpu_file.read().decode('utf-8')
-                lines = record_string.split('\n')
+                file_data = self._extract_spec_file_data(tar, file)
+                lines = file_data.split('\n')
                 for line in lines:
                     if line.startswith("CPU(s):"):
                         cpus = line.split()[1]
@@ -179,6 +176,10 @@ class InventoryEventsConsumer:
 
             if spec_count == 2:
                 return performance_record
+
+    def _extract_spec_file_data(self, tar, file):
+        extracted_file = tar.extractfile(file)
+        return extracted_file.read().decode('utf-8')
 
     def _calculate_performance_score(self, performance_record):
         memory_score = (float(performance_record['mem.util.used']) / float(performance_record['mem.physmem'])) * 100
