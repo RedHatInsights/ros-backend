@@ -2,9 +2,7 @@ import json
 from flask import request
 from flask_restful import Resource, abort, fields, marshal_with
 from ros.lib.models import RecommendationRating, System, db, RatingChoicesEnum
-
 from ros.lib.utils import identity, user_data_from_identity
-from ros.lib.app import app
 
 
 class RecommendationRatingsApi(Resource):
