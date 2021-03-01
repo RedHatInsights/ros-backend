@@ -1,10 +1,10 @@
 import json
 import logging
 import requests
+import datetime
 from http import HTTPStatus
 import tarfile
 from io import BytesIO
-from datetime import date
 from confluent_kafka import Consumer, KafkaException
 from ros.lib.config import INSIGHTS_KAFKA_ADDRESS, INVENTORY_EVENTS_TOPIC, GROUP_ID
 from ros.lib.app import app, db
@@ -137,7 +137,7 @@ class InventoryEventsConsumer:
                     system_id=system.id,
                     performance_record=performance_record,
                     performance_score=performance_score,
-                    report_date=date.today()
+                    report_date=datetime.datetime.utcnow().date()
                 )
 
                 # Commit changes
