@@ -123,10 +123,10 @@ class HostDetailsApi(Resource):
         ).order_by(PerformanceProfile.report_date.desc()).first()
 
         if profile:
-            record = {}
+            record = {'inventory_id': host_id}
             record['display_performance_score'] = profile.display_performance_score
         else:
             abort(404, message="Performance Profile {} doesn't exist"
                   .format(host_id))
 
-        return profile
+        return record
