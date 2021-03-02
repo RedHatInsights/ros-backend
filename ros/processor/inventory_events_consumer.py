@@ -139,12 +139,20 @@ class InventoryEventsConsumer:
                          system.inventory_id, system.id, account.account, account.id)
 
     def _calculate_performance_score(self, performance_record):
+        MAX_IOPS_CAPACITY = 0
         memory_score = (float(performance_record['mem.util.used']) / float(performance_record['mem.physmem'])) * 100
         cpu_score = self._calculate_cpu_score(performance_record)
         performance_score = {'memory_score': int(memory_score), 'cpu_score': int(cpu_score)}
         # considering 16000 as the max iops capacity for volumes in AWS/Azure
-        io_score = (float(performance_record['disk.all.total']) / float(16000)) * 100
-        performance_score = {'memory_score': int(memory_score), 'io_score': int(io_score)}
+        with app.app_context():
+            cloud_query = (db.session.query(System.cloud_provider).filter(System.id == PerformanceProfile.system_id))
+            cloud_provider = cloud_query.first()[0]
+            if cloud_provider == 'aws':
+                MAX_IOPS_CAPACITY = 16000
+            if cloud_provider == 'azure':
+                MAX_IOPS_CAPACITY = 20000
+            io_score = (float(performance_record['disk.all.total']) / float(MAX_IOPS_CAPACITY)) * 100
+            performance_score = {'memory_score': int(memory_score), 'io_score': int(io_score)}
         return performance_score
 
     def _calculate_cpu_score(self, performance_record):
