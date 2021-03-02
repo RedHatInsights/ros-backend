@@ -183,5 +183,12 @@ class InventoryEventsConsumer:
 
     def _calculate_performance_score(self, performance_record):
         memory_score = (float(performance_record['mem.util.used']) / float(performance_record['mem.physmem'])) * 100
-        performance_score = {'memory_score': int(memory_score)}
+        cpu_score = self._calculate_cpu_score(performance_record)
+        performance_score = {'memory_score': int(memory_score), 'cpu_score': int(cpu_score)}
         return performance_score
+
+    def _calculate_cpu_score(self, performance_record):
+        idle_cpu_percent = ((float(performance_record['kernel.all.cpu.idle']) * 100)
+                            / int(performance_record['total_cpus']))
+        cpu_utilized_percent = 100 - idle_cpu_percent
+        return cpu_utilized_percent
