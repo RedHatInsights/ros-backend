@@ -104,7 +104,56 @@
                     }
                 }
             }
+        },
+        "/rating": {
+            "post": {
+                "summary": "submit recommendation rating",
+                "description": "submit recommendation rating",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Rating"
+                            }
+                        }
+
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Rating"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Updated an existing rating submitted by same user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Rating"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid input for rating",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Message"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
+
     },
     "components": {
         "schemas": {
@@ -236,6 +285,27 @@
                                 "type": "number"
                             }
                         }
+                    }
+                }
+            },
+            "Rating": {
+                "type": "object",
+                "properties": {
+                    "inventory_id": {
+                        "type": "string"
+                    },
+                    "rating": {
+                        "type": "integer",
+                        "enum": [-1, 0, 1]
+                    }
+                }
+            },
+            "Message": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "description": "Message text"
                     }
                 }
             }

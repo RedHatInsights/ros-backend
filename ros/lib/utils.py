@@ -38,3 +38,13 @@ def identity(request):
             jsonify({"Error": "Authentication token not provided"}), 401)
         abort(response)
     return json.loads(base64.b64decode(ident))
+
+
+def user_data_from_identity(identity):
+    """
+    Get the user details dict from the rh-identity data or error out.
+    """
+    if 'user' not in identity:
+        return None
+
+    return identity['user']

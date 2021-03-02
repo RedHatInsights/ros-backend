@@ -1,8 +1,10 @@
 from flask import request
 from flask_restful import Resource, abort, fields, marshal_with
 
-from ros.lib.models import PerformanceProfile, RhAccount, System, db
-from ros.lib.utils import is_valid_uuid, identity
+from ros.lib.models import (
+    PerformanceProfile, RhAccount, System,
+    db, RecommendationRating)
+from ros.lib.utils import is_valid_uuid, identity, user_data_from_identity
 from ros.api.common.pagination import build_paginated_system_list_response
 
 from sqlalchemy import func
@@ -105,7 +107,8 @@ class HostDetailsApi(Resource):
     profile_fields = {
         'host_id': fields.String(attribute='inventory_id'),
         'performance_record': fields.String,
-        'display_performance_score': fields.String
+        'display_performance_score': fields.String,
+        'rating': fields.Integer
     }
 
     @marshal_with(profile_fields)
@@ -114,6 +117,9 @@ class HostDetailsApi(Resource):
             abort(404, message='Invalid host_id, Id should be in form of UUID4')
 
         ident = identity(request)['identity']
+        user = user_data_from_identity(ident)
+        username = user['username'] if 'username' in user else None
+
         account_query = db.session.query(RhAccount.id).filter(RhAccount.account == ident['account_number']).subquery()
         system_query = db.session.query(System.id) \
             .filter(System.account_id.in_(account_query)).filter(System.inventory_id == host_id).subquery()
@@ -122,9 +128,15 @@ class HostDetailsApi(Resource):
             PerformanceProfile.system_id.in_(system_query)
         ).order_by(PerformanceProfile.report_date.desc()).first()
 
+        rating_record = RecommendationRating.query.filter(
+            RecommendationRating.system_id.in_(system_query),
+            RecommendationRating.rated_by == username
+        ).first()
+
         if profile:
             record = {'inventory_id': host_id}
             record['display_performance_score'] = profile.display_performance_score
+            record['rating'] = rating_record.rating if rating_record else None
         else:
             abort(404, message="Performance Profile {} doesn't exist"
                   .format(host_id))
