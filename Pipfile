@@ -17,6 +17,8 @@ flask-script = "~=2.0.6"
 flask-cors = "~=3.0.9"
 confluent-kafka = "~=1.5.0"
 requests = "~=2.25.1"
+insights-core =  { git = "https://github.com/RedHatInsights/insights-core.git", ref = "3.0" }
+pydash = "~=4.9.2"
 
 [requires]
 python_version = "3.8"
