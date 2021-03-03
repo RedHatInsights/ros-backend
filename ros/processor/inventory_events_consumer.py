@@ -91,15 +91,11 @@ class InventoryEventsConsumer:
                 insights_id,
                 self.prefix
             )
-            system_id_query = db.session.query(System.id).filter(System.inventory_id == host_id).subquery()
-            rows_deleted = db.session.query(PerformanceProfile) \
-                .filter(PerformanceProfile.system_id.in_(system_id_query)) \
-                .delete()
-
+            rows_deleted = db.session.query(System.id).filter(System.inventory_id == host_id).delete()
             if rows_deleted > 0:
                 LOG.info(
-                    'Deleted %d performance profile record(s) - %s',
-                    rows_deleted,
+                    'Deleted host from inventory with id: %s - %s',
+                    host_id,
                     self.prefix
                 )
             db.session.commit()
