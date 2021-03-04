@@ -14,7 +14,10 @@ class PerformanceProfile(db.Model):
     system_id = db.Column(db.Integer)
     __table_args__ = (
         db.PrimaryKeyConstraint('system_id', 'report_date', name='performance_profile_pkey'),
-        db.ForeignKeyConstraint(['system_id'], ['systems.id'], name='performance_profile_system_id_fkey'),
+        db.ForeignKeyConstraint(
+            ['system_id'], ['systems.id'],
+            name='performance_profile_system_id_fkey',
+            ondelete='CASCADE'),
     )
 
     @property
