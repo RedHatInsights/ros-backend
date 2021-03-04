@@ -10,69 +10,100 @@ objects:
     name: ros
   spec:
     envName: ${ENV_NAME}
-    pods:
-    - name: ros-backend
-      image: ${IMAGE}:${IMAGE_TAG}
-      minReplicas: ${{MIN_REPLICAS}}
-      livenessProbe:
-        failureThreshold: 3
-        httpGet:
-          path: /api/status
-          port: 8080
-          scheme: HTTP
-        initialDelaySeconds: 35
-        periodSeconds: 5
-        successThreshold: 1
-        timeoutSeconds: 120
-      readinessProbe:
-        failureThreshold: 3
-        httpGet:
-          path: /api/status
-          port: 8080
-          scheme: HTTP
-        initialDelaySeconds: 35
-        periodSeconds: 5
-        successThreshold: 1
-        timeoutSeconds: 120
-      resources:
-        limits:
-          cpu: ${CPU_LIMIT}
-          memory: ${MEMORY_LIMIT}
-        requests:
-          cpu: 200m
-          memory: 256Mi
-      web: true
-      volumes:
-      - emptyDir: {}
-        name: tmpdir
-      volumeMounts:
-      - mountPath: /tmp
-        name: tmpdir
-    kafkaTopics:
-    - replicas: 3
-      partitions: 64
-      topicName: platform.upload.resource-optimization
+    deployments:
+      - name: backend
+        minReplicas: 1
+        podSpec:
+          image: ${IMAGE}:${IMAGE_TAG}
+          command: ["bash"]
+          args: ["-c", "python -m manage db upgrade && python -m ros.api.main"]
+          resources:
+            requests:
+              cpu: ${CPU_REQUEST}
+              memory: ${MEMORY_REQUEST}
+            limits:
+              cpu: ${CPU_LIMIT}
+              memory: ${MEMORY_LIMIT}
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /api/ros/v0/status
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /api/ros/v0/status
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 3
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 3
+          env:
+            - name: CLOWDER_ENABLED
+              value: ${CLOWDER_ENABLED}
+      - name: processor
+        minReplicas: ${{MIN_REPLICAS}}
+        podSpec:
+          image: ${IMAGE}:${IMAGE_TAG}
+          command: ["bash"]
+          args: ["-c", "python -m ros.processor.main"]
+          resources:
+            requests:
+              cpu: ${CPU_REQUEST}
+              memory: ${MEMORY_REQUEST}
+            limits:
+              cpu: ${CPU_LIMIT}
+              memory: ${MEMORY_LIMIT}
+          env:
+            - name: CLOWDER_ENABLED
+              value: ${CLOWDER_ENABLED}
     database:
-      name: ros-db 
+      name: ros-db
+      version: 12
+    kafkaTopics:
+      - topicName: platform.inventory.events
+        partitions: 1
 
 parameters:
-- description: Cpu limit of service
-  name: CPU_LIMIT
-  value: 500m
-- description: memory limit of service
-  name: MEMORY_LIMIT
-  value: 512Mi
-- name: MIN_REPLICAS
-  value: '1'
+- description : ClowdEnvironment name
+  name: ENV_NAME
+  required: true
+- description: min replicas
+  name: MIN_REPLICAS
+  value: "1"
+- description: Image NAME
+  name: IMAGE
+  required: true
+  value: quay.io/cloudservices/ros-backend
 - description: Image tag
   name: IMAGE_TAG
   required: true
-- description: Image name
-  name: IMAGE
-  value: quay.io/cloudservices/resource-optimization
-- description: Determines Clowder deployment
+- description: Initial cpu request.
+  displayName: CPU Request
+  name: CPU_REQUEST
+  required: true
+  value: 500m
+- description: Initial amount of memory the container will request.
+  displayName: Memory Request
+  name: MEMORY_REQUEST
+  required: true
+  value: 1Gi
+- description: Maximum amount of memory the Django container can use.
+  displayName: Memory Limit
+  name: MEMORY_LIMIT
+  required: true
+  value: 1Gi
+- description: Maximum amount of CPU the build container can use.
+  displayName: CPU Limit
+  name: CPU_LIMIT
+  required: true
+  value: '1'
+- description: Is clowder enabled
   name: CLOWDER_ENABLED
-  value: "false"
-- description: ClowdEnv Name
-  name: ENV_NAME
-  requred: false
+  value: "False"
