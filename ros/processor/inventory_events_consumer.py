@@ -146,8 +146,10 @@ class InventoryEventsConsumer:
             cloud_provider = host['system_profile']['cloud_provider']
             if cloud_provider == 'aws':
                 MAX_IOPS_CAPACITY = 16000
-            if cloud_provider == 'azure':
+            elif cloud_provider == 'azure':
                 MAX_IOPS_CAPACITY = 20000
+            else:
+                MAX_IOPS_CAPACITY = 16000
             io_score = (float(performance_record['disk.all.total']) / float(MAX_IOPS_CAPACITY)) * 100
             performance_score = {
                 'memory_score': int(memory_score),
