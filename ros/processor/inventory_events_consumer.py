@@ -108,7 +108,7 @@ class InventoryEventsConsumer:
         host = msg['host']
         performance_record = get_performance_profile(msg['platform_metadata']['url'])
         if performance_record:
-            performance_score = self._calculate_performance_score(performance_record)
+            performance_score = self._calculate_performance_score(performance_record, host)
             with app.app_context():
                 account = get_or_create(
                     db.session, RhAccount, 'account',
@@ -138,21 +138,22 @@ class InventoryEventsConsumer:
                 LOG.info("Refreshed system %s (%s) belonging to account: %s (%s)",
                          system.inventory_id, system.id, account.account, account.id)
 
-    def _calculate_performance_score(self, performance_record):
-        MAX_IOPS_CAPACITY = 0
+    def _calculate_performance_score(self, performance_record, host):
+        MAX_IOPS_CAPACITY = 16000
         memory_score = (float(performance_record['mem.util.used']) / float(performance_record['mem.physmem'])) * 100
         cpu_score = self._calculate_cpu_score(performance_record)
-        performance_score = {'memory_score': int(memory_score), 'cpu_score': int(cpu_score)}
-        # considering 16000 as the max iops capacity for volumes in AWS/Azure
         with app.app_context():
-            cloud_query = (db.session.query(System.cloud_provider).filter(System.id == PerformanceProfile.system_id))
-            cloud_provider = cloud_query.first()[0]
+            cloud_provider = host['system_profile']['cloud_provider']
             if cloud_provider == 'aws':
                 MAX_IOPS_CAPACITY = 16000
             if cloud_provider == 'azure':
                 MAX_IOPS_CAPACITY = 20000
             io_score = (float(performance_record['disk.all.total']) / float(MAX_IOPS_CAPACITY)) * 100
-            performance_score = {'memory_score': int(memory_score), 'io_score': int(io_score)}
+            performance_score = {
+                'memory_score': int(memory_score),
+                'cpu_score': int(cpu_score),
+                'io_score': int(io_score)
+                }
         return performance_score
 
     def _calculate_cpu_score(self, performance_record):
