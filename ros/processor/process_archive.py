@@ -35,7 +35,7 @@ def performance_profile(pmlog_summary, lscpu, aws_instance_id):
     profile["total_cpus"] = int(lscpu.info.get('CPUs'))
     profile["instance_type"] = aws_instance_id.get('instanceType')
     for i in performance_metrics:
-        profile[i] = _.get(pmlog_summary, f'{i}.val', default='None')
+        profile[i] = _.get(pmlog_summary, f'{i}.val')
 
     metadata_response = make_metadata()
     metadata_response.update(profile)
