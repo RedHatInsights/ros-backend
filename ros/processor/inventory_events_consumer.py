@@ -142,18 +142,17 @@ class InventoryEventsConsumer:
         MAX_IOPS_CAPACITY = 16000
         memory_score = (float(performance_record['mem.util.used']) / float(performance_record['mem.physmem'])) * 100
         cpu_score = self._calculate_cpu_score(performance_record)
-        with app.app_context():
-            cloud_provider = host['system_profile']['cloud_provider']
-            if cloud_provider == 'aws':
-                MAX_IOPS_CAPACITY = 16000
-            if cloud_provider == 'azure':
-                MAX_IOPS_CAPACITY = 20000
-            io_score = (float(performance_record['disk.all.total']) / float(MAX_IOPS_CAPACITY)) * 100
-            performance_score = {
-                'memory_score': int(memory_score),
-                'cpu_score': int(cpu_score),
-                'io_score': int(io_score)
-                }
+        cloud_provider = host['system_profile']['cloud_provider']
+        if cloud_provider == 'aws':
+            MAX_IOPS_CAPACITY = 16000
+        if cloud_provider == 'azure':
+            MAX_IOPS_CAPACITY = 20000
+        io_score = (float(performance_record['disk.all.total']) / float(MAX_IOPS_CAPACITY)) * 100
+        performance_score = {
+            'memory_score': int(memory_score),
+            'cpu_score': int(cpu_score),
+            'io_score': int(io_score)
+            }
         return performance_score
 
     def _calculate_cpu_score(self, performance_record):
