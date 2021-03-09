@@ -24,12 +24,8 @@ class PerformanceProfile(db.Model):
     def display_performance_score(self):
         display_performance_score = {
             'memory_score': self.performance_score['memory_score'] // 20,
-            'cpu_score': self.performance_score['cpu_score'] // 20
-
-            # TODO
-
-            # commenting this as cpu and io metrics aren't currently present in report
-            # 'io_score': self.performance_score['io_score'] // 20
+            'cpu_score': self.performance_score['cpu_score'] // 20,
+            'io_score': self.performance_score['io_score'] // 20
         }
         return display_performance_score
 
