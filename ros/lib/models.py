@@ -22,11 +22,10 @@ class PerformanceProfile(db.Model):
 
     @property
     def display_performance_score(self):
-        display_performance_score = {
-            'memory_score': self.performance_score['memory_score'] // 20,
-            'cpu_score': self.performance_score['cpu_score'] // 20,
-            'io_score': self.performance_score['io_score'] // 20
-        }
+        display_performance_score = {}
+        for key, value in self.performance_score.items():
+            display_performance_score[key] = value // 20
+
         return display_performance_score
 
 
