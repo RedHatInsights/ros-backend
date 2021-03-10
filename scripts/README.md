@@ -44,16 +44,3 @@ python -m ros.processor.main
 ```
 make insights-upload-data
 ```
-
-### Sending report(pcp metrics data) to ingress/kafka topic(platform.upload.resource-optimization). 
-```
-make ros-upload-data
-```
-
-## Useful commands.
-
-1. Monitor resource-optimization kafka topic
-```
-docker-compose exec kafka kafka-console-consumer --topic=platform.upload.resource-optimization --bootstrap-server=localhost:29092
-
-```
