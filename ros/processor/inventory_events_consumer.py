@@ -135,7 +135,7 @@ class InventoryEventsConsumer:
 
                 # Commit changes
                 db.session.commit()
-                LOG.info("Refreshed system %s (%s) belonging to account: %s (%s)",
+                LOG.info("Refreshed system %s (%s) belonging to account: %s (%s) via report-processor",
                          system.inventory_id, system.id, account.account, account.id)
 
     def _calculate_performance_score(self, performance_record, host):
