@@ -41,20 +41,16 @@
                 "operationId": "listSystems",
                 "parameters": [
                     {
-                        "name": "limit",
-                        "in": "query",
-                        "description": "Number of items to return, set -1 to return all",
-                        "schema": {
-                            "type": "integer"
-                        }
+                        "$ref": "#/components/parameters/limitParam"
                     },
                     {
-                        "name": "offset",
-                        "in": "query",
-                        "description": "Number of items to skip before starting to collect the result set",
-                        "schema": {
-                            "type": "integer"
-                        }
+                        "$ref": "#/components/parameters/offsetParam"
+                    },
+                    {
+                        "$ref": "#/components/parameters/orderByParam"
+                    },
+                    {
+                        "$ref": "#/components/parameters/orderHowParam"
                     }
                 ],
                 "responses": {
@@ -309,6 +305,59 @@
                     }
                 }
             }
+        },
+        "parameters": {
+            "limitParam": {
+                "name": "limit",
+                "in": "query",
+                "required": false,
+                "description": "Number of items to return, set -1 to return all",
+                "schema": {
+                    "type": "integer",
+                    "default": 10
+                }
+            },
+            "offsetParam": {
+                "name": "offset",
+                "in": "query",
+                "required": false,
+                "description": "Number of items to skip before starting to collect the result set",
+                "schema": {
+                    "type": "integer",
+                    "default": 0
+                }
+            },
+            "orderByParam": {
+                "name": "order_by",
+                "in": "query",
+                "required": false,
+                "description": "Ordering field name, defaults to display_name",
+                "schema": {
+                    "type": "string",
+                    "default": "display_name",
+                    "enum": [
+                        "display_name",
+                        "cpu_score",
+                        "memory_score",
+                        "io_score"
+                    ]
+                }
+            },
+            "orderHowParam": {
+                "name": "order_how",
+                "in": "query",
+                "required": false,
+                "description": "Direction of the ordering, defaults to ASC",
+                "schema": {
+                    "type": "string",
+                    "default": "ASC",
+                    "enum": [
+                        "ASC",
+                        "DESC"
+                    ]
+                }
+            }
+
         },
         "securitySchemes": {
             "RhIdentity": {
