@@ -108,7 +108,9 @@ class HostDetailsApi(Resource):
         'host_id': fields.String(attribute='inventory_id'),
         'performance_record': fields.String,
         'display_performance_score': fields.String,
-        'rating': fields.Integer
+        'rating': fields.Integer,
+        'recommendation_count': fields.Integer,
+        'state': fields.String
     }
 
     @marshal_with(profile_fields)
@@ -133,10 +135,14 @@ class HostDetailsApi(Resource):
             RecommendationRating.rated_by == username
         ).first()
 
+        system = db.session.query(System).filter(System.inventory_id == host_id).all()
+
         if profile:
             record = {'inventory_id': host_id}
             record['display_performance_score'] = profile.display_performance_score
             record['rating'] = rating_record.rating if rating_record else None
+            record['recommendation_count'] = len(system[0].rule_hit_details)
+            record['state'] = system[0].rule_hit_details[0].get('key')
         else:
             abort(404, message="Performance Profile {} doesn't exist"
                   .format(host_id))
