@@ -92,8 +92,12 @@ class HostsApi(Resource):
         for row in query_results:
             system_dict = row.System.__dict__
             host = {skey: system_dict[skey] for skey in system_columns}
-            host['recommendation_count'] = len(host['rule_hit_details'])
-            host['state'] = host['rule_hit_details'][0].get('key')
+            if host['rule_hit_details']:
+                host['recommendation_count'] = len(host['rule_hit_details'])
+                host['state'] = host['rule_hit_details'][0].get('key')
+            else:
+                host['recommendation_count'] = 0
+                host['state'] = 'Undefined'
             host['account'] = row.RhAccount.account
             host['display_performance_score'] = row.PerformanceProfile.display_performance_score
             hosts.append(host)
