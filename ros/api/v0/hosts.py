@@ -88,12 +88,12 @@ class HostsApi(Resource):
         query_results = query.all()
 
         hosts = []
-        system_columns = ['inventory_id', 'fqdn', 'display_name', 'instance_type', 'cloud_provider']
+        system_columns = ['inventory_id', 'fqdn', 'display_name', 'instance_type', 'cloud_provider', 'rule_hit_details']
         for row in query_results:
             system_dict = row.System.__dict__
             host = {skey: system_dict[skey] for skey in system_columns}
-            host['recommendation_count'] = 5
-            host['state'] = 'Undersized'
+            host['recommendation_count'] = len(host['rule_hit_details'])
+            host['state'] = host['rule_hit_details'][0].get('key')
             host['account'] = row.RhAccount.account
             host['display_performance_score'] = row.PerformanceProfile.display_performance_score
             hosts.append(host)
@@ -108,7 +108,9 @@ class HostDetailsApi(Resource):
         'host_id': fields.String(attribute='inventory_id'),
         'performance_record': fields.String,
         'display_performance_score': fields.String,
-        'rating': fields.Integer
+        'rating': fields.Integer,
+        'recommendation_count': fields.Integer,
+        'state': fields.String
     }
 
     @marshal_with(profile_fields)
@@ -133,10 +135,14 @@ class HostDetailsApi(Resource):
             RecommendationRating.rated_by == username
         ).first()
 
+        system = db.session.query(System).filter(System.inventory_id == host_id).first()
+
         if profile:
             record = {'inventory_id': host_id}
             record['display_performance_score'] = profile.display_performance_score
             record['rating'] = rating_record.rating if rating_record else None
+            record['recommendation_count'] = len(system.rule_hit_details)
+            record['state'] = system.rule_hit_details[0].get('key')
         else:
             abort(404, message="Performance Profile {} doesn't exist"
                   .format(host_id))
