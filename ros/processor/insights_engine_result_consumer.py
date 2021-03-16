@@ -4,7 +4,7 @@ from ros.lib.app import app, db
 from ros.lib.utils import get_or_create
 from ros.lib.models import RhAccount, System
 from confluent_kafka import Consumer, KafkaException
-from ros.lib.config import INSIGHTS_KAFKA_ADDRESS, GROUP_ID, Engine_RESULT_TOPIC
+from ros.lib.config import INSIGHTS_KAFKA_ADDRESS, GROUP_ID, ENGINE_RESULT_TOPIC
 
 logging.basicConfig(
     level='INFO',
@@ -22,7 +22,7 @@ class InsightsEngineResultConsumer:
         })
 
         # Subscribe to topic
-        self.consumer.subscribe([Engine_RESULT_TOPIC])
+        self.consumer.subscribe([ENGINE_RESULT_TOPIC])
 
         self.prefix = 'PROCESSING ENGINE RESULTS'
 
