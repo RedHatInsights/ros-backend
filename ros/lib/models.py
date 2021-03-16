@@ -38,7 +38,6 @@ class System(db.Model):
     fqdn = db.Column(db.String(100))
     cloud_provider = db.Column(db.String(25))
     instance_type = db.Column(db.String(25))
-    state = db.Column(db.String(25))
     rule_hit_details = db.Column(JSONB)
     __table_args__ = (
         db.UniqueConstraint('inventory_id'),
