@@ -132,22 +132,13 @@ class HostsApi(Resource):
         if order_method == 'display_name':
             return (sort_order(System.display_name),
                     asc(PerformanceProfile.system_id),)
-        if order_method == 'cpu_score':
+
+        score_methods = ['cpu_score', 'memory_score', 'io_score']
+        if order_method in score_methods:
             return (
                 sort_order(PerformanceProfile.performance_score[
-                    'cpu_score'].astext.cast(Integer)),
-                asc(PerformanceProfile.system_id)
-            )
-        if order_method == 'memory_score':
-            return (
-                sort_order(PerformanceProfile.performance_score[
-                    'memory_score'].astext.cast(Integer)),
-                asc(PerformanceProfile.system_id), )
-        if order_method == 'io_score':
-            return (
-                sort_order(PerformanceProfile.performance_score[
-                    'io_score'].astext.cast(Integer)),
-                asc(PerformanceProfile.system_id), )
+                    order_method].astext.cast(Integer)),
+                asc(PerformanceProfile.system_id),)
         # FIXME: no ordering as of now for columns:
         # state, recommendation_count
         abort(403, message="Unexpected sort method {}".format(order_method))
