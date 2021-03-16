@@ -135,14 +135,14 @@ class HostDetailsApi(Resource):
             RecommendationRating.rated_by == username
         ).first()
 
-        system = db.session.query(System).filter(System.inventory_id == host_id).all()
+        system = db.session.query(System).filter(System.inventory_id == host_id).first()
 
         if profile:
             record = {'inventory_id': host_id}
             record['display_performance_score'] = profile.display_performance_score
             record['rating'] = rating_record.rating if rating_record else None
-            record['recommendation_count'] = len(system[0].rule_hit_details)
-            record['state'] = system[0].rule_hit_details[0].get('key')
+            record['recommendation_count'] = len(system.rule_hit_details)
+            record['state'] = system.rule_hit_details[0].get('key')
         else:
             abort(404, message="Performance Profile {} doesn't exist"
                   .format(host_id))
