@@ -80,6 +80,9 @@ class HostsApi(Resource):
                   (PerformanceProfile.system_id == last_reported.c.system_id))
             .join(System, System.id == last_reported.c.system_id)
             .join(RhAccount, RhAccount.id == System.account_id)
+            .filter(PerformanceProfile.performance_score['memory_score'].as_integer() != 0,
+                    PerformanceProfile.performance_score['cpu_score'].as_integer() != 0,
+                    PerformanceProfile.performance_score['io_score'].as_integer() != 0)
             .order_by(PerformanceProfile.system_id.asc())
         )
 
