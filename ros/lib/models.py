@@ -39,6 +39,7 @@ class System(db.Model):
     cloud_provider = db.Column(db.String(25))
     instance_type = db.Column(db.String(25))
     state = db.Column(db.String(25))
+    rule_hit_details = db.Column(JSONB)
     __table_args__ = (
         db.UniqueConstraint('inventory_id'),
         db.ForeignKeyConstraint(['account_id'], ['rh_accounts.id'], name='systems_account_id_fkey'),

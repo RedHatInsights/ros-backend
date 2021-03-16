@@ -15,6 +15,7 @@ INVENTORY_PORT = os.getenv("INVENTORY_PORT", "8081")
 INVENTORY_URL = f"http://{INVENTORY_HOST}:{INVENTORY_PORT}"
 INVENTORY_EVENTS_TOPIC = os.getenv("INVENTORY_EVENTS_TOPIC", "platform.inventory.events")
 
+ENGINE_RESULT_TOPIC = os.getenv("ENGINE_RESULT_TOPIC", "platform.engine.results")
 
 INSIGHTS_KAFKA_HOST = os.getenv("INSIGHTS_KAFKA_HOST", "localhost")
 INSIGHTS_KAFKA_PORT = os.getenv("INSIGHTS_KAFKA_PORT", "9092")

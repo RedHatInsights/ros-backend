@@ -1,0 +1,268 @@
+{
+  "input": {
+    "platform_metadata": {
+      "account": "0000001",
+      "b64_identity": "eyJpZGVudGl0eSI6IHsiYWNjb3VudF9udW1iZXIiOiAiMDAwMDAwMSIsInR5cGUiOiAiVXNlciIsInVzZXIiOiB7InVzZXJuYW1lIjogInR1c2VyQHJlZGhhdC5jb20iLCJlbWFpbCI6ICJ0dXNlckByZWRoYXQuY29tIiwiZmlyc3RfbmFtZSI6ICJ0ZXN0IiwibGFzdF9uYW1lIjogInVzZXIiLCJpc19hY3RpdmUiOiB0cnVlLCJpc19vcmdfYWRtaW4iOiBmYWxzZSwgImlzX2ludGVybmFsIjogdHJ1ZSwgImxvY2FsZSI6ICJlbl9VUyJ9LCJpbnRlcm5hbCI6IHsgIm9yZ19pZCI6ICIwMDAwMDEifX19Cg==",
+      "category": "collection",
+      "elapsed_time": 1615353073.959285,
+      "extras": {},
+      "host": {},
+      "id": null,
+      "metadata": {
+        "reporter": "",
+        "stale_timestamp": "0001-01-01T00:00:00Z"
+      },
+      "payload_id": null,
+      "principal": "000001",
+      "request_id": "e25e47193887/bPmlgL71KF-000002",
+      "satellite_managed": null,
+      "service": "advisor",
+      "size": 310498,
+      "timestamp": "2021-03-10T05:11:11.848534927Z",
+      "url": "http://minio:9000/insights-upload-perma/e25e47193887/bPmlgL71KF-000002?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=BQA2GEXO711FVBVXDWKM%2F20210310%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20210310T051111Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&X-Amz-Signature=86ad10ee50a95279dd9fc492aa1c392502e7d23162915eaff075a823d31c7541",
+      "validation": null,
+      "test": null,
+      "is_ros": "true"
+    },
+    "metadata": {
+      "request_id": "e25e47193887/bPmlgL71KF-000002"
+    },
+    "host": {
+      "tags": [],
+      "insights_id": "677fb960-e164-48a4-929f-59e2d917b444",
+      "ip_addresses": [
+        "172.31.11.67"
+      ],
+      "external_id": null,
+      "reporter": "puptoo",
+      "account": "0000001",
+      "ansible_host": null,
+      "bios_uuid": "ec2c6410-f352-0d4c-e1b3-e0b454b2b3de",
+      "subscription_manager_id": null,
+      "satellite_id": null,
+      "id": "ee0b9978-fe1b-4191-8408-cbadbd47f7a2",
+      "stale_timestamp": "2021-03-11T10:11:14.199560+00:00",
+      "mac_addresses": [
+        "0a:b8:49:a1:39:18",
+        "00:00:00:00:00:00"
+      ],
+      "rhel_machine_id": null,
+      "fqdn": "ip-172-31-11-67.ap-south-1.compute.internal",
+      "display_name": "ip-172-31-11-67.ap-south-1.compute.internal",
+      "culled_timestamp": "2021-03-25T10:11:14.199560+00:00",
+      "updated": "2021-03-10T05:11:14.241538+00:00",
+      "created": "2021-03-10T04:27:08.513316+00:00",
+      "system_profile": {
+        "os_release": "8.3",
+        "satellite_managed": false,
+        "os_kernel_version": "4.18.0"
+      },
+      "stale_warning_timestamp": "2021-03-18T10:11:14.199560+00:00"
+    },
+    "type": "updated",
+    "timestamp": "2021-03-10T05:11:14.248390+00:00"
+  },
+  "results": {
+    "system": {
+      "metadata": {
+        "timezone_information": {
+          "utcoffset": 0,
+          "timezone": "UTC"
+        },
+        "listening_processes": [
+          {
+            "ip_addr": "",
+            "process_name": "pmlogger",
+            "port": ":1:4330"
+          },
+          {
+            "ip_addr": "",
+            "process_name": "pmlogger",
+            "port": "::4332"
+          },
+          {
+            "ip_addr": "",
+            "process_name": "sshd",
+            "port": "::22"
+          },
+          {
+            "ip_addr": "",
+            "process_name": "pmcd",
+            "port": ":1:44321"
+          }
+        ],
+        "rhel_version": "8.3",
+        "bios_information": {
+          "bios_revision": "4.2",
+          "release_date": "08/24/2006",
+          "vendor": "Xen",
+          "version": "4.2.amazon"
+        },
+        "system_information": {
+          "product_name": "HVM domU",
+          "family": "Not Specified",
+          "manufacturer": "Xen",
+          "virtual_machine": true
+        },
+        "cpu_score": 1,
+        "mem_score": 4,
+        "io_score": 1,
+        "release": "Red Hat Enterprise Linux release 8.3 (Ootpa)"
+      },
+      "hostname": "ip-172-31-11-67.ap-south-1.compute.internal",
+      "remote_branch": -1,
+      "remote_leaf": -1,
+      "system_id": "677fb960-e164-48a4-929f-59e2d917b444",
+      "product": "rhel",
+      "type": "host"
+    },
+    "reports": [
+      {
+        "rule_id": "insights_core_egg_not_up2date|INSIGHTS_CORE_EGG_NOT_UP2DATE",
+        "component": "telemetry.rules.plugins.other.insights_core_egg_not_up2date.report",
+        "type": "rule",
+        "key": "INSIGHTS_CORE_EGG_NOT_UP2DATE",
+        "details": {
+          "rhel": "8.3",
+          "cur": "3.0.8-dev",
+          "rel": "3.0.212",
+          "auto_update": "False",
+          "type": "rule",
+          "error_key": "INSIGHTS_CORE_EGG_NOT_UP2DATE"
+        },
+        "tags": [],
+        "links": {
+          "jira": [
+            "https://issues.redhat.com/browse/CEECBA-4587"
+          ],
+          "kcs": [
+            "https://access.redhat.com/articles/3747741"
+          ]
+        },
+        "system_id": "677fb960-e164-48a4-929f-59e2d917b444"
+      },
+      {
+        "rule_id": "xen_kdump_supported|XEN_KDUMP_SUPPORTED",
+        "component": "telemetry.rules.plugins.aws.xen_kdump_supported.report",
+        "type": "rule",
+        "key": "XEN_KDUMP_SUPPORTED",
+        "details": {
+          "kvr": "4.18.0-240.1.1.el8_3",
+          "type": "rule",
+          "error_key": "XEN_KDUMP_SUPPORTED"
+        },
+        "tags": [
+          "rhel7",
+          "rhel8",
+          "rhel6",
+          "xen",
+          "aws"
+        ],
+        "links": {
+          "kcs": [
+            "https://access.redhat.com/solutions/2890881"
+          ],
+          "jira": [
+            "https://projects.engineering.redhat.com/browse/CEECBA-3484",
+            "https://projects.engineering.redhat.com/browse/CEECBA-4123"
+          ],
+          "bug": [
+            "https://bugzilla.redhat.com/show_bug.cgi?id=1859233"
+          ]
+        },
+        "system_id": "677fb960-e164-48a4-929f-59e2d917b444"
+      },
+      {
+        "rule_id": "tzdata_need_upgrade|TZDATA_NEED_UPGRADE_RESTART_NTP_AFTER_LEAP_INFO",
+        "component": "telemetry.rules.plugins.kernel.tzdata_need_upgrade.report",
+        "type": "rule",
+        "key": "TZDATA_NEED_UPGRADE_RESTART_NTP_AFTER_LEAP_INFO",
+        "details": {
+          "service": "chronyd",
+          "rhel": 8,
+          "type": "rule",
+          "error_key": "TZDATA_NEED_UPGRADE_RESTART_NTP_AFTER_LEAP_INFO"
+        },
+        "tags": [],
+        "links": {
+          "kcs": [
+            "https://access.redhat.com/solutions/1465713"
+          ]
+        },
+        "system_id": "677fb960-e164-48a4-929f-59e2d917b444"
+      },
+      {
+        "rule_id": "ntp_leapsmear|NTP_LEAPSMEAR_MIX_SERVER_SMEAR_AND_NOT_ONES",
+        "component": "telemetry.rules.plugins.service.ntp_leapsmear.report",
+        "type": "rule",
+        "key": "NTP_LEAPSMEAR_MIX_SERVER_SMEAR_AND_NOT_ONES",
+        "details": {
+          "smearing_servers": [
+            "169.254.169.123"
+          ],
+          "smearing_patterns_len": 1,
+          "nonsmearing_servers": [
+            "2.rhel.pool.ntp.org"
+          ],
+          "leap_directives": [
+            "leapsectz right/UTC"
+          ],
+          "is_special_aws_ip_case": true,
+          "service": "chrony",
+          "type": "rule",
+          "error_key": "NTP_LEAPSMEAR_MIX_SERVER_SMEAR_AND_NOT_ONES"
+        },
+        "tags": [],
+        "links": {
+          "kcs": [
+            "https://access.redhat.com/solutions/5132071"
+          ],
+          "jira": [
+            "https://projects.engineering.redhat.com/browse/CEECBA-3662",
+            "https://projects.engineering.redhat.com/browse/CEECBA-4130"
+          ]
+        },
+        "system_id": "677fb960-e164-48a4-929f-59e2d917b444"
+      },
+      {
+        "rule_id": "cloud_instance_ros_evaluation|CONSUMPTION_MODEL",
+        "component": "telemetry.rules.plugins.ros.cloud_instance_ros_evaluation.report_consumption_model",
+        "type": "rule",
+        "key": "CONSUMPTION_MODEL",
+        "details": {
+          "rhel": "8.3",
+          "cloud_provider": "aws",
+          "instance_type": "t2.micro",
+          "type": "rule",
+          "error_key": "CONSUMPTION_MODEL"
+        },
+        "tags": [],
+        "links": {
+          "jira": [
+            "https://issues.redhat.com/browse/CEECBA-5092"
+          ],
+          "kcs": [
+            "T.B.D"
+          ]
+        },
+        "system_id": "677fb960-e164-48a4-929f-59e2d917b444"
+      }
+    ],
+    "fingerprints": [],
+    "analysis_metadata": {
+      "start": "2021-03-10T05:11:14.350653+00:00",
+      "finish": "2021-03-10T05:11:15.897261+00:00",
+      "execution_context": "insights.core.context.SerializedArchiveContext",
+      "plugin_sets": {
+        "insights-core": {
+          "version": "insights-core-3.0.214-1",
+          "commit": "placeholder"
+        },
+        "insights-plugins": {
+          "version": "insights-plugins-2.0.163-1",
+          "commit": "placeholder"
+        }
+      }
+    }
+  }
+}
