@@ -157,10 +157,12 @@ class HostDetailsApi(Resource):
     profile_fields = {
         'host_id': fields.String(attribute='inventory_id'),
         'performance_record': fields.String,
-        'display_performance_score': fields.String,
         'rating': fields.Integer,
-        'recommendation_count': fields.Integer,
-        'state': fields.String
+        'report_date': fields.String,
+        'instance_type': fields.String,
+        'cloud_provider': fields.String,
+        'idling_time': fields.String,
+        'io_wait': fields.String
     }
 
     @marshal_with(profile_fields)
@@ -189,12 +191,16 @@ class HostDetailsApi(Resource):
 
         if profile:
             record = {'inventory_id': host_id}
-            record['display_performance_score'] = profile.display_performance_score
             record['rating'] = rating_record.rating if rating_record else None
-            record['recommendation_count'] = len(system.rule_hit_details)
-            record['state'] = system.rule_hit_details[0].get('key')
+            record['report_date'] = profile.report_date
+            record['cloud_provider'] = system.cloud_provider
+            record['instance_type'] = system.instance_type
+            record['idling_time'] = (profile.performance_record['kernel.all.cpu.idle']
+                                     / profile.performance_record['total_cpus']) * 100
+            # This metric has not been updated in our archive yet.
+            record['io_wait'] = profile.performance_record['kernel.all.cpu.wait.total'] * 100
         else:
-            abort(404, message="Performance Profile {} doesn't exist"
+            abort(404, message="System {} doesn't exist"
                   .format(host_id))
 
         return record
