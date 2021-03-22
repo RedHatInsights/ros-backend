@@ -61,6 +61,9 @@ class HostsApi(Resource):
         ).strip().lower()
         order_how = (request.args.get('order_how') or 'asc').strip().lower()
 
+        # if query string is passed with display_name
+        filter_display_name = request.args.get('display_name')
+
         ident = identity(request)['identity']
         # Note that When using LIMIT, it is important to use an ORDER BY clause
         # that constrains the result rows into a unique order.
@@ -106,6 +109,11 @@ class HostsApi(Resource):
             host['account'] = row.RhAccount.account
             host['display_performance_score'] = row.PerformanceProfile.display_performance_score
             hosts.append(host)
+            # for filtering get the request param and check
+            if filter_display_name and host['display_name'] == filter_display_name:
+                hosts = []
+                hosts.append(host)
+                break
 
         return build_paginated_system_list_response(
             limit, offset, hosts, count
