@@ -51,6 +51,15 @@
                     },
                     {
                         "$ref": "#/components/parameters/orderHowParam"
+                    },
+                    {
+                        "name": "filter[display_name]",
+                        "in": "query",
+                        "required": false,
+                        "description": "Filter ",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
