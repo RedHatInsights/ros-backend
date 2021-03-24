@@ -1,3 +1,5 @@
+from sqlalchemy import func, asc, desc
+from sqlalchemy.types import Integer
 from flask import request
 from flask_restful import Resource, abort, fields, marshal_with
 
@@ -7,7 +9,6 @@ from ros.lib.models import (
 from ros.lib.utils import is_valid_uuid, identity, user_data_from_identity
 from ros.api.common.pagination import build_paginated_system_list_response
 
-from sqlalchemy import func
 
 DEFAULT_HOSTS_PER_REP = 10
 DEFAULT_OFFSET = 0
@@ -55,6 +56,10 @@ class HostsApi(Resource):
     def get(self):
         limit = int(request.args.get('limit') or DEFAULT_HOSTS_PER_REP)
         offset = int(request.args.get('offset') or DEFAULT_OFFSET)
+        order_by = (
+            request.args.get('order_by') or 'display_name'
+        ).strip().lower()
+        order_how = (request.args.get('order_how') or 'asc').strip().lower()
 
         ident = identity(request)['identity']
         # Note that When using LIMIT, it is important to use an ORDER BY clause
@@ -74,13 +79,15 @@ class HostsApi(Resource):
             .subquery()
         )
 
+        sort_expression = self.build_sort_expression(order_how, order_by)
+
         query = (
             db.session.query(PerformanceProfile, System, RhAccount)
             .join(last_reported, (last_reported.c.max_date == PerformanceProfile.report_date) &
                   (PerformanceProfile.system_id == last_reported.c.system_id))
             .join(System, System.id == last_reported.c.system_id)
             .join(RhAccount, RhAccount.id == System.account_id)
-            .order_by(PerformanceProfile.system_id.asc())
+            .order_by(*sort_expression)
         )
 
         count = query.count()
@@ -88,7 +95,9 @@ class HostsApi(Resource):
         query_results = query.all()
 
         hosts = []
-        system_columns = ['inventory_id', 'fqdn', 'display_name', 'instance_type', 'cloud_provider', 'rule_hit_details']
+        system_columns = [
+            'inventory_id', 'fqdn', 'display_name',
+            'instance_type', 'cloud_provider', 'rule_hit_details']
         for row in query_results:
             system_dict = row.System.__dict__
             host = {skey: system_dict[skey] for skey in system_columns}
@@ -101,6 +110,39 @@ class HostsApi(Resource):
         return build_paginated_system_list_response(
             limit, offset, hosts, count
         )
+
+    @staticmethod
+    def sorting_order(order_how):
+        """Sorting order method."""
+        if order_how == 'asc':
+            method_name = asc
+        elif order_how == 'desc':
+            method_name = desc
+        else:
+            abort(
+                403,
+                message="Incorrect sorting order. Possible values - ASC/DESC"
+            )
+        return method_name
+
+    def build_sort_expression(self, order_how, order_method):
+        """Build sort expression."""
+        sort_order = self.sorting_order(order_how)
+
+        if order_method == 'display_name':
+            return (sort_order(System.display_name),
+                    asc(PerformanceProfile.system_id),)
+
+        score_methods = ['cpu_score', 'memory_score', 'io_score']
+        if order_method in score_methods:
+            return (
+                sort_order(PerformanceProfile.performance_score[
+                    order_method].astext.cast(Integer)),
+                asc(PerformanceProfile.system_id),)
+        # FIXME: no ordering as of now for columns:
+        # state, recommendation_count
+        abort(403, message="Unexpected sort method {}".format(order_method))
+        return None
 
 
 class HostDetailsApi(Resource):
