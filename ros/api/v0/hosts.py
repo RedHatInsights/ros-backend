@@ -148,8 +148,15 @@ class HostsApi(Resource):
                 sort_order(PerformanceProfile.performance_score[
                     order_method].astext.cast(Integer)),
                 asc(PerformanceProfile.system_id),)
-        # FIXME: no ordering as of now for columns:
-        # state, number_of_recommendations
+
+        if order_method == 'recommendation_count':
+            return (sort_order(System.rule_hit_details),
+                    asc(PerformanceProfile.system_id),)
+
+        if order_method == 'state':
+            return (sort_order(System.rule_hit_details[0]['key']),
+                    asc(PerformanceProfile.system_id),)
+
         abort(403, message="Unexpected sort method {}".format(order_method))
         return None
 
