@@ -342,7 +342,9 @@
                         "display_name",
                         "cpu_score",
                         "memory_score",
-                        "io_score"
+                        "io_score",
+                        "number_of_recommendations",
+                        "state"
                     ]
                 }
             },
