@@ -60,8 +60,6 @@ class HostsApi(Resource):
             request.args.get('order_by') or 'display_name'
         ).strip().lower()
         order_how = (request.args.get('order_how') or 'asc').strip().lower()
-
-        # if query string is passed with display_name
         filter_display_name = request.args.get('display_name')
 
         ident = identity(request)['identity']
@@ -71,13 +69,18 @@ class HostsApi(Resource):
         # Refer - https://www.postgresql.org/docs/13/queries-limit.html
 
         account_query = db.session.query(RhAccount.id).filter(RhAccount.account == ident['account_number']).subquery()
-        system_query = db.session.query(System.id)\
-            .filter(System.account_id.in_(account_query)).subquery()
+        if filter_display_name:
+            system_query = db.session.query(System.id)\
+                .filter(System.account_id.in_(account_query))\
+                .filter(System.display_name == filter_display_name)
+        else:
+            system_query = db.session.query(System.id)\
+                .filter(System.account_id.in_(account_query))
 
         last_reported = (
             db.session.query(PerformanceProfile.system_id, func.max(PerformanceProfile.report_date).label('max_date')
                              )
-            .filter(PerformanceProfile.system_id.in_(system_query))
+            .filter(PerformanceProfile.system_id.in_(system_query.subquery()))
             .group_by(PerformanceProfile.system_id)
             .subquery()
         )
@@ -92,7 +95,6 @@ class HostsApi(Resource):
             .join(RhAccount, RhAccount.id == System.account_id)
             .order_by(*sort_expression)
         )
-
         count = query.count()
         query = query.limit(limit).offset(offset)
         query_results = query.all()
@@ -109,11 +111,6 @@ class HostsApi(Resource):
             host['account'] = row.RhAccount.account
             host['display_performance_score'] = row.PerformanceProfile.display_performance_score
             hosts.append(host)
-            # for filtering get the request param and check
-            if filter_display_name and host['display_name'] == filter_display_name:
-                hosts = []
-                hosts.append(host)
-                break
 
         return build_paginated_system_list_response(
             limit, offset, hosts, count
