@@ -6,4 +6,5 @@ from .config import DB_URI
 app = Flask(__name__)
 # Initalize database connection
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_URI
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
