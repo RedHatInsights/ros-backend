@@ -96,8 +96,7 @@ class HostsApi(Resource):
                 host['recommendation_count'] = len(host['rule_hit_details'])
                 host['state'] = host['rule_hit_details'][0].get('key')
             else:
-                host['recommendation_count'] = 0
-                host['state'] = 'Undefined'
+                continue
             host['account'] = row.RhAccount.account
             host['display_performance_score'] = row.PerformanceProfile.display_performance_score
             hosts.append(host)
