@@ -19,6 +19,7 @@ def database():
         create_database(DB_URI)
 
     app.config['SQLALCHEMY_DATABASE_URI'] = DB_URI
+    app.testing = True
     with app.app_context():
         db.create_all()
         yield
