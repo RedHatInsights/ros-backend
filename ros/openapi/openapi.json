@@ -361,7 +361,7 @@
                 }
             },
             "filterParam": {
-                "name": "filter[display_name]",
+                "name": "display_name",
                 "in": "query",
                 "required": false,
                 "description": "Filter system with the given display name ",
