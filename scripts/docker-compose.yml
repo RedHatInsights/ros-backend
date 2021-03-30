@@ -19,6 +19,17 @@ services:
       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:32181
       - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+  # Below container is to implement workaround for creating required topics.
+  kafka-create-topics:
+    image: confluentinc/cp-kafka
+    ports:
+      - 7777:29092
+    command: "bash -c 'echo Waiting for Kafka to be ready... && \
+                       cub kafka-ready -b kafka:29092 1 20 && \
+                       kafka-topics --create --if-not-exists --topic platform.inventory.events --bootstrap-server kafka:29092 && \
+                       kafka-topics --create --if-not-exists --topic platform.engine.results --bootstrap-server kafka:29092'"
+    depends_on:
+      - kafka
   minio:
     image: minio/minio
     command: server /data
@@ -97,7 +108,7 @@ services:
       - PAYLOAD_TRACKER_ENABLED=false
       - LISTEN_PORT=8081
     depends_on:
-       - kafka
+       - kafka-create-topics
        - db-host-inventory
        - puptoo
        - createbuckets
@@ -126,6 +137,13 @@ services:
     volumes:
       - './cdappconfig.json:/cdappconfig.json:Z'
 
+  insights-engine:
+    image: quay.io/cloudservices/insights-engine:latest
+    restart: always
+    depends_on:
+      - puptoo
+      - kafka-create-topics
+      - insights-inventory-mq
   # Allows us to run the application in the form it's going to be deployed, will be needed for tests
   ros-processor: &ros
     build:
@@ -133,6 +151,7 @@ services:
     command: [ "python", "-m", "ros.processor.main" ]
     depends_on:
       - insights-inventory-web
+      - insights-engine
       - kafka
       - createbuckets
     environment:
