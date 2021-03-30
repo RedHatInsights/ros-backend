@@ -13,6 +13,9 @@ from ros.api.common.pagination import build_paginated_system_list_response
 DEFAULT_HOSTS_PER_REP = 10
 DEFAULT_OFFSET = 0
 
+SYSTEM_STATES = {"INSTANCE_OVERSIZED": "Oversized", "INSTANCE_UNDERSIZED": "Undersized",
+                 "CONSUMPTION_MODEL": "Idling", "STORAGE_RIGHTSIZING": "Storage rightsizing"}
+
 
 class HostsApi(Resource):
 
@@ -102,8 +105,9 @@ class HostsApi(Resource):
             system_dict = row.System.__dict__
             host = {skey: system_dict[skey] for skey in system_columns}
             if host['rule_hit_details']:
+                rule_error_key = host['rule_hit_details'][0].get('key')
+                host['state'] = SYSTEM_STATES[rule_error_key]
                 host['recommendation_count'] = len(host['rule_hit_details'])
-                host['state'] = host['rule_hit_details'][0].get('key')
             else:
                 continue
             host['account'] = row.RhAccount.account
@@ -187,7 +191,8 @@ class HostDetailsApi(Resource):
             record['display_performance_score'] = profile.display_performance_score
             record['rating'] = rating_record.rating if rating_record else None
             record['recommendation_count'] = len(system.rule_hit_details)
-            record['state'] = system.rule_hit_details[0].get('key')
+            rule_error_key = system.rule_hit_details[0].get('key')
+            record['state'] = SYSTEM_STATES[rule_error_key]
         else:
             abort(404, message="Performance Profile {} doesn't exist"
                   .format(host_id))
