@@ -60,6 +60,7 @@ class HostsApi(Resource):
             request.args.get('order_by') or 'display_name'
         ).strip().lower()
         order_how = (request.args.get('order_how') or 'asc').strip().lower()
+        filter_display_name = request.args.get('display_name')
 
         ident = identity(request)['identity']
         # Note that When using LIMIT, it is important to use an ORDER BY clause
@@ -68,13 +69,18 @@ class HostsApi(Resource):
         # Refer - https://www.postgresql.org/docs/13/queries-limit.html
 
         account_query = db.session.query(RhAccount.id).filter(RhAccount.account == ident['account_number']).subquery()
-        system_query = db.session.query(System.id)\
-            .filter(System.account_id.in_(account_query)).subquery()
+        if filter_display_name:
+            system_query = db.session.query(System.id)\
+                .filter(System.display_name.ilike(f'%{filter_display_name}%'))\
+                .filter(System.account_id.in_(account_query))
+        else:
+            system_query = db.session.query(System.id)\
+                .filter(System.account_id.in_(account_query))
 
         last_reported = (
             db.session.query(PerformanceProfile.system_id, func.max(PerformanceProfile.report_date).label('max_date')
                              )
-            .filter(PerformanceProfile.system_id.in_(system_query))
+            .filter(PerformanceProfile.system_id.in_(system_query.subquery()))
             .group_by(PerformanceProfile.system_id)
             .subquery()
         )
@@ -89,7 +95,6 @@ class HostsApi(Resource):
             .join(RhAccount, RhAccount.id == System.account_id)
             .order_by(*sort_expression)
         )
-
         count = query.count()
         query = query.limit(limit).offset(offset)
         query_results = query.all()
