@@ -51,6 +51,9 @@
                     },
                     {
                         "$ref": "#/components/parameters/orderHowParam"
+                    },
+                    {
+                        "$ref": "#/components/parameters/filterParam"
                     }
                 ],
                 "responses": {
@@ -355,6 +358,15 @@
                         "ASC",
                         "DESC"
                     ]
+                }
+            },
+            "filterParam": {
+                "name": "display_name",
+                "in": "query",
+                "required": false,
+                "description": "Filter system with the given display name ",
+                "schema": {
+                    "type": "string"
                 }
             }
 
