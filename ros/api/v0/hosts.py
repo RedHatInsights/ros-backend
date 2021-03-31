@@ -30,10 +30,9 @@ class HostsApi(Resource):
         'state': fields.String,
         'display_performance_score': fields.Nested(display_performance_score_fields),
         'cloud_provider': fields.String,
-        'instance_type': fields.String
-        # TODO - idling_time, io_wait
-        # 'idling_time': fields.String,
-        # 'io_wait': fields.String
+        'instance_type': fields.String,
+        'idling_time': fields.String,
+        'io_wait': fields.String
     }
     meta_fields = {
         'count': fields.Integer,
@@ -113,6 +112,8 @@ class HostsApi(Resource):
                 continue
             host['account'] = row.RhAccount.account
             host['display_performance_score'] = row.PerformanceProfile.display_performance_score
+            host['idling_time'] = row.PerformanceProfile.idling_time
+            host['io_wait'] = row.PerformanceProfile.io_wait
             hosts.append(host)
 
         return build_paginated_system_list_response(
@@ -156,7 +157,6 @@ class HostsApi(Resource):
 class HostDetailsApi(Resource):
     profile_fields = {
         'host_id': fields.String(attribute='inventory_id'),
-        'performance_record': fields.String,
         'rating': fields.Integer,
         'report_date': fields.String,
         'instance_type': fields.String,
@@ -195,10 +195,8 @@ class HostDetailsApi(Resource):
             record['report_date'] = profile.report_date
             record['cloud_provider'] = system.cloud_provider
             record['instance_type'] = system.instance_type
-            record['idling_time'] = (profile.performance_record['kernel.all.cpu.idle']
-                                     / profile.performance_record['total_cpus']) * 100
-            # This metric has not been updated in our archive yet.
-            record['io_wait'] = profile.performance_record['kernel.all.cpu.wait.total'] * 100
+            record['idling_time'] = profile.idling_time
+            record['io_wait'] = profile.io_wait
         else:
             abort(404, message="System {} doesn't exist"
                   .format(host_id))

@@ -29,6 +29,15 @@ class PerformanceProfile(db.Model):
 
         return display_performance_score
 
+    @property
+    def idling_time(self):
+        return (self.performance_record['kernel.all.cpu.idle']
+                / self.performance_record['total_cpus']) * 100
+
+    @property
+    def io_wait(self):
+        return self.performance_record['kernel.all.cpu.wait.total'] * 100
+
 
 class System(db.Model):
     __tablename__ = 'systems'
