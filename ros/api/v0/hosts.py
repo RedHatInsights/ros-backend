@@ -158,8 +158,7 @@ class HostDetailsApi(Resource):
         'performance_record': fields.String,
         'display_performance_score': fields.String,
         'rating': fields.Integer,
-        'recommendation_count': fields.Integer,
-        'state': fields.String
+        'recommendation_count': fields.Integer
     }
 
     @marshal_with(profile_fields)
@@ -191,8 +190,6 @@ class HostDetailsApi(Resource):
             record['display_performance_score'] = profile.display_performance_score
             record['rating'] = rating_record.rating if rating_record else None
             record['recommendation_count'] = len(system.rule_hit_details)
-            rule_error_key = system.rule_hit_details[0].get('key')
-            record['state'] = SYSTEM_STATES[rule_error_key]
         else:
             abort(404, message="Performance Profile {} doesn't exist"
                   .format(host_id))
