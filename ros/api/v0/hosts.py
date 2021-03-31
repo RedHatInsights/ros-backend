@@ -71,8 +71,8 @@ class HostsApi(Resource):
         account_query = db.session.query(RhAccount.id).filter(RhAccount.account == ident['account_number']).subquery()
         if filter_display_name:
             system_query = db.session.query(System.id)\
-                .filter(System.account_id.in_(account_query))\
-                .filter(System.display_name == filter_display_name)
+                .filter(System.display_name.ilike(f'%{filter_display_name}%'))\
+                .filter(System.account_id.in_(account_query))
         else:
             system_query = db.session.query(System.id)\
                 .filter(System.account_id.in_(account_query))
