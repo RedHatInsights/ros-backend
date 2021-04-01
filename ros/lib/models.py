@@ -24,7 +24,8 @@ class PerformanceProfile(db.Model):
     def display_performance_score(self):
         display_performance_score = {}
         for key, value in self.performance_score.items():
-            display_performance_score[key] = value // 20
+            score = value // 20
+            display_performance_score[key] = 1 if score < 1 else score
 
         return display_performance_score
 
