@@ -26,13 +26,14 @@ class HostsApi(Resource):
         'display_name': fields.String,
         'inventory_id': fields.String,
         'account': fields.String,
-        'recommendation_count': fields.Integer,
+        'number_of_recommendations': fields.Integer,
         'state': fields.String,
         'display_performance_score': fields.Nested(display_performance_score_fields),
         'cloud_provider': fields.String,
         'instance_type': fields.String,
         'idling_time': fields.String,
-        'io_wait': fields.String
+        'io_wait': fields.String,
+        'rule_hit_details': fields.String
     }
     meta_fields = {
         'count': fields.Integer,
@@ -106,7 +107,8 @@ class HostsApi(Resource):
             system_dict = row.System.__dict__
             host = {skey: system_dict[skey] for skey in system_columns}
             if host['rule_hit_details']:
-                host['recommendation_count'] = len(host['rule_hit_details'])
+                # FIXME after Ticket-86 is resolved
+                host['number_of_recommendations'] = len(host['rule_hit_details'])
                 host['state'] = host['rule_hit_details'][0].get('key')
             else:
                 continue
@@ -149,20 +151,24 @@ class HostsApi(Resource):
                     order_method].astext.cast(Integer)),
                 asc(PerformanceProfile.system_id),)
         # FIXME: no ordering as of now for columns:
-        # state, recommendation_count
+        # state, number_of_recommendations
         abort(403, message="Unexpected sort method {}".format(order_method))
         return None
 
 
 class HostDetailsApi(Resource):
     profile_fields = {
-        'host_id': fields.String(attribute='inventory_id'),
+        'inventory_id': fields.String,
+        'display_performance_score': fields.String,
         'rating': fields.Integer,
+        'number_of_recommendations': fields.Integer,
+        'state': fields.String,
         'report_date': fields.String,
         'instance_type': fields.String,
         'cloud_provider': fields.String,
         'idling_time': fields.String,
-        'io_wait': fields.String
+        'io_wait': fields.String,
+        'rule_hit_details': fields.String
     }
 
     @marshal_with(profile_fields)
@@ -191,12 +197,20 @@ class HostDetailsApi(Resource):
 
         if profile:
             record = {'inventory_id': host_id}
+            record['display_performance_score'] = profile.display_performance_score
             record['rating'] = rating_record.rating if rating_record else None
             record['report_date'] = profile.report_date
             record['cloud_provider'] = system.cloud_provider
             record['instance_type'] = system.instance_type
             record['idling_time'] = profile.idling_time
             record['io_wait'] = profile.io_wait
+            record['rule_hit_details'] = system.rule_hit_details
+            # FIXME
+            # record['number_of_recommendations'] = fetch value from db itself
+            # record['state] = fetch value from db itself
+            # TODO
+            # after Ticket-86 is resolved
+
         else:
             abort(404, message="System {} doesn't exist"
                   .format(host_id))
