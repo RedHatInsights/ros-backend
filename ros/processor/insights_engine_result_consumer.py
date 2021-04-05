@@ -76,13 +76,18 @@ class InsightsEngineResultConsumer:
                     account=host['account']
                 )
 
+            SYSTEM_STATES = {"INSTANCE_OVERSIZED": "Oversized", "INSTANCE_UNDERSIZED": "Undersized",
+                             "CONSUMPTION_MODEL": "Idling", "STORAGE_RIGHTSIZING": "Storage rightsizing"}
+
             system = get_or_create(
                     db.session, System, 'inventory_id',
                     account_id=account.id,
                     inventory_id=host['id'],
                     display_name=host['display_name'],
                     fqdn=host['fqdn'],
-                    rule_hit_details=reports
+                    rule_hit_details=reports,
+                    number_of_recommendations=len(reports),
+                    state=SYSTEM_STATES[reports[0].get('key')]
                 )
 
             db.session.commit()
