@@ -89,3 +89,13 @@ class RhAccount(db.Model):
         db.UniqueConstraint('account'),
         db.CheckConstraint('NOT(account IS NULL)'),
     )
+
+
+class Rule(db.Model):
+    __tablename__ = 'rules'
+    id = db.Column(db.Integer, primary_key=True)
+    rule_id = db.Column(db.String(255), unique=True, nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    reason = db.Column(db.Text, nullable=False)
+    resolution = db.Column(db.Text, nullable=False)
+    condition = db.Column(db.Text, nullable=False)
