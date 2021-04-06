@@ -31,6 +31,22 @@ def get_or_create(session, model, keys, **kwargs):
     return instance
 
 
+def delete_record(session, model, keys, **kwargs):
+    deleted = False
+    if not keys:
+        keys = kwargs.keys()
+    if isinstance(keys, str):
+        keys = [keys]
+    if not isinstance(keys, list):
+        raise TypeError('keys argument must be a string')
+    instance = session.query(model).filter_by(**{k: kwargs[k] for k in keys}).first()
+    if instance:
+        session.delete(instance)
+        session.commit()
+        deleted = True
+    return deleted
+
+
 def identity(request):
     ident = request.headers.get('X-RH-IDENTITY')
     if not ident:

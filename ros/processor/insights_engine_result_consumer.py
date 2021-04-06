@@ -1,7 +1,7 @@
 import json
 import logging
 from ros.lib.app import app, db
-from ros.lib.utils import get_or_create
+from ros.lib.utils import get_or_create, delete_record
 from ros.lib.models import RhAccount, System
 from confluent_kafka import Consumer, KafkaException
 from ros.lib.config import INSIGHTS_KAFKA_ADDRESS, GROUP_ID, ENGINE_RESULT_TOPIC
@@ -66,8 +66,12 @@ class InsightsEngineResultConsumer:
                 for report in reports:
                     if 'cloud_instance_ros_evaluation' in report["rule_id"]:
                         ros_reports.append(report)
-
-                self.process_report(host, ros_reports)
+                if len(ros_reports) == 0:
+                    with app.app_context():
+                        delete_record(db.session, System, 'inventory_id',
+                                      inventory_id=host['id'])
+                else:
+                    self.process_report(host, ros_reports)
 
     def process_report(self, host, reports):
         with app.app_context():
