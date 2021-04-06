@@ -27,6 +27,7 @@ def performance_profile(pmlog_summary, lscpu, aws_instance_id):
         'kernel.all.cpu.nice',
         'kernel.all.cpu.steal',
         'kernel.all.cpu.idle',
+        'kernel.all.cpu.wait.total',
         'disk.all.total',
         'mem.util.cached',
         'mem.util.bufmem',
