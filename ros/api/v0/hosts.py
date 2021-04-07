@@ -20,27 +20,6 @@ class HostsApi(Resource):
         'memory_score': fields.Integer,
         'io_score': fields.Integer
     }
-    link_key_fields = {
-        'kcs': fields.List,
-        'jira': fields.List
-    }
-    details_fields = {
-        'rhel': fields.String,
-        'type': fields.String,
-        'error_key': fields.String
-        # Are instance_type and cloud_provider needed here too?
-        # We have them below already.
-    }
-    rule_hit_details_fields = {
-        'key': fields.String,
-        'tags': fields.List,
-        'type': fields.String,
-        'links': fields.Nested(link_key_fields),
-        'details': fields.Nested(details_fields),
-        'rule_id': fields.String,
-        'component': fields.String,
-        'system_id': fields.String
-    }
     hosts_fields = {
         'fqdn': fields.String,
         'display_name': fields.String,
@@ -53,7 +32,6 @@ class HostsApi(Resource):
         'instance_type': fields.String,
         'idling_time': fields.String,
         'io_wait': fields.String,
-        'rule_hit_details': fields.List(fields.Nested(rule_hit_details_fields))
     }
     meta_fields = {
         'count': fields.Integer,
@@ -182,27 +160,6 @@ class HostDetailsApi(Resource):
         'memory_score': fields.Integer,
         'io_score': fields.Integer
     }
-    link_key_fields = {
-        'kcs': fields.List,
-        'jira': fields.List
-    }
-    details_fields = {
-        'rhel': fields.String,
-        'type': fields.String,
-        'error_key': fields.String
-        # Are instance_type and cloud_provider needed here too?
-        # We have them below already.
-    }
-    rule_hit_details_fields = {
-        'key': fields.String,
-        'tags': fields.List,
-        'type': fields.String,
-        'links': fields.Nested(link_key_fields),
-        'details': fields.Nested(details_fields),
-        'rule_id': fields.String,
-        'component': fields.String,
-        'system_id': fields.String
-    }
     profile_fields = {
         'inventory_id': fields.String,
         'display_performance_score': fields.Nested(display_performance_score_fields),
@@ -213,8 +170,7 @@ class HostDetailsApi(Resource):
         'instance_type': fields.String,
         'cloud_provider': fields.String,
         'idling_time': fields.String,
-        'io_wait': fields.String,
-        'rule_hit_details': fields.List(fields.Nested(rule_hit_details_fields))
+        'io_wait': fields.String
     }
 
     @marshal_with(profile_fields)
@@ -250,7 +206,6 @@ class HostDetailsApi(Resource):
             record['instance_type'] = system.instance_type
             record['idling_time'] = profile.idling_time
             record['io_wait'] = profile.io_wait
-            record['rule_hit_details'] = system.rule_hit_details
             # FIXME
             # record['number_of_recommendations'] = fetch value from db itself
             # record['state] = fetch value from db itself
