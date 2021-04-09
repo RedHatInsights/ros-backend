@@ -68,9 +68,8 @@ class InsightsEngineResultConsumer:
                         ros_reports.append(report)
                 if len(ros_reports) == 0:
                     with app.app_context():
-                        deleted_id = delete_record(db.session, System, 'inventory_id',
-                                                   inventory_id=host['id'])
-                        LOG.info("Deleted system with inventory_id: %s via engine-result", deleted_id)
+                        deleted_inventory_id = delete_record(db.session, System, inventory_id=host['id'])
+                        LOG.info("Deleted system with inventory_id: %s via engine-result", deleted_inventory_id)
                 else:
                     self.process_report(host, ros_reports)
 

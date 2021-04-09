@@ -100,7 +100,8 @@ class HostsApi(Resource):
         hosts = []
         system_columns = [
             'inventory_id', 'fqdn', 'display_name',
-            'instance_type', 'cloud_provider', 'rule_hit_details']
+            'instance_type', 'cloud_provider',
+            'rule_hit_details', 'state', 'number_of_recommendations']
         for row in query_results:
             system_dict = row.System.__dict__
             host = {skey: system_dict[skey] for skey in system_columns}

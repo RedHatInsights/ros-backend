@@ -31,19 +31,14 @@ def get_or_create(session, model, keys, **kwargs):
     return instance
 
 
-def delete_record(session, model, keys, **kwargs):
-    if not keys:
-        keys = kwargs.keys()
-    if isinstance(keys, str):
-        keys = [keys]
-    if not isinstance(keys, list):
-        raise TypeError('keys argument must be a string')
-    instance = session.query(model).filter_by(**{k: kwargs[k] for k in keys}).first()
-    deleted = instance.inventory_id
+def delete_record(session, model, **system_fields):
+    keys = list(system_fields.keys())
+    instance = session.query(model).filter_by(**{k: system_fields[k] for k in keys}).first()
+    inventory_id = instance.inventory_id
     if instance:
         session.delete(instance)
         session.commit()
-    return deleted
+    return inventory_id
 
 
 def identity(request):
