@@ -26,19 +26,25 @@ class RecommendationApi(Resource):
 
         ident = identity(request)['identity']
 
+        filter_description = request.args.get('description')
+
         account_query = db.session.query(RhAccount.id).filter(RhAccount.account == ident['account_number']).subquery()
-        system_query = db.session.query(System) \
+        system = db.session.query(System) \
             .filter(System.account_id.in_(account_query)).filter(System.inventory_id == host_id).first()
 
-        if not system_query:
+        if not system:
             abort(404, message="host with id {} doesn't exist"
                   .format(host_id))
-        rule_hits = system_query.rule_hit_details
+        rule_hits = system.rule_hit_details
         recommendations = []
         rules_columns = ['rule_id', 'description', 'reason', 'resolution', 'condition']
         if rule_hits:
             for rule_hit in rule_hits:
-                rule_data = db.session.query(Rule).filter(Rule.rule_id == rule_hit['rule_id']).first()
+                if filter_description:
+                    rule_data = db.session.query(Rule).filter(Rule.rule_id == rule_hit['rule_id'])\
+                                .filter(Rule.description.ilike(f'%{filter_description}%')).first()
+                else:
+                    rule_data = db.session.query(Rule).filter(Rule.rule_id == rule_hit['rule_id']).first()
                 if rule_data:
                     rule_dict = rule_data.__dict__
                     recommendation = {}
@@ -47,8 +53,8 @@ class RecommendationApi(Resource):
                     recommendations.append(recommendation)
 
             record = {}
-            record['host_id'] = system_query.inventory_id
-            record['recommendation_count'] = len(system_query.rule_hit_details)
+            record['host_id'] = system.inventory_id
+            record['recommendation_count'] = len(system.rule_hit_details)
             record['recommendations'] = recommendations
             return record
         else:
