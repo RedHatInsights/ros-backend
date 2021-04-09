@@ -69,7 +69,11 @@ class InsightsEngineResultConsumer:
                 if len(ros_reports) == 0:
                     with app.app_context():
                         system = delete_record(db.session, System, inventory_id=host['id'])
-                        LOG.info("Deleted system with inventory_id: %s via engine-result.", system.inventory_id)
+                        if system:
+                            LOG.info("Deleted system with inventory_id: %s via engine-result.", system.inventory_id)
+                        else:
+                            LOG.info(
+                                "Cannot upload system with inventory id: %s and no ROS rules.", host['id'])
                 else:
                     self.process_report(host, ros_reports)
 
