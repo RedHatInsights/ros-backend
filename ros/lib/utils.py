@@ -31,14 +31,14 @@ def get_or_create(session, model, keys, **kwargs):
     return instance
 
 
-def delete_record(session, model, **system_fields):
-    keys = list(system_fields.keys())
-    instance = session.query(model).filter_by(**{k: system_fields[k] for k in keys}).first()
-    inventory_id = instance.inventory_id
+def delete_record(session, model, **kwargs):
+    """ Deletes a record filtered by key(s) present in kwargs(contains model specific fields)."""
+    keys = list(kwargs.keys())
+    instance = session.query(model).filter_by(**{k: kwargs[k] for k in keys}).first()
     if instance:
         session.delete(instance)
         session.commit()
-    return inventory_id
+    return instance
 
 
 def identity(request):
