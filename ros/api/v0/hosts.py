@@ -100,16 +100,11 @@ class HostsApi(Resource):
         hosts = []
         system_columns = [
             'inventory_id', 'fqdn', 'display_name',
-            'instance_type', 'cloud_provider', 'rule_hit_details']
+            'instance_type', 'cloud_provider',
+            'rule_hit_details', 'state', 'number_of_recommendations']
         for row in query_results:
             system_dict = row.System.__dict__
             host = {skey: system_dict[skey] for skey in system_columns}
-            if host['rule_hit_details']:
-                # FIXME after Ticket-86 is resolved
-                host['number_of_recommendations'] = len(host['rule_hit_details'])
-                host['state'] = host['rule_hit_details'][0].get('key')
-            else:
-                continue
             host['account'] = row.RhAccount.account
             host['display_performance_score'] = row.PerformanceProfile.display_performance_score
             host['idling_time'] = row.PerformanceProfile.idling_time
@@ -148,8 +143,15 @@ class HostsApi(Resource):
                 sort_order(PerformanceProfile.performance_score[
                     order_method].astext.cast(Integer)),
                 asc(PerformanceProfile.system_id),)
-        # FIXME: no ordering as of now for columns:
-        # state, number_of_recommendations
+
+        if order_method == 'number_of_recommendations':
+            return (sort_order(System.number_of_recommendations),
+                    asc(PerformanceProfile.system_id),)
+
+        if order_method == 'state':
+            return (sort_order(System.state),
+                    asc(PerformanceProfile.system_id),)
+
         abort(403, message="Unexpected sort method {}".format(order_method))
         return None
 
@@ -206,12 +208,8 @@ class HostDetailsApi(Resource):
             record['instance_type'] = system.instance_type
             record['idling_time'] = profile.idling_time
             record['io_wait'] = profile.io_wait
-            # FIXME
-            # record['number_of_recommendations'] = fetch value from db itself
-            # record['state] = fetch value from db itself
-            # TODO
-            # after Ticket-86 is resolved
-
+            record['number_of_recommendations'] = system.number_of_recommendations
+            record['state'] = system.state
         else:
             abort(404, message="System {} doesn't exist"
                   .format(host_id))

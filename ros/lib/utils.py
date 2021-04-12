@@ -31,6 +31,16 @@ def get_or_create(session, model, keys, **kwargs):
     return instance
 
 
+def delete_record(session, model, **kwargs):
+    """ Deletes a record filtered by key(s) present in kwargs(contains model specific fields)."""
+    keys = list(kwargs.keys())
+    instance = session.query(model).filter_by(**{k: kwargs[k] for k in keys}).first()
+    if instance:
+        session.delete(instance)
+        session.commit()
+    return instance
+
+
 def identity(request):
     ident = request.headers.get('X-RH-IDENTITY')
     if not ident:
