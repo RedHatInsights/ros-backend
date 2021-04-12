@@ -36,7 +36,7 @@ class RecommendationsApi(Resource):
             abort(404, message="host with id {} doesn't exist"
                   .format(host_id))
         rule_hits = system.rule_hit_details
-        recommendations = []
+        recommendations_list = []
         rules_columns = ['rule_id', 'description', 'reason', 'resolution', 'condition']
         if rule_hits:
             for rule_hit in rule_hits:
@@ -50,12 +50,12 @@ class RecommendationsApi(Resource):
                     recommendation = {}
                     for skey in rules_columns:
                         recommendation[skey] = eval("f'{}'".format(rule_dict[skey]))
-                    recommendations.append(recommendation)
+                    recommendations_list.append(recommendation)
 
             record = {}
             record['host_id'] = system.inventory_id
-            record['number_of_recommendations'] = len(system.rule_hit_details)
-            record['recommendations'] = recommendations
+            record['number_of_recommendations'] = system.number_of_recommendations
+            record['recommendations'] = recommendations_list
             return record
         else:
             abort(404, message="host with id {} doesn't have any recommendation"
