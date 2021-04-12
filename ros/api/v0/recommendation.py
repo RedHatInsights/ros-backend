@@ -4,7 +4,7 @@ from flask_restful import Resource, abort, fields, marshal_with
 from flask import request
 
 
-class RecommendationApi(Resource):
+class RecommendationsApi(Resource):
 
     recommendation_fields = {
         'rule_id':  fields.String,
@@ -15,7 +15,7 @@ class RecommendationApi(Resource):
     }
     data_fields = {
         'host_id': fields.String,
-        'recommendation_count': fields.Integer,
+        'number_of_recommendations': fields.Integer,
         'recommendations': fields.List(fields.Nested(recommendation_fields))
     }
 
@@ -54,7 +54,7 @@ class RecommendationApi(Resource):
 
             record = {}
             record['host_id'] = system.inventory_id
-            record['recommendation_count'] = len(system.rule_hit_details)
+            record['number_of_recommendations'] = len(system.rule_hit_details)
             record['recommendations'] = recommendations
             return record
         else:

@@ -1,8 +1,11 @@
 import json
+import logging
 from flask_script import Command
 from ros.lib.models import Rule
 from ros.lib.app import db
 from ros.lib.utils import get_or_create
+
+LOG = logging.getLogger(__name__)
 
 
 class Seed(Command):
@@ -23,3 +26,4 @@ class Seed(Command):
                     condition=data['condition']
                 )
                 db.session.commit()
+        LOG.info("Seeding completed successfully. ROS rules added to database")
