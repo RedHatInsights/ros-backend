@@ -1,6 +1,6 @@
 from .v0.hosts import HostsApi, HostDetailsApi
 from .v0.recommendation_ratings import RecommendationRatingsApi
-from .v0.recommendation import RecommendationsApi
+from .v0.recommendations import RecommendationsApi
 from .v0.openapi_spec import OpenAPISpec
 from .v0.status import Status
 
