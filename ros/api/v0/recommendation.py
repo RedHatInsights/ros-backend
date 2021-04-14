@@ -13,10 +13,15 @@ class RecommendationsApi(Resource):
         'resolution': fields.String,
         'condition': fields.String
     }
+
+    meta_fields = {
+        'count': fields.Integer
+    }
+
     data_fields = {
         'host_id': fields.String,
-        'number_of_recommendations': fields.Integer,
-        'recommendations': fields.List(fields.Nested(recommendation_fields))
+        'meta': fields.Nested(meta_fields),
+        'data': fields.List(fields.Nested(recommendation_fields))
     }
 
     @marshal_with(data_fields)
@@ -52,11 +57,12 @@ class RecommendationsApi(Resource):
                         recommendation[skey] = eval("f'{}'".format(rule_dict[skey]))
                     recommendations_list.append(recommendation)
 
-            record = {}
-            record['host_id'] = system.inventory_id
-            record['number_of_recommendations'] = system.number_of_recommendations
-            record['recommendations'] = recommendations_list
-            return record
+            records = {}
+            records['host_id'] = system.inventory_id
+            records['meta'] = {}
+            records['meta']['count'] = system.number_of_recommendations
+            records['data'] = recommendations_list
+            return records
         else:
             abort(404, message="host with id {} doesn't have any recommendation"
                   .format(host_id))
