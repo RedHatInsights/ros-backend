@@ -251,16 +251,19 @@
                     "display_name": {
                         "type": "string"
                     },
-                    "id": {
+                    "inventory_id": {
                         "type": "string"
                     },
-                    "recommendation_count": {
+                    "account": {
+                        "type": "string"
+                    },
+                    "number_of_recommendations": {
                         "type": "integer"
                     },
                     "state": {
                         "type": "string"
                     },
-                    "performance_score": {
+                    "display_performance_score": {
                         "type": "object",
                         "properties": {
                             "memory_score": {
@@ -274,11 +277,17 @@
                             }
                         }
                     },
-                    "facts": {
-                        "type": "array",
-                        "items": {
-                            "type": "object"
-                        }
+                    "cloud_provider": {
+                        "type": "string"
+                    },
+                    "instance_type": {
+                        "type": "string"
+                    },
+                    "idling_time": {
+                        "type": "number"
+                    },
+                    "io_wait": {
+                        "type": "number"
                     }
                 }
             },
@@ -295,21 +304,10 @@
             "SystemDetails": {
                 "type": "object",
                 "properties": {
-                    "host_id": {
+                    "inventory_id": {
                         "type": "string"
                     },
-                    "performance_record": {
-                        "type": "object",
-                        "properties": {
-                            "avg_memory": {
-                                "type": "number"
-                            },
-                            "avg_memory_used": {
-                                "type": "number"
-                            }
-                        }
-                    },
-                    "performance_score": {
+                    "display_performance_score": {
                         "type": "object",
                         "properties": {
                             "memory_score": {
@@ -322,6 +320,31 @@
                                 "type": "number"
                             }
                         }
+                    },
+                    "rating": {
+                        "type": "integer",
+                        "enum": [-1, 0, 1]
+                    },
+                    "number_of_recommendations": {
+                        "type": "integer"
+                    },
+                    "state": {
+                        "type": "string"
+                    },
+                    "report_date": {
+                        "type": "string"
+                    },
+                    "instance_type": {
+                        "type": "string"
+                    },
+                    "cloud_provider": {
+                        "type": "string"
+                    },
+                    "idling_time": {
+                        "type": "number"
+                    },
+                    "io_wait": {
+                        "type": "number"
                     }
                 }
             },
