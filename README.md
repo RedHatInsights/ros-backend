@@ -42,6 +42,7 @@ README.md file in scripts directory.
 Run the following commands to excute the db migration scripts.
 ```bash
 python manage.py db upgrade
+python manage.py seed 
 ```
 
 #### Running the processor locally

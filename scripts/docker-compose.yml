@@ -144,6 +144,6 @@ services:
       - ROS_DB_PORT=5432
   ros-api:
     <<: *ros
-    command: ["bash", "-c", "python -m manage db upgrade && python -m ros.api.main"]
+    command: ["bash", "-c", "python -m manage db upgrade && python -m manage seed && python -m ros.api.main"]
     ports:
       - 8080:8080

@@ -104,6 +104,44 @@
                 }
             }
         },
+        "/systems/{inventory_id}/recommendations": {
+            "get": {
+                "summary": "Show the list of recommendations by given inventory id",
+                "description": "Show the list of recommendations by given inventory id",
+                "parameters": [
+                    {
+                        "name": "inventory_id",
+                        "in": "path",
+                        "description": "Inventory ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "description",
+                        "in": "query",
+                        "required": false,
+                        "description": "Filter system with the given description",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RecommendationsList"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/rating": {
             "post": {
                 "summary": "submit recommendation rating",
@@ -284,6 +322,48 @@
                                 "type": "number"
                             }
                         }
+                    }
+                }
+            },
+            "RecommendationsList": {
+                "type": "object",
+                "properties": {
+                    "host_id": {
+                        "type": "string"
+                    },
+                    "meta": {
+                        "type": "object",
+                        "properties": {
+                            "count": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RecommendationsItem"
+                        }
+                    }
+                }
+            },
+            "RecommendationsItem": {
+                "type": "object",
+                "properties": {
+                    "rule_id": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "reason": {
+                        "type": "string"
+                    },
+                    "resolution": {
+                        "type": "string"
+                    },
+                    "condition": {
+                        "type": "string"
                     }
                 }
             },
