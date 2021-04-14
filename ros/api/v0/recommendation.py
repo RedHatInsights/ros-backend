@@ -19,7 +19,7 @@ class RecommendationsApi(Resource):
     }
 
     data_fields = {
-        'host_id': fields.String,
+        'inventory_id': fields.String,
         'meta': fields.Nested(meta_fields),
         'data': fields.List(fields.Nested(recommendation_fields))
     }
@@ -57,12 +57,11 @@ class RecommendationsApi(Resource):
                         recommendation[skey] = eval("f'{}'".format(rule_dict[skey]))
                     recommendations_list.append(recommendation)
 
-            records = {}
-            records['host_id'] = system.inventory_id
-            records['meta'] = {}
-            records['meta']['count'] = system.number_of_recommendations
-            records['data'] = recommendations_list
-            return records
+            return {
+                  'inventory_id': system.inventory_id,
+                  'data': recommendations_list,
+                  'meta': {'count': system.number_of_recommendations}
+            }
         else:
             abort(404, message="host with id {} doesn't have any recommendation"
                   .format(host_id))
