@@ -31,14 +31,16 @@ class PerformanceProfile(db.Model):
 
     @property
     def idling_time(self):
-        idling_percent = ((float(self.performance_record['kernel.all.cpu.idle']) * 100)
-                          / int(self.performance_record['total_cpus']))
-        return "%0.2f" % idling_percent
+        if 'kernel.all.cpu.idle' in self.performance_record:
+            idling_percent = ((float(self.performance_record['kernel.all.cpu.idle']) * 100)
+                              / int(self.performance_record['total_cpus']))
+            return "%0.2f" % idling_percent
 
     @property
     def io_wait(self):
-        io_wait = self.performance_record['kernel.all.cpu.wait.total'] * 100
-        return "%0.2f" % io_wait
+        if 'kernel.all.cpu.wait.total' in self.performance_record:
+            io_wait = self.performance_record['kernel.all.cpu.wait.total'] * 100
+            return "%0.2f" % io_wait
 
 
 class System(db.Model):
