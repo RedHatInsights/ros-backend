@@ -25,7 +25,7 @@ The application depends on several parts of the insights platform. These depende
 
 To run the dependencies, just run following command:
 ```bash
-cd scripts && docker-compose up insights-inventory-web db-ros
+cd scripts && docker-compose up insights-inventory-web db-ros insights-engine
 ```
 ## Running the ROS application
 ### Within docker

@@ -20,7 +20,7 @@ docker login quay.io
 4. Start dependency containers (insight-sinventory-web has dependency on all platform containers, so they can be started with a single command).
 The db-ros container just provides a PostgreSQL database for the ROS application
 ```bash
-docker-compose up --build insights-inventory-web db-ros
+docker-compose up --build insights-inventory-web db-ros insights-engine
 ```
 
 ## Usage
