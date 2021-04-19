@@ -8,7 +8,9 @@ from ros.lib.models import (
     db, RecommendationRating)
 from ros.lib.utils import is_valid_uuid, identity, user_data_from_identity
 from ros.api.common.pagination import build_paginated_system_list_response
+import logging
 
+LOG = logging.getLogger(__name__)
 
 DEFAULT_HOSTS_PER_REP = 10
 DEFAULT_OFFSET = 0
@@ -103,14 +105,19 @@ class HostsApi(Resource):
             'instance_type', 'cloud_provider',
             'rule_hit_details', 'state', 'number_of_recommendations']
         for row in query_results:
-            system_dict = row.System.__dict__
-            host = {skey: system_dict[skey] for skey in system_columns}
-            host['account'] = row.RhAccount.account
-            host['display_performance_score'] = row.PerformanceProfile.display_performance_score
-            host['idling_time'] = row.PerformanceProfile.idling_time
-            host['io_wait'] = row.PerformanceProfile.io_wait
-            hosts.append(host)
-
+            try:
+                system_dict = row.System.__dict__
+                host = {skey: system_dict[skey] for skey in system_columns}
+                host['account'] = row.RhAccount.account
+                host['display_performance_score'] = row.PerformanceProfile.display_performance_score
+                host['idling_time'] = row.PerformanceProfile.idling_time
+                host['io_wait'] = row.PerformanceProfile.io_wait
+                hosts.append(host)
+            except Exception as err:
+                LOG.error(
+                    'An error occured while fetching the host. %s',
+                    repr(err)
+                )
         return build_paginated_system_list_response(
             limit, offset, hosts, count
         )
