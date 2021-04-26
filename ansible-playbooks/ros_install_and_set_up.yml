@@ -1,13 +1,13 @@
 ---
 # Steps required to get system ready for the Insights resource-optimization service:
 # 1. Install pcp package on your system.
-# 2. Create configuration file for PCP
+# 2. Create configuration file for pcp
 # 3. Start and enable pmcd service
 # 4. Start and enable pmlogger service
 
 - hosts: all
   tasks:
-    - name: Enabling required repository
+    - name: Enable required repository
       rhsm_repository:
         name: rhel-8-for-x86_64-baseos-rpms,rhel-8-for-x86_64-appstream-rpms
         state: enabled
@@ -21,7 +21,7 @@
         regexp: "LOCALHOSTNAME	n   y	PCP_LOG_DIR/pmlogger/ros	-r -T24h10m -c config.ros -v 100Mb"
         line: "LOCALHOSTNAME	n   y	PCP_LOG_DIR/pmlogger/ros	-r -T24h10m -c config.ros -v 100Mb"
         create: yes
-    - name: Create pcp ros configuration file. 
+    - name: Create pcp ros configuration file
       copy:
         dest: /var/lib/pcp/config/pmlogger/config.ros
         content: |
