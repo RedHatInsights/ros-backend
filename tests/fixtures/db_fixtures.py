@@ -50,6 +50,8 @@ def db_create_system(db_create_account):
         fqdn='ip-172-31-11-67.ap-south-1.compute.internal',
         cloud_provider='aws',
         instance_type='t2.micro',
+        state='Idling',
+        number_of_recommendations=1,
         rule_hit_details='{"rule_id": "cloud_instance_ros_evaluation|CONSUMPTION_MODEL","component":'
                          '"telemetry.rules.plugins.ros.cloud_instance_ros_evaluation.report_consumption_model",'
                          '"type": "rule","key": "CONSUMPTION_MODEL","details": {"rhel": "8.3","cloud_provider": "aws",'

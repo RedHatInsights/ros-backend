@@ -25,7 +25,7 @@ def test_handle_msg(engine_result_message, engine_consumer, mocker):
 
 def test_process_report(engine_result_message, engine_consumer, db_setup):
     host = engine_result_message["input"]["host"]
-    ros_reports = engine_result_message["results"]["reports"][4]
+    ros_reports = [engine_result_message["results"]["reports"][4]]
     engine_consumer.process_report(host, ros_reports)
     data = db_get_host(host['id'])
     assert str(data.inventory_id) == host['id']
