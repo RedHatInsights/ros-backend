@@ -8,6 +8,7 @@ from insights import extract, rule, run, make_metadata
 from insights.parsers.pmlog_summary import PmLogSummary
 from insights.parsers.lscpu import LsCPU
 from insights.parsers.aws_instance_id import AWSInstanceIdDoc
+from insights.parsers.azure_instance_type import AzureInstanceType
 from insights.core import dr
 from ros.lib.config import INSIGHTS_EXTRACT_LOGLEVEL
 
@@ -16,8 +17,8 @@ LOG = logging.getLogger(__name__)
 dr.log.setLevel(INSIGHTS_EXTRACT_LOGLEVEL)
 
 
-@rule(PmLogSummary, LsCPU, AWSInstanceIdDoc)
-def performance_profile(pmlog_summary, lscpu, aws_instance_id):
+@rule(PmLogSummary, LsCPU, [AWSInstanceIdDoc, AzureInstanceType])
+def performance_profile(pmlog_summary, lscpu, aws_instance_id, azure_instance_type):
     profile = {}
     performance_metrics = [
         'mem.physmem',
@@ -34,7 +35,12 @@ def performance_profile(pmlog_summary, lscpu, aws_instance_id):
         'mem.util.free'
         ]
     profile["total_cpus"] = int(lscpu.info.get('CPUs'))
-    profile["instance_type"] = aws_instance_id.get('instanceType')
+    if aws_instance_id:
+        profile["instance_type"] = aws_instance_id.get('instanceType')
+    elif azure_instance_type:
+        profile["instance_type"] = azure_instance_type.raw
+    else:
+        profile["instance_type"] = None
     for i in performance_metrics:
         profile[i] = _.get(pmlog_summary, f'{i}.val')
 
