@@ -13,7 +13,7 @@
     - name: Remove ros pmlogger service instance
       lineinfile:
         dest: /etc/pcp/pmlogger/control.d/local
-        regexp: "LOCALHOSTNAME	n   y	PCP_LOG_DIR/pmlogger/ros	-r -T24h10m -c config.ros -v 100Mb"
+        regexp: ".*config.ros.*"
         state: absent
     - name: Restart pcp service
       systemd:
