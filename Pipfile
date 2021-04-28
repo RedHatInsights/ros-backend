@@ -5,12 +5,17 @@ verify_ssl = true
 
 [dev-packages]
 flake8 = "*"
+pytest = "*"
+sqlalchemy-utils = "*"
+pytest-mock = "*"
+pytest-cov = "*"
 
 [packages]
 Flask = "~=1.1.2"
 gunicorn = "~=20.0.4"
 flask-restful = "~=0.3.8"
 Flask-SQLAlchemy = "~=2.4.4"
+sqlalchemy = "<1.4"
 psycopg2-binary = "~=2.8.6"
 flask-migrate = "~=2.5.3"
 flask-script = "~=2.0.6"

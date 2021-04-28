@@ -47,7 +47,8 @@ def identity(request):
         response = make_response(
             jsonify({"Error": "Authentication token not provided"}), 401)
         abort(response)
-    return json.loads(base64.b64decode(ident))
+    else:
+        return json.loads(base64.b64decode(ident))
 
 
 def user_data_from_identity(identity):
