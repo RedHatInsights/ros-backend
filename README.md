@@ -57,6 +57,13 @@ The web api component provides a REST api view of the app database.
 python -m ros.api.main
 ```
 
+#### Running the Tests
+It is possible to run the tests using pytest:
+```bash
+pipenv install --dev
+pytest --cov=ros tests
+```
+
 ## Available v0 API endpoints
 
 ### Request
