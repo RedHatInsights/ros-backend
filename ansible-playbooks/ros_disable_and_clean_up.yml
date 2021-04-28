@@ -1,0 +1,27 @@
+---
+# This playbook will take care of all steps required to remove
+# Insights resource-optimization (pcp packages)
+- hosts: all
+  tasks:
+    - name: Ensure a pcp service is stopped
+      systemd:
+        state: stopped
+        enabled: no
+        name: "{{ item }}"
+      with_items:
+        - 'pmcd'
+        - 'pmlogger'
+    - name: Remove ros pmlogger service instance
+      lineinfile:
+        dest: /etc/pcp/pmlogger/control.d/local
+        regexp: ".*config.ros.*"
+        state: absent
+    - name: Remove ros configuration file 
+      file:
+        state: absent
+        path: /var/lib/pcp/config/pmlogger/config.ros
+    - name: Remove pcp packages
+      yum:
+        name: pcp
+        state: absent
+    
