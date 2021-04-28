@@ -1,0 +1,25 @@
+---
+# This playbook will take care of disabling insights resource-optimization service
+- hosts: all
+  tasks:
+    - name: Ensure a pcp service is stopped
+      systemd:
+        state: stopped
+        enabled: no
+        name: "{{ item }}"
+      with_items:
+        - 'pmcd'
+        - 'pmlogger'
+    - name: Remove ros pmlogger service instance
+      lineinfile:
+        dest: /etc/pcp/pmlogger/control.d/local
+        regexp: ".*config.ros.*"
+        state: absent
+    - name: Restart pcp service
+      systemd:
+        state: restarted
+        enabled: yes
+        name: "{{ item }}"
+      with_items:
+        - 'pmcd'
+        - 'pmlogger'
