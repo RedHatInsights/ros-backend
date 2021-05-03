@@ -1,0 +1,24 @@
+global:
+  scrape_interval: 15s # By default, scrape targets every 15 seconds.
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+    monitor: 'ros-monitor'
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's the Fn server
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'ros'
+    metrics_path: /metrics
+
+    # Override the global default and scrape targets from this job every 10 seconds.
+    scrape_interval: 10s
+
+    static_configs:
+      # Specify all the fn servers from which metrics will be scraped
+      # for docker versions under 18.03 onwards you can use host.docker.internal
+      # to point at your localhost from the container
+      # for version 17.06 - 18.03 we use docker.for.mac.localhost
+      - targets: ['172.17.0.1:8080'] # Uses /metrics by default
