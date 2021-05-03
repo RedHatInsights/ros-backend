@@ -5,6 +5,7 @@ from ros.lib.utils import get_or_create, delete_record
 from ros.lib.models import RhAccount, System
 from confluent_kafka import Consumer, KafkaException
 from ros.lib.config import INSIGHTS_KAFKA_ADDRESS, GROUP_ID, ENGINE_RESULT_TOPIC
+from ros.processor.metrics import add_host_success, add_host_failure
 
 logging.basicConfig(
     level='INFO',
@@ -79,25 +80,31 @@ class InsightsEngineResultConsumer:
 
     def process_report(self, host, reports):
         with app.app_context():
-            account = get_or_create(
-                    db.session, RhAccount, 'account',
-                    account=host['account']
-                )
+            try:
+                account = get_or_create(
+                        db.session, RhAccount, 'account',
+                        account=host['account']
+                    )
 
-            SYSTEM_STATES = {"INSTANCE_OVERSIZED": "Oversized", "INSTANCE_UNDERSIZED": "Undersized",
-                             "CONSUMPTION_MODEL": "Idling", "STORAGE_RIGHTSIZING": "Storage rightsizing"}
+                SYSTEM_STATES = {"INSTANCE_OVERSIZED": "Oversized", "INSTANCE_UNDERSIZED": "Undersized",
+                                 "CONSUMPTION_MODEL": "Idling", "STORAGE_RIGHTSIZING": "Storage rightsizing"}
 
-            system = get_or_create(
-                    db.session, System, 'inventory_id',
-                    account_id=account.id,
-                    inventory_id=host['id'],
-                    display_name=host['display_name'],
-                    fqdn=host['fqdn'],
-                    rule_hit_details=reports,
-                    number_of_recommendations=len(reports),
-                    state=SYSTEM_STATES[reports[0].get('key')]
-                )
+                system = get_or_create(
+                        db.session, System, 'inventory_id',
+                        account_id=account.id,
+                        inventory_id=host['id'],
+                        display_name=host['display_name'],
+                        fqdn=host['fqdn'],
+                        rule_hit_details=reports,
+                        number_of_recommendations=len(reports),
+                        state=SYSTEM_STATES[reports[0].get('key')]
+                    )
 
-            db.session.commit()
-            LOG.info("Refreshed system %s (%s) belonging to account: %s (%s) via engine-result",
-                     system.inventory_id, system.id, account.account, account.id)
+                db.session.commit()
+                add_host_success.labels('engine-event-processor').inc()
+                LOG.info("Refreshed system %s (%s) belonging to account: %s (%s) via engine-result",
+                         system.inventory_id, system.id, account.account, account.id)
+            except Exception as err:
+                add_host_failure.labels('engine-event-processor').inc()
+                LOG.error("Unable to add host %s to DB belonging to account: %s via report-processor - %s",
+                          host['fqdn'], host['account'], err)

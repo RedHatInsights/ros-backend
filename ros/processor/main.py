@@ -1,5 +1,6 @@
 from ros.processor.inventory_events_consumer import InventoryEventsConsumer
 from ros.processor.insights_engine_result_consumer import InsightsEngineResultConsumer
+from prometheus_client import start_http_server
 import threading
 
 
@@ -19,6 +20,7 @@ if __name__ == "__main__":
     events = threading.Thread(name='events-processor', target=events_processor)
     events.start()
     engine_results.start()
+    start_http_server(5005)
     # Wait for threads to finish
     events.join()
     engine_results.join()
