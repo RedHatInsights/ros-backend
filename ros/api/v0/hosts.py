@@ -222,3 +222,71 @@ class HostDetailsApi(Resource):
                   .format(host_id))
 
         return record
+
+
+class HostHistoryApi(Resource):
+    display_performance_score_fields = {
+        'cpu_score': fields.Integer,
+        'memory_score': fields.Integer,
+        'io_score': fields.Integer,
+        'report_date':  fields.String
+    }
+
+    data_fields = {
+        'inventory_id': fields.String,
+        'performance_history': fields.List(fields.Nested(display_performance_score_fields))
+    }
+    meta_fields = {
+        'count': fields.Integer,
+        'limit': fields.Integer,
+        'offset': fields.Integer
+    }
+    links_fields = {
+        'first': fields.String,
+        'last': fields.String,
+        'next': fields.String,
+        'previous': fields.String
+    }
+    history_fields = {
+        'meta': fields.Nested(meta_fields),
+        'links': fields.Nested(links_fields),
+        'data': fields.Nested(data_fields)
+    }
+
+    @marshal_with(history_fields)
+    def get(self, host_id):
+        limit = int(request.args.get('limit') or DEFAULT_HOSTS_PER_REP)
+        offset = int(request.args.get('offset') or DEFAULT_OFFSET)
+        if not is_valid_uuid(host_id):
+            abort(404, message='Invalid host_id, Id should be in form of UUID4')
+
+        ident = identity(request)['identity']
+
+        account_query = db.session.query(RhAccount.id).filter(RhAccount.account == ident['account_number']).subquery()
+        system_query = db.session.query(System.id) \
+            .filter(System.account_id.in_(account_query)).filter(System.inventory_id == host_id).subquery()
+
+        query = PerformanceProfile.query.filter(
+            PerformanceProfile.system_id.in_(system_query)
+        ).order_by(PerformanceProfile.report_date.desc())
+
+        count = query.count()
+        query = query.limit(limit).offset(offset)
+        query_results = query.all()
+
+        if query_results:
+            performance_history = []
+            for profile in query_results:
+                performance_record = profile.display_performance_score
+                performance_record['report_date'] = profile.report_date
+                performance_history.append(performance_record)
+
+            record = {'inventory_id': host_id}
+            record['performance_history'] = performance_history
+        else:
+            abort(404, message="System {} doesn't exist"
+                  .format(host_id))
+
+        return build_paginated_system_list_response(
+            limit, offset, record, count
+        )
