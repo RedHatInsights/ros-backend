@@ -60,7 +60,7 @@ class RecommendationsApi(Resource):
             return {
                   'inventory_id': system.inventory_id,
                   'data': recommendations_list,
-                  'meta': {'count': system.number_of_recommendations}
+                  'meta': {'count': len(recommendations_list)}
             }
         else:
             abort(404, message="host with id {} doesn't have any recommendation"
