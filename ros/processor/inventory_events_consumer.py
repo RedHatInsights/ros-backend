@@ -1,18 +1,14 @@
 import json
-import logging
 import datetime
 from confluent_kafka import Consumer, KafkaException
-from ros.lib.config import INSIGHTS_KAFKA_ADDRESS, INVENTORY_EVENTS_TOPIC, GROUP_ID
+from ros.lib.config import INSIGHTS_KAFKA_ADDRESS, INVENTORY_EVENTS_TOPIC, GROUP_ID, get_logger
 from ros.lib.app import app, db
 from ros.lib.models import PerformanceProfile, RhAccount, System
 from ros.lib.utils import get_or_create
 from ros.processor.process_archive import get_performance_profile
 
-logging.basicConfig(
-    level='INFO',
-    format='%(asctime)s - %(levelname)s  - %(funcName)s - %(message)s'
-)
-LOG = logging.getLogger(__name__)
+
+LOG = get_logger(__name__)
 
 
 class InventoryEventsConsumer:
