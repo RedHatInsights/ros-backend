@@ -1,15 +1,10 @@
 from ros.lib.app import app, db
 from ros.lib.models import PerformanceProfile
 from datetime import datetime, timedelta
-from ros.lib.config import GARBAGE_COLLECTION_INTERVAL
+from ros.lib.config import GARBAGE_COLLECTION_INTERVAL, DAYS_DATA_OUTDATED, get_logger
 import time
-import logging
 
-logging.basicConfig(
-    level='INFO',
-    format='%(asctime)s - %(levelname)s  - %(funcName)s - %(message)s'
-)
-LOG = logging.getLogger(__name__)
+LOG = get_logger(__name__)
 
 
 class GarbageCollector():
@@ -20,7 +15,7 @@ class GarbageCollector():
     def remove_outdated_data(self):
         with app.app_context():
             results = db.session.query(PerformanceProfile).filter(
-                      PerformanceProfile.report_date < datetime.today() - timedelta(days=10)).delete()
+                      PerformanceProfile.report_date < datetime.today() - timedelta(days=DAYS_DATA_OUTDATED)).delete()
             db.session.commit()
             if results:
                 LOG.info("Deleted %s outdated performance profiles", results)

@@ -1,16 +1,11 @@
 import json
-import logging
 from ros.lib.app import app, db
 from ros.lib.utils import get_or_create, delete_record
 from ros.lib.models import RhAccount, System
 from confluent_kafka import Consumer, KafkaException
-from ros.lib.config import INSIGHTS_KAFKA_ADDRESS, GROUP_ID, ENGINE_RESULT_TOPIC
+from ros.lib.config import INSIGHTS_KAFKA_ADDRESS, GROUP_ID, ENGINE_RESULT_TOPIC, get_logger
 
-logging.basicConfig(
-    level='INFO',
-    format='%(asctime)s - %(levelname)s  - %(funcName)s - %(message)s'
-)
-LOG = logging.getLogger(__name__)
+LOG = get_logger(__name__)
 
 
 class InsightsEngineResultConsumer:
