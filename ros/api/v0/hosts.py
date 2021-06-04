@@ -233,7 +233,6 @@ class HostHistoryApi(Resource):
     }
 
     data_fields = {
-        'inventory_id': fields.String,
         'performance_history': fields.List(fields.Nested(display_performance_score_fields))
     }
     meta_fields = {
@@ -250,6 +249,7 @@ class HostHistoryApi(Resource):
     history_fields = {
         'meta': fields.Nested(meta_fields),
         'links': fields.Nested(links_fields),
+        'inventory_id': fields.String,
         'data': fields.Nested(data_fields)
     }
 
@@ -274,19 +274,20 @@ class HostHistoryApi(Resource):
         query = query.limit(limit).offset(offset)
         query_results = query.all()
 
-        if query_results:
-            performance_history = []
-            for profile in query_results:
-                performance_record = profile.display_performance_score
-                performance_record['report_date'] = profile.report_date
-                performance_history.append(performance_record)
-
-            record = {'inventory_id': host_id}
-            record['performance_history'] = performance_history
-        else:
+        if not query_results:
             abort(404, message="System {} doesn't exist"
                   .format(host_id))
 
-        return build_paginated_system_list_response(
+        performance_history = []
+        for profile in query_results:
+            performance_record = profile.display_performance_score
+            performance_record['report_date'] = profile.report_date
+            performance_history.append(performance_record)
+
+        record = {'performance_history': performance_history}
+
+        paginated_response = build_paginated_system_list_response(
             limit, offset, record, count
         )
+        paginated_response['inventory_id'] = host_id
+        return paginated_response
