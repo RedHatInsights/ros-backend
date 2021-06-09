@@ -30,7 +30,7 @@ INSIGHTS_EXTRACT_LOGLEVEL = os.getenv("INSIGHTS_EXTRACT_LOGLEVEL", "ERROR")
 # Time interval after which garbage collector is involved to check for outdated data.
 GARBAGE_COLLECTION_INTERVAL = os.getenv("GARBAGE_COLLECTION_INTERVAL", 86400)
 # Number of days after which data is considered to be outdated.
-DAYS_DATA_OUTDATED = os.getenv("DAYS_DATA_OUTDATED", 14)
+DAYS_UNTIL_STALE = os.getenv("DAYS_UNTIL_STALE", 14)
 
 
 def get_logger(name):
