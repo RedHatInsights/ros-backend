@@ -9,7 +9,7 @@
   tasks:
     - name: Enable required repository
       rhsm_repository:
-        name: rhel-8-for-x86_64-baseos-rpms,rhel-8-for-x86_64-appstream-rpms
+        name: rhel-8-for-x86_64-baseos-rpms,rhel-8-for-x86_64-appstream-rpms,rhel-8-for-aarch64-baseos-rpms,rhel-8-for-aarch64-appstream-rpms
         state: enabled
     - name: Install pcp packages for ROS service
       yum:
