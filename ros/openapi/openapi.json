@@ -104,6 +104,35 @@
                 }
             }
         },
+        "/systems/{inventory_id}/history": {
+            "get": {
+                "summary": "Show the system's performance history by given inventory id",
+                "description": "Show the system's performance history by given inventory id",
+                "parameters": [
+                    {
+                        "name": "inventory_id",
+                        "in": "path",
+                        "description": "Inventory ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PerformanceHistory"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/systems/{inventory_id}/recommendations": {
             "get": {
                 "summary": "Show the list of recommendations by given inventory id",
@@ -345,6 +374,40 @@
                     },
                     "io_wait": {
                         "type": "number"
+                    }
+                }
+            },
+            "PerformanceHistory": {
+                "type": "object",
+                "properties": {
+                    "meta": {
+                        "$ref": "#/components/schemas/ListMeta"
+                    },
+                    "links": {
+                        "$ref": "#/components/schemas/Links"
+                    },
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PerformanceItem"
+                        }
+                    }
+                }
+            },
+            "PerformanceItem": {
+                "type": "object",
+                "properties": {
+                    "cpu_score": {
+                        "type": "integer"
+                    },
+                    "memory_score": {
+                        "type": "integer"
+                    },
+                    "io_score": {
+                        "type": "integer"
+                    },
+                    "report_date": {
+                        "type": "string"
                     }
                 }
             },
