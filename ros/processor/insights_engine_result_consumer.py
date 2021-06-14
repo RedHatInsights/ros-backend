@@ -1,7 +1,7 @@
 import json
 import logging
 from ros.lib.app import app, db
-from ros.lib.utils import get_or_create, delete_record
+from ros.lib.utils import get_or_create
 from ros.lib.models import RhAccount, System
 from confluent_kafka import Consumer, KafkaException
 from ros.lib.config import INSIGHTS_KAFKA_ADDRESS, GROUP_ID, ENGINE_RESULT_TOPIC
@@ -11,6 +11,14 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s  - %(funcName)s - %(message)s'
 )
 LOG = logging.getLogger(__name__)
+SYSTEM_STATES = {
+    "INSTANCE_OVERSIZED": "Oversized",
+    "INSTANCE_UNDERSIZED": "Undersized",
+    "CONSUMPTION_MODEL": "Idling",
+    "STORAGE_RIGHTSIZING": "Storage rightsizing",
+    "OPTIMIZED": "Optimized"
+}
+OPTIMIZED_SYSTEM_KEY = "OPTIMIZED"
 
 
 class InsightsEngineResultConsumer:
@@ -66,37 +74,34 @@ class InsightsEngineResultConsumer:
                 for report in reports:
                     if 'cloud_instance_ros_evaluation' in report["rule_id"]:
                         ros_reports.append(report)
-                if len(ros_reports) == 0:
-                    with app.app_context():
-                        system = delete_record(db.session, System, inventory_id=host['id'])
-                        if system:
-                            LOG.info("Deleted system with inventory_id: %s via engine-result.", system.inventory_id)
-                        else:
-                            LOG.info(
-                                "Cannot upload system with inventory id: %s and no ROS rules.", host['id'])
-                else:
-                    self.process_report(host, ros_reports)
+                self.process_report(host, ros_reports)
 
     def process_report(self, host, reports):
+        """create/update system based on reports data."""
         with app.app_context():
             account = get_or_create(
-                    db.session, RhAccount, 'account',
-                    account=host['account']
-                )
+                db.session, RhAccount, 'account',
+                account=host['account']
+            )
 
-            SYSTEM_STATES = {"INSTANCE_OVERSIZED": "Oversized", "INSTANCE_UNDERSIZED": "Undersized",
-                             "CONSUMPTION_MODEL": "Idling", "STORAGE_RIGHTSIZING": "Storage rightsizing"}
+            state_key = reports[0].get('key')
+            if len(reports) == 0:
+                state_key = OPTIMIZED_SYSTEM_KEY
+                LOG.info(
+                    'There is no ros rule hits. '
+                    "Marking state of system with inventory id: %s as %s",
+                    host['id'], SYSTEM_STATES[state_key])
 
             system = get_or_create(
-                    db.session, System, 'inventory_id',
-                    account_id=account.id,
-                    inventory_id=host['id'],
-                    display_name=host['display_name'],
-                    fqdn=host['fqdn'],
-                    rule_hit_details=reports,
-                    number_of_recommendations=len(reports),
-                    state=SYSTEM_STATES[reports[0].get('key')]
-                )
+                db.session, System, 'inventory_id',
+                account_id=account.id,
+                inventory_id=host['id'],
+                display_name=host['display_name'],
+                fqdn=host['fqdn'],
+                rule_hit_details=reports,
+                number_of_recommendations=len(reports),
+                state=SYSTEM_STATES[state_key]
+            )
 
             db.session.commit()
             LOG.info("Refreshed system %s (%s) belonging to account: %s (%s) via engine-result",
