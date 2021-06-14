@@ -63,5 +63,4 @@ class RecommendationsApi(Resource):
                   'meta': {'count': len(recommendations_list)}
             }
         else:
-            abort(404, message="host with id {} doesn't have any recommendation"
-                  .format(host_id))
+            recommendations_list = []
