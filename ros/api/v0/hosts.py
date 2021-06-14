@@ -14,6 +14,9 @@ LOG = logging.getLogger(__name__)
 
 DEFAULT_HOSTS_PER_REP = 10
 DEFAULT_OFFSET = 0
+SYSTEM_STATES_EXCEPT_OPTIMIZED = [
+    "Oversized", "Undersized", "Idling", "Storage rightsizing"
+]
 
 
 class HostsApi(Resource):
@@ -72,10 +75,12 @@ class HostsApi(Resource):
         if filter_display_name:
             system_query = db.session.query(System.id)\
                 .filter(System.display_name.ilike(f'%{filter_display_name}%'))\
-                .filter(System.account_id.in_(account_query))
+                .filter(System.account_id.in_(account_query))\
+                .filter(System.state.in_(SYSTEM_STATES_EXCEPT_OPTIMIZED))
         else:
             system_query = db.session.query(System.id)\
-                .filter(System.account_id.in_(account_query))
+                .filter(System.account_id.in_(account_query))\
+                .filter(System.state.in_(SYSTEM_STATES_EXCEPT_OPTIMIZED))
 
         last_reported = (
             db.session.query(PerformanceProfile.system_id, func.max(PerformanceProfile.report_date).label('max_date')
