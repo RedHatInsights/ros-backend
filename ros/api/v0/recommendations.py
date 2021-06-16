@@ -56,12 +56,8 @@ class RecommendationsApi(Resource):
                     for skey in rules_columns:
                         recommendation[skey] = eval("f'{}'".format(rule_dict[skey]))
                     recommendations_list.append(recommendation)
-
-            return {
+        return {
                   'inventory_id': system.inventory_id,
                   'data': recommendations_list,
                   'meta': {'count': len(recommendations_list)}
             }
-        else:
-            abort(404, message="host with id {} doesn't have any recommendation"
-                  .format(host_id))
