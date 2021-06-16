@@ -1,9 +1,8 @@
 from urllib.parse import urljoin
-from exceptions import IllegalHttpMethodError, RBACDenied, ItemNotReturned, ServiceError, HTTPError
-import requests
-from utils import identity
+from .exceptions import IllegalHttpMethodError, RBACDenied, ItemNotReturned, ServiceError, HTTPError
 from http import HTTPStatus
-from config import RBAC_SVC_URL, PATH_PREFIX, ROS_SHARED_SECRET
+from .config import RBAC_SVC_URL, PATH_PREFIX
+import requests
 
 
 RBAC_SVC_ENDPOINT = "/api/rbac/v1/access/?application=%s"
@@ -11,11 +10,10 @@ AUTH_HEADER_NAME = "X-RH-IDENTITY"
 VALID_HTTP_VERBS = ["get", "options", "head", "post", "put", "patch", "delete"]
 
 
-def fetch_url(url, auth_header, logger, time_metric, exception_metric, method="get"):
+def fetch_url(url, auth_header, logger, method="get"):
     """
     Helper to make a single request *** Add to this comment once functionality done.
     """
-
     if method not in VALID_HTTP_VERBS:
         raise IllegalHttpMethodError(
             "Provided method '%s' is not valid HTTP method." % method
@@ -23,9 +21,7 @@ def fetch_url(url, auth_header, logger, time_metric, exception_metric, method="g
 
     logger.debug("Fetching %s" % url)
 
-    with time_metric.time():
-        with exception_metric.count_exceptions():
-            response = requests.request(method, url, headers=auth_header)
+    response = requests.request(method, url, headers=auth_header)
     logger.debug("fetched %s" % url)
     _validate_service_response(response, logger, auth_header)
     return response.json()
@@ -67,25 +63,17 @@ def get_key_from_headers(incoming_headers):
     return incoming_headers.get(AUTH_HEADER_NAME)
 
 
-def internal_auth_header():
-    """
-    returns ros internal header with shared secret
-    """
-    return {"x-rh-ros-internal-api": ROS_SHARED_SECRET}
-
-
-def get_perms(application, service_auth_key, logger, request_metric, exception_metric):
+def get_perms(application, auth_key, logger):
     """
     check if user has a permission
     """
 
-    auth_header = {AUTH_HEADER_NAME: service_auth_key}
+    auth_header = {AUTH_HEADER_NAME: auth_key}
 
     rbac_location = urljoin(RBAC_SVC_URL, RBAC_SVC_ENDPOINT) % application
 
     rbac_result = fetch_url(
-        rbac_location, auth_header, logger, request_metric, exception_metric
-    )
+        rbac_location, auth_header, logger)
     perms = [perm["permission"] for perm in rbac_result["data"]]
 
     return perms
@@ -94,22 +82,11 @@ def get_perms(application, service_auth_key, logger, request_metric, exception_m
 def ensure_has_permission(**kwargs):
     """
     Ensure permission exists. kwargs needs to contain:
-    permissions, application, app_name, request, logger, request_metric, exception_metric
+    permissions, application, app_name, request, logger
     """
     rbac_enabled = True
     request = kwargs["request"]
-    auth_key = identity(request)
-
-    # check if the request comes from own ros service
-    if auth_key:
-        if auth_key.get("identity", {}).get("type", None) == "System":
-            # how to set this internal api?
-            request_shared_secret = request.headers.get("x-rh-ros-internal-api", None)
-            if request_shared_secret and request_shared_secret == ROS_SHARED_SECRET:
-                kwargs["logger"].audit(
-                    "shared-secret found, auth/entitlement authorized"
-                )
-                return  # shared secret set and is correct
+    auth_key = request.headers.get('X-RH-IDENTITY')
 
     if not rbac_enabled:
         return
@@ -122,9 +99,7 @@ def ensure_has_permission(**kwargs):
             perms = get_perms(
                 kwargs["application"],
                 auth_key,
-                kwargs["logger"],
-                kwargs["request_metric"],
-                kwargs["exception_metric"],
+                kwargs["logger"]
             )
             for p in perms:
                 if p in kwargs["permissions"]:
