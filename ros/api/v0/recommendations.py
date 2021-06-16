@@ -56,11 +56,11 @@ class RecommendationsApi(Resource):
                     for skey in rules_columns:
                         recommendation[skey] = eval("f'{}'".format(rule_dict[skey]))
                     recommendations_list.append(recommendation)
+        else:
+            recommendations_list = []
 
-            return {
+        return {
                   'inventory_id': system.inventory_id,
                   'data': recommendations_list,
                   'meta': {'count': len(recommendations_list)}
             }
-        else:
-            recommendations_list = []
