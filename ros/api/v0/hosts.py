@@ -7,13 +7,13 @@ from ros.lib.models import (
     PerformanceProfile, RhAccount, System,
     db, RecommendationRating)
 from ros.lib.utils import is_valid_uuid, identity, user_data_from_identity
-from ros.api.common.pagination import build_paginated_system_list_response
+from ros.api.common.pagination import (
+    build_paginated_system_list_response,
+    limit_value,
+    offset_value)
 import logging
 
 LOG = logging.getLogger(__name__)
-
-DEFAULT_HOSTS_PER_REP = 10
-DEFAULT_OFFSET = 0
 SYSTEM_STATES_EXCEPT_OPTIMIZED = [
     "Oversized", "Undersized", "Idling", "Storage rightsizing"
 ]
@@ -57,8 +57,8 @@ class HostsApi(Resource):
 
     @marshal_with(output_fields)
     def get(self):
-        limit = int(request.args.get('limit') or DEFAULT_HOSTS_PER_REP)
-        offset = int(request.args.get('offset') or DEFAULT_OFFSET)
+        limit = limit_value()
+        offset = offset_value()
         order_by = (
             request.args.get('order_by') or 'display_name'
         ).strip().lower()
@@ -123,6 +123,7 @@ class HostsApi(Resource):
                     'An error occured while fetching the host. %s',
                     repr(err)
                 )
+                count -= 1
         return build_paginated_system_list_response(
             limit, offset, hosts, count
         )
@@ -257,8 +258,8 @@ class HostHistoryApi(Resource):
 
     @marshal_with(history_fields)
     def get(self, host_id):
-        limit = int(request.args.get('limit') or DEFAULT_HOSTS_PER_REP)
-        offset = int(request.args.get('offset') or DEFAULT_OFFSET)
+        limit = limit_value()
+        offset = offset_value()
         if not is_valid_uuid(host_id):
             abort(404, message='Invalid host_id, Id should be in form of UUID4')
 
