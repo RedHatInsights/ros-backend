@@ -10,15 +10,15 @@
   tasks:
     - debug: var=ansible_architecture
     - name: Enable required repository for x86_64 arch
-      when: ansible_architecture == "x86_64"
       rhsm_repository:
         name: rhel-8-for-x86_64-baseos-rpms,rhel-8-for-x86_64-appstream-rpms
         state: enabled
+      when: ansible_architecture == "x86_64"
     - name: Enable required repository for ARM arch
-      when: ansible_architecture == "aarch64"
       rhsm_repository:
         name: rhel-8-for-aarch64-baseos-rpms,rhel-8-for-aarch64-appstream-rpms
         state: enabled
+      when: ansible_architecture == "aarch64"
     - name: Install pcp packages for ROS service
       yum:
         name: pcp
