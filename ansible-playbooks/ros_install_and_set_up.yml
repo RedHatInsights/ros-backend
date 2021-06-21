@@ -1,13 +1,33 @@
 ---
 # Steps required to get system ready for the Insights resource-optimization service:
-# 1. Install pcp package on your system.
-# 2. Create configuration file for pcp
-# 3. Start and enable pmcd service
-# 4. Start and enable pmlogger service
+# 1. Check if insights-client is installed on system.
+# 2. Check if core_collect is enabled on system.
+# 3. Install pcp package on your system.
+# 4. Create configuration file for pcp
+# 5. Start and enable pmcd service
+# 6. Start and enable pmlogger service
 
 - hosts: all
   gather_facts: True
   tasks:
+    - name: Check if insights-client is installed.
+      yum:
+        list=insights-client
+      register: is_installed
+    - fail:
+        msg: insights-client is not installed on the system.
+      when: is_installed.results | selectattr("yumstate", "match", "installed") | list | length == 0
+    - name: Check if core_collect is enabled.
+      lineinfile:
+        dest: /etc/insights-client/insights-client.conf
+        regexp: '^\s*core_collect\s*=\s*True\s*'
+        line: "core_collect=True"
+      check_mode: yes
+      register: core_collect
+      changed_when: false
+    - fail:
+        msg: insights-client core collect is disabled.
+      when: core_collect.msg == 'line added'
     - debug: var=ansible_architecture
     - name: Enable required repository for x86_64 arch
       rhsm_repository:
