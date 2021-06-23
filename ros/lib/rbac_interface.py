@@ -1,6 +1,6 @@
 from urllib.parse import urljoin
-from .exceptions import IllegalHttpMethodError, RBACDenied, ItemNotReturned, ServiceError, HTTPError
 from http import HTTPStatus
+from flask_restful import abort
 from .config import RBAC_SVC_URL, PATH_PREFIX
 import requests
 
@@ -15,8 +15,8 @@ def fetch_url(url, auth_header, logger, method="get"):
     Helper to make a single request *** Add to this comment once functionality done.
     """
     if method not in VALID_HTTP_VERBS:
-        raise IllegalHttpMethodError(
-            "Provided method '%s' is not valid HTTP method." % method
+        abort(
+            HTTPStatus.METHOD_NOT_ALLOWED, message="'%s' is not valid HTTP method." % method
         )
 
     logger.debug("Fetching %s" % url)
@@ -31,11 +31,11 @@ def _validate_service_response(response, logger, auth_header):
     """
     Raise an exception if the response was not what we expected.
     """
+    print(response.status_code)
     if response.status_code == requests.codes.not_found:
-        logger.info(
-            "%s error received from service: %s" % (response.status_code, response.text)
+        abort(
+            response.status_code, message="%s error received from service: %s" % response.text
         )
-        raise ItemNotReturned(response.text)
 
     if response.status_code in [requests.codes.forbidden, requests.codes.unauthorized]:
         logger.info(
@@ -47,13 +47,14 @@ def _validate_service_response(response, logger, auth_header):
                 logger.info("identity '%s'" % get_key_from_headers(auth_header))
             else:
                 logger.info("no identity or no key")
-        raise RBACDenied(response.text)
+        abort(
+            response.status_code, message=response.text
+        )
 
     if response.status_code != requests.codes.ok:
-        logger.warn(
-            "%s error received from service: %s" % (response.status_code, response.text)
+        abort(
+            response.status_code, message="Error received from backend service"
         )
-        raise ServiceError("Error received from backend service")
 
 
 def get_key_from_headers(incoming_headers):
@@ -84,6 +85,7 @@ def ensure_has_permission(**kwargs):
     Ensure permission exists. kwargs needs to contain:
     permissions, application, app_name, request, logger
     """
+
     rbac_enabled = True
     request = kwargs["request"]
     auth_key = request.headers.get('X-RH-IDENTITY')
@@ -93,7 +95,6 @@ def ensure_has_permission(**kwargs):
 
     if _is_mgmt_url(request.path) or _is_openapi_url(request.path, kwargs["app_name"]):
         return  # allow request
-
     if auth_key:
         try:
             perms = get_perms(
@@ -104,18 +105,23 @@ def ensure_has_permission(**kwargs):
             for p in perms:
                 if p in kwargs["permissions"]:
                     return  # allow
-            raise HTTPError(
+
+            # if wrong permissions
+            abort(
                 HTTPStatus.FORBIDDEN,
-                message="user does not have access to %s" % kwargs["permissions"],
+                message='user does not have access to %s' % kwargs["permissions"]
             )
-        except RBACDenied:
-            raise HTTPError(
+        # if something wrong inside try e.g. perms not of type array
+        except Exception:
+            abort(
                 HTTPStatus.FORBIDDEN,
-                message="request to retrieve permissions from RBAC was forbidden",
+                message="request to retrieve permissions from RBAC was forbidden"
             )
     else:
-        # if we got here, reject the request
-        raise HTTPError(HTTPStatus.BAD_REQUEST, message="identity not found on request")
+        # if no auth_key
+        abort(
+            HTTPStatus.BAD_REQUEST, message="identity not found on request"
+        )
 
 
 def _is_mgmt_url(path):
