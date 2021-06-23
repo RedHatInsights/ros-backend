@@ -24,8 +24,3 @@ class GarbageCollector():
                 LOG.info("Deleted %s performance profiles older than %d days", results, DAYS_UNTIL_STALE)
 
             time.sleep(GARBAGE_COLLECTION_INTERVAL)
-
-
-if __name__ == "__main__":
-    collector = GarbageCollector()
-    collector.run()
