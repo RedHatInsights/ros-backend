@@ -1,16 +1,12 @@
 import json
-import logging
 from ros.lib.app import app, db
-from ros.lib.utils import get_or_create
+from ros.lib.config import (INSIGHTS_KAFKA_ADDRESS, GROUP_ID,
+                            ENGINE_RESULT_TOPIC, get_logger)
 from ros.lib.models import RhAccount, System
+from ros.lib.utils import get_or_create
 from confluent_kafka import Consumer, KafkaException
-from ros.lib.config import INSIGHTS_KAFKA_ADDRESS, GROUP_ID, ENGINE_RESULT_TOPIC
 
-logging.basicConfig(
-    level='INFO',
-    format='%(asctime)s - %(levelname)s  - %(funcName)s - %(message)s'
-)
-LOG = logging.getLogger(__name__)
+
 SYSTEM_STATES = {
     "INSTANCE_OVERSIZED": "Oversized",
     "INSTANCE_UNDERSIZED": "Undersized",
@@ -19,6 +15,7 @@ SYSTEM_STATES = {
     "OPTIMIZED": "Optimized"
 }
 OPTIMIZED_SYSTEM_KEY = "OPTIMIZED"
+LOG = get_logger(__name__)
 
 
 class InsightsEngineResultConsumer:
