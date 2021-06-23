@@ -15,7 +15,7 @@ db.init_app(app)
 @app.before_request
 def ensure_rbac():
     ensure_has_permission(
-        permissions=["ros:*:*", "ros:read"],
+        permissions=["ros:*:*", "ros:*:read"],
         application="ros",
         app_name="ros",
         request=request,

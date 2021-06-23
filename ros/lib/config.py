@@ -27,8 +27,9 @@ APP_NAME = os.getenv("APP_NAME", "ros")
 
 INSIGHTS_EXTRACT_LOGLEVEL = os.getenv("INSIGHTS_EXTRACT_LOGLEVEL", "ERROR")
 
-RBAC_SVC_URL = os.getenv("RBAC_SVC_URL", "http://rbac_svc_url_is_not_set")
-ROS_SHARED_SECRET = os.getenv("ROS_SHARED_SECRET", None)
+RBAC_HOST = os.getenv("RBAC_HOST", "localhost")
+RBAC_PORT = os.getenv("RBAC_PORT", "8114")
+RBAC_SVC_URL = f"http://{RBAC_HOST}:{RBAC_PORT}/"
 
 # Time interval after which garbage collector is involved to check for outdated data.
 GARBAGE_COLLECTION_INTERVAL = os.getenv("GARBAGE_COLLECTION_INTERVAL", 86400)
