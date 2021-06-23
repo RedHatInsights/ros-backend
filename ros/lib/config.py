@@ -1,4 +1,5 @@
 import os
+import logging
 
 DB_USER = os.getenv("ROS_DB_USER", "postgres")
 DB_PASSWORD = os.getenv("ROS_DB_PASS", "postgres")
@@ -25,3 +26,16 @@ PATH_PREFIX = os.getenv("PATH_PREFIX", "/api/")
 APP_NAME = os.getenv("APP_NAME", "ros")
 
 INSIGHTS_EXTRACT_LOGLEVEL = os.getenv("INSIGHTS_EXTRACT_LOGLEVEL", "ERROR")
+
+# Time interval after which garbage collector is involved to check for outdated data.
+GARBAGE_COLLECTION_INTERVAL = os.getenv("GARBAGE_COLLECTION_INTERVAL", 86400)
+# Number of days after which data is considered to be outdated.
+DAYS_UNTIL_STALE = os.getenv("DAYS_UNTIL_STALE", 14)
+
+
+def get_logger(name):
+    logging.basicConfig(
+        level='INFO',
+        format='%(asctime)s - %(levelname)s  - %(funcName)s - %(message)s'
+    )
+    return logging.getLogger(name)
