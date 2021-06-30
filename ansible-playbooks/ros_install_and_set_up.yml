@@ -47,20 +47,11 @@
         - ansible_architecture == "aarch64"
         - ansible_distribution == "RedHat"
         - ansible_distribution_major_version == "8"
-    - name: Enable required repository for RHEL7 x86_64 arch
+    - name: Enable required repository for RHEL7
       rhsm_repository:
         name: rhel-7-server-rpms
         state: enabled
       when:
-        - ansible_architecture == "x86_64"
-        - ansible_distribution == "RedHat"
-        - ansible_distribution_major_version == "7"
-    - name: Enable required repository for RHEL7 ARM arch
-      rhsm_repository:
-        name: rhel-7-server-rpms
-        state: enabled
-      when:
-        - ansible_architecture == "aarch64"
         - ansible_distribution == "RedHat"
         - ansible_distribution_major_version == "7"
     - name: Install pcp packages for ROS service
