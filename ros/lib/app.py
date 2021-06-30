@@ -3,6 +3,7 @@ from .models import db
 from .config import DB_URI
 from flask import request
 from .rbac_interface import ensure_has_permission
+from .config import get_logger
 
 # Since we're using flask_sqlalchemy, we must create the flask app in both processor and web api
 app = Flask(__name__)
@@ -19,5 +20,5 @@ def ensure_rbac():
         application="ros",
         app_name="ros",
         request=request,
-        logger=app.logger,
+        logger=get_logger(__name__)
     )
