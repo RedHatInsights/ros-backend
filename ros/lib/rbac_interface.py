@@ -2,7 +2,6 @@ from urllib.parse import urljoin
 from http import HTTPStatus
 from flask_restful import abort
 from .config import RBAC_SVC_URL, PATH_PREFIX
-from .rbac_denied_exception import RBACDenied
 import requests
 
 
@@ -106,10 +105,10 @@ def ensure_has_permission(**kwargs):
             # if wrong permissions
             abort(
                 HTTPStatus.FORBIDDEN,
-                message='user does not have access to %s' % kwargs["permissions"]
+                message='user does not have correct permissions to access the service'
             )
         # if something wrong inside `try`
-        except RBACDenied:
+        except requests.exceptions.HTTPError:
             abort(
                 HTTPStatus.FORBIDDEN,
                 message="request to retrieve permissions from RBAC was forbidden"
