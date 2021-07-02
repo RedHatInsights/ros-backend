@@ -10,13 +10,10 @@
 - hosts: all
   gather_facts: True
   tasks:
-    - name: Check if insights-client is installed.
+    - name: Install insights-client if not already installed.
       yum:
-        list=insights-client
-      register: is_installed
-    - fail:
-        msg: insights-client is not installed on the system.
-      when: is_installed.results | selectattr("yumstate", "match", "installed") | list | length == 0
+        name: insights-client
+        state: latest
     - name: Check if core_collect is enabled.
       lineinfile:
         dest: /etc/insights-client/insights-client.conf
@@ -26,19 +23,34 @@
       register: core_collect
       changed_when: false
     - fail:
-        msg: insights-client core collect is disabled.
+        msg: insights-client core collect is disabled in `/etc/insights-client/insights-client.conf`.
       when: core_collect.msg == 'line added'
+    - debug: var=ansible_distribution
+    - debug: var=ansible_distribution_major_version
     - debug: var=ansible_architecture
-    - name: Enable required repository for x86_64 arch
+    - name: Enable required repository for RHEL8 x86_64 arch
       rhsm_repository:
         name: rhel-8-for-x86_64-baseos-rpms,rhel-8-for-x86_64-appstream-rpms
         state: enabled
-      when: ansible_architecture == "x86_64"
-    - name: Enable required repository for ARM arch
+      when:
+        - ansible_architecture == "x86_64"
+        - ansible_distribution == "RedHat"
+        - ansible_distribution_major_version == "8"
+    - name: Enable required repository for RHEL8 ARM arch
       rhsm_repository:
         name: rhel-8-for-aarch64-baseos-rpms,rhel-8-for-aarch64-appstream-rpms
         state: enabled
-      when: ansible_architecture == "aarch64"
+      when:
+        - ansible_architecture == "aarch64"
+        - ansible_distribution == "RedHat"
+        - ansible_distribution_major_version == "8"
+    - name: Enable required repository for RHEL7
+      rhsm_repository:
+        name: rhel-7-server-rpms
+        state: enabled
+      when:
+        - ansible_distribution == "RedHat"
+        - ansible_distribution_major_version == "7"
     - name: Install pcp packages for ROS service
       yum:
         name: pcp
