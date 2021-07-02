@@ -34,9 +34,9 @@ def _validate_service_response(response, logger, auth_header):
         # Log identity header if 401 (unauthorized)
         if response.status_code == requests.codes.unauthorized:
             if isinstance(auth_header, dict) and AUTH_HEADER_NAME in auth_header:
-                logger.info("identity '%s'" % get_key_from_headers(auth_header))
+                logger.info("Identity '%s'" % get_key_from_headers(auth_header))
             else:
-                logger.info("no identity or no key")
+                logger.info("No identity or no key")
         abort(
             response.status_code, message="Unable to retrieve permissions."
         )
@@ -44,12 +44,12 @@ def _validate_service_response(response, logger, auth_header):
         if response.status_code == requests.codes.not_found:
             logger.error("%s error received from service." % response.status_code)
             abort(
-                response.status_code, message="Not Found"  # find a better msg for 404
+                response.status_code, message="The requested URL was not found."
             )
         if response.status_code != requests.codes.ok:
             logger.error("%s error received from service." % response.status_code)
             abort(
-                response.status_code, message="error received from backend service"
+                response.status_code, message="Error received from backend service"
             )
 
 
@@ -92,31 +92,24 @@ def ensure_has_permission(**kwargs):
     if _is_mgmt_url(request.path) or _is_openapi_url(request.path, kwargs["app_name"]):
         return  # allow request
     if auth_key:
-        try:
-            perms = get_perms(
-                kwargs["application"],
-                auth_key,
-                kwargs["logger"]
-            )
-            for p in perms:
-                if p in kwargs["permissions"]:
-                    return  # allow
-
+        perms = get_perms(
+            kwargs["application"],
+            auth_key,
+            kwargs["logger"]
+        )
+        if not perms:
             # if wrong permissions
             abort(
                 HTTPStatus.FORBIDDEN,
-                message='user does not have correct permissions to access the service'
+                message='User does not have correct permissions to access the service'
             )
-        # if something wrong inside `try`
-        except requests.exceptions.HTTPError:
-            abort(
-                HTTPStatus.FORBIDDEN,
-                message="request to retrieve permissions from RBAC was forbidden"
-            )
+        for p in perms:
+            if p in kwargs["permissions"]:
+                return  # allow
     else:
         # if no auth_key
         abort(
-            HTTPStatus.BAD_REQUEST, message="identity not found on request"
+            HTTPStatus.BAD_REQUEST, message="Identity not found in request"
         )
 
 
