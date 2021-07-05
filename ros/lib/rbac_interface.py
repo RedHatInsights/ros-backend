@@ -97,15 +97,15 @@ def ensure_has_permission(**kwargs):
             auth_key,
             kwargs["logger"]
         )
-        if not perms:
-            # if wrong permissions
-            abort(
-                HTTPStatus.FORBIDDEN,
-                message='User does not have correct permissions to access the service'
-            )
-        for p in perms:
-            if p in kwargs["permissions"]:
-                return  # allow
+        if perms:
+            for p in perms:
+                if p in kwargs["permissions"]:
+                    return  # allow
+        # if wrong permissions
+        abort(
+            HTTPStatus.FORBIDDEN,
+            message='User does not have correct permissions to access the service'
+        )
     else:
         # if no auth_key
         abort(
