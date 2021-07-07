@@ -1,6 +1,27 @@
 import os
 import logging
 
+
+# small helper to convert strings to boolean
+def str_to_bool(s):
+    try:
+        if s.lower() == "true":
+            return True
+        if s.lower() == "false":
+            return False
+    except AttributeError:
+        raise ValueError("Valid string argument expected")
+    raise ValueError("Unable to determine boolean value from given string argument")
+
+
+def get_logger(name):
+    logging.basicConfig(
+        level='INFO',
+        format='%(asctime)s - %(levelname)s  - %(funcName)s - %(message)s'
+    )
+    return logging.getLogger(name)
+
+
 DB_USER = os.getenv("ROS_DB_USER", "postgres")
 DB_PASSWORD = os.getenv("ROS_DB_PASS", "postgres")
 DB_HOST = os.getenv("ROS_DB_HOST", "localhost")
@@ -29,17 +50,10 @@ INSIGHTS_EXTRACT_LOGLEVEL = os.getenv("INSIGHTS_EXTRACT_LOGLEVEL", "ERROR")
 
 RBAC_HOST = os.getenv("RBAC_HOST", "localhost")
 RBAC_PORT = os.getenv("RBAC_PORT", "8114")
-RBAC_SVC_URL = f"http://{RBAC_HOST}:{RBAC_PORT}/"
+RBAC_SVC_URL = os.getenv("RBAC_SVC_URL", f"http://{RBAC_HOST}:{RBAC_PORT}/")
+ENABLE_RBAC = str_to_bool(os.getenv("ENABLE_RBAC", "True"))
 
 # Time interval after which garbage collector is involved to check for outdated data.
 GARBAGE_COLLECTION_INTERVAL = os.getenv("GARBAGE_COLLECTION_INTERVAL", 86400)
 # Number of days after which data is considered to be outdated.
 DAYS_UNTIL_STALE = os.getenv("DAYS_UNTIL_STALE", 14)
-
-
-def get_logger(name):
-    logging.basicConfig(
-        level='INFO',
-        format='%(asctime)s - %(levelname)s  - %(funcName)s - %(message)s'
-    )
-    return logging.getLogger(name)

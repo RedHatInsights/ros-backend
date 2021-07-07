@@ -1,7 +1,7 @@
 from urllib.parse import urljoin
 from http import HTTPStatus
 from flask_restful import abort
-from .config import RBAC_SVC_URL, PATH_PREFIX
+from .config import RBAC_SVC_URL, ENABLE_RBAC, PATH_PREFIX
 import requests
 
 
@@ -82,11 +82,10 @@ def ensure_has_permission(**kwargs):
     permissions, application, app_name, request, logger
     """
 
-    rbac_enabled = True
     request = kwargs["request"]
     auth_key = request.headers.get('X-RH-IDENTITY')
 
-    if not rbac_enabled:
+    if not ENABLE_RBAC:
         return
 
     if _is_mgmt_url(request.path) or _is_openapi_url(request.path, kwargs["app_name"]):
