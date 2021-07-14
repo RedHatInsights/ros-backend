@@ -10,6 +10,8 @@ objects:
     name: ros
   spec:
     envName: ${ENV_NAME}
+    dependencies:
+    - rbac
     pods:
       - name: backend
         minReplicas: 1
@@ -46,6 +48,8 @@ objects:
         env:
           - name: CLOWDER_ENABLED
             value: ${CLOWDER_ENABLED}
+          - name: ENABLE_RBAC
+            value: "${ENABLE_RBAC}"
       - name: processor
         minReplicas: ${{MIN_REPLICAS}}
         image: ${IMAGE}:${IMAGE_TAG}
@@ -71,6 +75,9 @@ objects:
         partitions: 1
 
 parameters:
+- description: Enable rbac needs to be "True" or "False"
+  name: ENABLE_RBAC
+  value: "True"
 - description : ClowdEnvironment name
   name: ENV_NAME
   required: true
