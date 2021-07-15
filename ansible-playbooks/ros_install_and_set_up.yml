@@ -10,21 +10,18 @@
 - hosts: all
   gather_facts: True
   tasks:
-    - name: Install insights-client if not already installed.
+    - name: Install insights-client if not already installed
       yum:
         name: insights-client
         state: latest
-    - name: Check if core_collect is enabled.
+    - name: Check if core_collect is enabled
+      shell: grep -c '^\s*core_collect\s*=\s*True\s*' /etc/insights-client/insights-client.conf || true
+      register: core_collect
+    - name: Enable core_collect if not already enabled
       lineinfile:
         dest: /etc/insights-client/insights-client.conf
-        regexp: '^\s*core_collect\s*=\s*True\s*'
         line: "core_collect=True"
-      check_mode: yes
-      register: core_collect
-      changed_when: false
-    - fail:
-        msg: insights-client core collect is disabled in `/etc/insights-client/insights-client.conf`.
-      when: core_collect.msg == 'line added'
+      when: core_collect.stdout == '0'
     - debug: var=ansible_distribution
     - debug: var=ansible_distribution_major_version
     - debug: var=ansible_architecture
