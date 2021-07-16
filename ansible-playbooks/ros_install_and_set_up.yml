@@ -10,14 +10,14 @@
 - hosts: all
   gather_facts: True
   tasks:
-    - name: Install insights-client if not already installed
+    - name: Ensure latest version of insights-client is installed
       yum:
         name: insights-client
         state: latest
     - name: Check if core_collect is enabled
       shell: grep -c '^\s*core_collect\s*=\s*True\s*' /etc/insights-client/insights-client.conf || true
       register: core_collect
-    - name: Enable core_collect if not already enabled
+    - name: Ensure core_collect is enabled
       lineinfile:
         dest: /etc/insights-client/insights-client.conf
         line: "core_collect=True"
