@@ -12,12 +12,16 @@ objects:
     envName: ${ENV_NAME}
     dependencies:
     - rbac
-    pods:
-      - name: backend
-        minReplicas: 1
+    deployments:
+    - name: backend
+      podSpec:
         image: ${IMAGE}:${IMAGE_TAG}
-        command: ["bash"]
-        args: ["-c", "python -m manage db upgrade && python -m ros.api.main"]
+        minReplicas: 1
+        initContainers:
+          - command:
+            - sh
+            - -c
+              python -m manage db upgrade && python -m ros.api.main
         resources:
           requests:
             cpu: ${CPU_REQUEST}
@@ -29,7 +33,7 @@ objects:
           failureThreshold: 3
           httpGet:
             path: /api/ros/v0/status
-            port: 8080
+            port: 8000
             scheme: HTTP
           initialDelaySeconds: 30
           periodSeconds: 10
@@ -38,7 +42,7 @@ objects:
         readinessProbe:
           httpGet:
             path: /api/ros/v0/status
-            port: 8080
+            port: 8000
             scheme: HTTP
           initialDelaySeconds: 3
           periodSeconds: 10
@@ -46,13 +50,16 @@ objects:
           failureThreshold: 3
           timeoutSeconds: 3
         env:
+          - name: PATH_PREFIX
+            value: /api
           - name: CLOWDER_ENABLED
             value: ${CLOWDER_ENABLED}
           - name: ENABLE_RBAC
             value: "${ENABLE_RBAC}"
-      - name: processor
-        minReplicas: ${{MIN_REPLICAS}}
+    - name: processor
+      podSpec:
         image: ${IMAGE}:${IMAGE_TAG}
+        minReplicas: ${{MIN_REPLICAS}}
         command: ["bash"]
         args: ["-c", "python -m ros.processor.main"]
         resources:
@@ -66,7 +73,7 @@ objects:
           - name: CLOWDER_ENABLED
             value: ${CLOWDER_ENABLED}
     database:
-      name: ros-db
+      name: ros
       version: 12
     kafkaTopics:
       - topicName: platform.inventory.events
