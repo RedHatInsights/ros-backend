@@ -1,6 +1,7 @@
 ---
 # This playbook will take care of disabling insights resource-optimization service
 - hosts: all
+  become: yes
   tasks:
     - name: Ensure a pcp service is stopped
       systemd:
