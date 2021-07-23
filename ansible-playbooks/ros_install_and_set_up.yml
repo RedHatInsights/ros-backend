@@ -21,6 +21,7 @@
         dest: /etc/insights-client/insights-client.conf
         insertafter: "^#core_collect=True"
         line: "core_collect=True"
+      when: not ansible_check_mode
     - debug: var=ansible_distribution
     - debug: var=ansible_distribution_major_version
     - debug: var=ansible_architecture
