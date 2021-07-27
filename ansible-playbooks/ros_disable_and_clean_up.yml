@@ -2,6 +2,7 @@
 # This playbook will take care of all steps required to remove
 # Insights resource-optimization (pcp packages)
 - hosts: all
+  become: yes
   tasks:
     - name: Ensure a pcp service is stopped
       systemd:
