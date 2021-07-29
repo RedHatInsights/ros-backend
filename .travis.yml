@@ -3,8 +3,22 @@ language: python
 python:
   - "3.8"
 
+services:
+  - postgresql
+
+env:
+  DB_NAME=ros_db_test
+  ROS_DB_HOST=localhost
+  ROS_DB_PORT=15432
+  ROS_DB_USER=postgres
+  ROS_DB_PASS=''
+
+before_script:
+  - psql -c "create database ${DB_NAME};" -U postgres
+
 script:
   - flake8
+  - pytest --cov=ros tests
 
 install:
   - pip install pipenv

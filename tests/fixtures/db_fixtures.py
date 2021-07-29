@@ -11,7 +11,7 @@ def database():
     DB_PASSWORD = os.getenv("ROS_DB_PASS", "postgres")
     DB_HOST = os.getenv("ROS_DB_HOST", "localhost")
     DB_PORT = os.getenv("ROS_DB_PORT", "15432")
-    DB_NAME = os.getenv("DB_NAME", "ros-db-test")
+    DB_NAME = os.getenv("DB_NAME", "ros_db_test")
     DB_URI = f"postgresql://{DB_USER}:{DB_PASSWORD}"\
              f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
