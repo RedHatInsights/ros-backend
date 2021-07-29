@@ -5,6 +5,7 @@ from ros.lib.config import (INSIGHTS_KAFKA_ADDRESS, GROUP_ID,
 from ros.lib.models import RhAccount, System
 from ros.lib.utils import get_or_create
 from confluent_kafka import Consumer, KafkaException
+from ros.processor.metrics import add_host_success, add_host_failure
 
 
 SYSTEM_STATES = {
@@ -76,30 +77,36 @@ class InsightsEngineResultConsumer:
     def process_report(self, host, reports):
         """create/update system based on reports data."""
         with app.app_context():
-            account = get_or_create(
-                db.session, RhAccount, 'account',
-                account=host['account']
-            )
+            try:
+                account = get_or_create(
+                    db.session, RhAccount, 'account',
+                    account=host['account']
+                )
 
-            state_key = reports[0].get('key')
-            if len(reports) == 0:
-                state_key = OPTIMIZED_SYSTEM_KEY
-                LOG.info(
-                    'There is no ros rule hits. '
-                    "Marking state of system with inventory id: %s as %s",
-                    host['id'], SYSTEM_STATES[state_key])
+                state_key = reports[0].get('key')
+                if len(reports) == 0:
+                    state_key = OPTIMIZED_SYSTEM_KEY
+                    LOG.info(
+                        'There is no ros rule hits. '
+                        "Marking state of system with inventory id: %s as %s",
+                        host['id'], SYSTEM_STATES[state_key])
 
-            system = get_or_create(
-                db.session, System, 'inventory_id',
-                account_id=account.id,
-                inventory_id=host['id'],
-                display_name=host['display_name'],
-                fqdn=host['fqdn'],
-                rule_hit_details=reports,
-                number_of_recommendations=len(reports),
-                state=SYSTEM_STATES[state_key]
-            )
+                system = get_or_create(
+                    db.session, System, 'inventory_id',
+                    account_id=account.id,
+                    inventory_id=host['id'],
+                    display_name=host['display_name'],
+                    fqdn=host['fqdn'],
+                    rule_hit_details=reports,
+                    number_of_recommendations=len(reports),
+                    state=SYSTEM_STATES[state_key]
+                )
 
-            db.session.commit()
-            LOG.info("Refreshed system %s (%s) belonging to account: %s (%s) via engine-result",
-                     system.inventory_id, system.id, account.account, account.id)
+                db.session.commit()
+                add_host_success.labels('engine-event-processor').inc()
+                LOG.info("Refreshed system %s (%s) belonging to account: %s (%s) via engine-result",
+                         system.inventory_id, system.id, account.account, account.id)
+            except Exception as err:
+                add_host_failure.labels('engine-event-processor').inc()
+                LOG.error("Unable to add host %s to DB belonging to account: %s via engine-result - %s",
+                          host['fqdn'], host['account'], err)
