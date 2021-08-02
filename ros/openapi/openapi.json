@@ -20,6 +20,7 @@
             "get": {
                 "summary": "Health check liveness call",
                 "description": "A small JSON indicating the application is deployed. This serves as both the liveness and readiness call.",
+                "operationId": "getStatus",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -38,7 +39,7 @@
             "get": {
                 "summary": "Lists all systems from cloud having performance profile",
                 "description": "Lists all systems from cloud having performance profile",
-                "operationId": "listSystems",
+                "operationId": "getSystems",
                 "parameters": [
                     {
                         "$ref": "#/components/parameters/limitParam"
@@ -79,6 +80,7 @@
             "get": {
                 "summary": "Show the system details by given inventory id",
                 "description": "Show the system details by given inventory id",
+                "operationId": "getSystemDetails",
                 "parameters": [
                     {
                         "name": "inventory_id",
@@ -108,6 +110,7 @@
             "get": {
                 "summary": "Show the system's performance history by given inventory id",
                 "description": "Show the system's performance history by given inventory id",
+                "operationId": "getSystemsPerformanceHistory",
                 "parameters": [
                     {
                         "name": "inventory_id",
@@ -137,6 +140,7 @@
             "get": {
                 "summary": "Show the list of recommendations by given inventory id",
                 "description": "Show the list of recommendations by given inventory id",
+                "operationId": "getSystemsRecommendations",
                 "parameters": [
                     {
                         "name": "inventory_id",
@@ -175,6 +179,7 @@
             "post": {
                 "summary": "submit recommendation rating",
                 "description": "submit recommendation rating",
+                "operationId": "addRecommendationRatingToSystem",
                 "requestBody": {
                     "content": {
                         "application/json": {
