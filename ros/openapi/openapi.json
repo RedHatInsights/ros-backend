@@ -110,7 +110,7 @@
             "get": {
                 "summary": "Show the system's performance history by given inventory id",
                 "description": "Show the system's performance history by given inventory id",
-                "operationId": "getSystemsPerformanceHistory",
+                "operationId": "getPerformanceHistoryForSystem",
                 "parameters": [
                     {
                         "name": "inventory_id",
@@ -140,7 +140,7 @@
             "get": {
                 "summary": "Show the list of recommendations by given inventory id",
                 "description": "Show the list of recommendations by given inventory id",
-                "operationId": "getSystemsRecommendations",
+                "operationId": "getRecommendationsForSystem",
                 "parameters": [
                     {
                         "name": "inventory_id",
