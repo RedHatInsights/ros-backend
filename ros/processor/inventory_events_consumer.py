@@ -64,9 +64,11 @@ class InventoryEventsConsumer:
                 )
             except Exception as err:
                 LOG.error(
-                    'An error occurred during message processing: %s - %s',
+                    'An error occurred during message processing: %s in the system %s created from account: %s - %s',
                     repr(err),
-                    self.prefix
+                    msg['host']['id'],
+                    msg['host']['account'],
+                    self.prefix,
                 )
             finally:
                 self.consumer.commit()
