@@ -68,3 +68,29 @@
       with_items:
         - 'pmcd'
         - 'pmlogger'
+
+    - name: (Re)Register insights-client and upload archive
+      shell: insights-client --register
+
+    - name: Get system's Insights-ID
+      shell: cat /etc/insights-client/machine-id
+      register: insights_id
+
+    - name: Fetch system's information from Insights inventory
+      environment:
+        SSL_CERT_FILE: /etc/rhsm/ca/redhat-uep.pem
+      uri:
+        url: "https://cert-api.access.redhat.com/r/insights/platform/inventory/v1/hosts?insights_id={{ insights_id.stdout }}"
+        method: GET
+        client_cert: /etc/pki/consumer/cert.pem
+        client_key: /etc/pki/consumer/key.pem
+        validate_certs: yes
+        body_format: json
+        return_content: yes
+      register: inventory
+
+    - name: ROS setup successful
+      debug:
+        msg: >
+          Red Hat Insights Resource Optimization Service configured successfully. Please wait for 24 hours.
+          View details about this system at https://console.redhat.com/beta/insights/ros/{{ inventory['json']['results'][0]['id'] }}"
