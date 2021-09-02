@@ -13,10 +13,33 @@ from ros.api.common.pagination import (
     offset_value)
 import logging
 
+
 LOG = logging.getLogger(__name__)
 SYSTEM_STATES_EXCEPT_OPTIMIZED = [
     "Oversized", "Undersized", "Idling", "Storage rightsizing"
 ]
+
+
+class IsROSConfiguredApi(Resource):
+    def get(self):
+        ident = identity(request)['identity']
+        account_query = db.session.query(RhAccount.id).filter(
+            RhAccount.account == ident['account_number']).subquery()
+        system_count = db.session.query(System.id)\
+            .filter(System.account_id.in_(account_query)).count()
+
+        if system_count <= 0:
+            return {
+                'success': False,
+                'code': 'NOSYSTEMS',
+                'count': system_count
+            }
+
+        return {
+            'success': True,
+            'code': 'SYSTEMSEXIST',
+            'count': system_count
+        }
 
 
 class HostsApi(Resource):
@@ -41,7 +64,7 @@ class HostsApi(Resource):
     meta_fields = {
         'count': fields.Integer,
         'limit': fields.Integer,
-        'offset': fields.Integer
+        'offset': fields.Integer,
     }
     links_fields = {
         'first': fields.String,
@@ -72,6 +95,7 @@ class HostsApi(Resource):
         # Refer - https://www.postgresql.org/docs/13/queries-limit.html
 
         account_query = db.session.query(RhAccount.id).filter(RhAccount.account == ident['account_number']).subquery()
+
         if filter_display_name:
             system_query = db.session.query(System.id)\
                 .filter(System.display_name.ilike(f'%{filter_display_name}%'))\
@@ -124,6 +148,7 @@ class HostsApi(Resource):
                     repr(err)
                 )
                 count -= 1
+
         return build_paginated_system_list_response(
             limit, offset, hosts, count
         )

@@ -35,6 +35,25 @@
                 }
             }
         },
+        "/is_configured": {
+            "get": {
+                "summary": "Check ROS configured",
+                "description": "Check whether service is configured.",
+                "operationId": "getServiceConfigurationInfo",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IsServiceConfigured"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/systems": {
             "get": {
                 "summary": "Lists all systems from cloud having performance profile",
@@ -273,6 +292,20 @@
                     },
                     "meta": {
                         "$ref": "#/components/schemas/ListMeta"
+                    }
+                }
+            },
+            "IsServiceConfigured": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "code" : {
+                        "type": "string"
+                    },
+                    "count": {
+                        "type": "integer"
                     }
                 }
             },
