@@ -120,7 +120,8 @@ class InventoryEventsConsumer:
                     display_name=host['display_name'],
                     fqdn=host['fqdn'],
                     cloud_provider=host['system_profile']['cloud_provider'],
-                    instance_type=performance_record.get('instance_type')
+                    instance_type=performance_record.get('instance_type'),
+                    stale_timestamp=host['stale_timestamp']
                 )
 
                 get_or_create(
