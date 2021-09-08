@@ -341,6 +341,9 @@
                     "inventory_id": {
                         "type": "string"
                     },
+                    "display_name": {
+                        "type": "string"
+                    },
                     "display_performance_score": {
                         "type": "object",
                         "properties": {

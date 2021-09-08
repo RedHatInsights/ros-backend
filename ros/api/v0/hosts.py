@@ -177,6 +177,7 @@ class HostDetailsApi(Resource):
     }
     profile_fields = {
         'inventory_id': fields.String,
+        'display_name': fields.String,
         'display_performance_score': fields.Nested(display_performance_score_fields),
         'rating': fields.Integer,
         'number_of_recommendations': fields.Integer,
@@ -214,6 +215,7 @@ class HostDetailsApi(Resource):
 
         if profile:
             record = {'inventory_id': host_id}
+            record['display_name'] = system.display_name
             record['display_performance_score'] = profile.display_performance_score
             record['rating'] = rating_record.rating if rating_record else None
             record['report_date'] = profile.report_date
