@@ -17,10 +17,10 @@ LOG = logging.getLogger(__name__)
 SYSTEM_STATES_EXCEPT_OPTIMIZED = [
     "Oversized", "Undersized", "Idling", "Storage rightsizing"
 ]
-system_columns = [
+SYSTEM_COLUMNS = [
             'inventory_id', 'display_name',
             'instance_type', 'cloud_provider',
-            'rule_hit_details', 'state', 'number_of_recommendations'
+            'rule_hit_details', 'state', 'number_of_recommendations', 'fqdn'
 ]
 
 
@@ -112,8 +112,7 @@ class HostsApi(Resource):
         for row in query_results:
             try:
                 system_dict = row.System.__dict__
-                host = {skey: system_dict[skey] for skey in system_columns}
-                host['fqdn'] = row.System.fqdn
+                host = {skey: system_dict[skey] for skey in SYSTEM_COLUMNS}
                 host['account'] = row.RhAccount.account
                 host['display_performance_score'] = row.PerformanceProfile.display_performance_score
                 host['idling_time'] = row.PerformanceProfile.idling_time
@@ -177,6 +176,7 @@ class HostDetailsApi(Resource):
         'io_score': fields.Integer
     }
     profile_fields = {
+        'fqdn': fields.String,
         'inventory_id': fields.String,
         'display_name': fields.String,
         'display_performance_score': fields.Nested(display_performance_score_fields),
@@ -215,7 +215,7 @@ class HostDetailsApi(Resource):
         system = db.session.query(System).filter(System.inventory_id == host_id).first()
 
         if profile:
-            record = {key: system.__dict__[key] for key in system_columns}
+            record = {key: system.__dict__[key] for key in SYSTEM_COLUMNS}
             record['display_performance_score'] = profile.display_performance_score
             record['rating'] = rating_record.rating if rating_record else None
             record['report_date'] = profile.report_date
