@@ -17,6 +17,11 @@ LOG = logging.getLogger(__name__)
 SYSTEM_STATES_EXCEPT_OPTIMIZED = [
     "Oversized", "Undersized", "Idling", "Storage rightsizing"
 ]
+system_columns = [
+            'inventory_id', 'display_name',
+            'instance_type', 'cloud_provider',
+            'rule_hit_details', 'state', 'number_of_recommendations'
+]
 
 
 class HostsApi(Resource):
@@ -103,16 +108,12 @@ class HostsApi(Resource):
         count = query.count()
         query = query.limit(limit).offset(offset)
         query_results = query.all()
-
         hosts = []
-        system_columns = [
-            'inventory_id', 'fqdn', 'display_name',
-            'instance_type', 'cloud_provider',
-            'rule_hit_details', 'state', 'number_of_recommendations']
         for row in query_results:
             try:
                 system_dict = row.System.__dict__
                 host = {skey: system_dict[skey] for skey in system_columns}
+                host['fqdn'] = row.System.fqdn
                 host['account'] = row.RhAccount.account
                 host['display_performance_score'] = row.PerformanceProfile.display_performance_score
                 host['idling_time'] = row.PerformanceProfile.idling_time
@@ -214,17 +215,12 @@ class HostDetailsApi(Resource):
         system = db.session.query(System).filter(System.inventory_id == host_id).first()
 
         if profile:
-            record = {'inventory_id': host_id}
-            record['display_name'] = system.display_name
+            record = {key: system.__dict__[key] for key in system_columns}
             record['display_performance_score'] = profile.display_performance_score
             record['rating'] = rating_record.rating if rating_record else None
             record['report_date'] = profile.report_date
-            record['cloud_provider'] = system.cloud_provider
-            record['instance_type'] = system.instance_type
             record['idling_time'] = profile.idling_time
             record['io_wait'] = profile.io_wait
-            record['number_of_recommendations'] = system.number_of_recommendations
-            record['state'] = system.state
         else:
             abort(404, message="System {} doesn't exist"
                   .format(host_id))
