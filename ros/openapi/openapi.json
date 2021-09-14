@@ -338,7 +338,13 @@
             "SystemDetails": {
                 "type": "object",
                 "properties": {
+                    "fqdn": {
+                        "type": "string"
+                    },
                     "inventory_id": {
+                        "type": "string"
+                    },
+                    "display_name": {
                         "type": "string"
                     },
                     "display_performance_score": {
