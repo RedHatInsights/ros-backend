@@ -338,6 +338,9 @@
             "SystemDetails": {
                 "type": "object",
                 "properties": {
+                    "fqdn": {
+                        "type": "string"
+                    },
                     "inventory_id": {
                         "type": "string"
                     },
