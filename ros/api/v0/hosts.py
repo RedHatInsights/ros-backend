@@ -92,6 +92,7 @@ class HostsApi(Resource):
         ).strip().lower()
         order_how = (request.args.get('order_how') or 'asc').strip().lower()
         filter_display_name = request.args.get('display_name')
+        filter_by_state = request.args.get('state')
 
         ident = identity(request)['identity']
         # Note that When using LIMIT, it is important to use an ORDER BY clause
@@ -101,11 +102,20 @@ class HostsApi(Resource):
 
         account_query = db.session.query(RhAccount.id).filter(RhAccount.account == ident['account_number']).subquery()
 
-        if filter_display_name:
+        if filter_display_name and filter_by_state:
+            system_query = db.session.query(System.id)\
+                .filter(System.display_name.ilike(f'%{filter_display_name}%'))\
+                .filter(System.account_id.in_(account_query))\
+                .filter(System.state.ilike(f'%{filter_by_state}%'))
+        elif filter_display_name:
             system_query = db.session.query(System.id)\
                 .filter(System.display_name.ilike(f'%{filter_display_name}%'))\
                 .filter(System.account_id.in_(account_query))\
                 .filter(System.state.in_(SYSTEM_STATES_EXCEPT_EMPTY))
+        elif filter_by_state:
+            system_query = db.session.query(System.id)\
+                .filter(System.state.ilike(f'%{filter_by_state}%'))\
+                .filter(System.account_id.in_(account_query))
         else:
             system_query = db.session.query(System.id)\
                 .filter(System.account_id.in_(account_query))\

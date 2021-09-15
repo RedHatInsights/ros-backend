@@ -74,6 +74,9 @@
                     },
                     {
                         "$ref": "#/components/parameters/filterParam"
+                    },
+                    {
+                        "$ref": "#/components/parameters/filterStateParam"
                     }
                 ],
                 "responses": {
@@ -577,6 +580,15 @@
                 "in": "query",
                 "required": false,
                 "description": "Filter system with the given display name ",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "filterStateParam": {
+                "name": "state",
+                "in": "query",
+                "required": false,
+                "description": "Filter system with the given state",
                 "schema": {
                     "type": "string"
                 }
