@@ -89,10 +89,10 @@ pytest --cov=ros tests
         'state': 'Crashloop',
         'recommendation_count': 5,
         'organization_id': 1,
-        'performance_score': {
-            'cpu_score': 20,
-            'memory_score': 20,
-            'io_score': 20
+        'performance_utilization': {
+            'cpu': 20,
+            'memory': 20,
+            'io': 20
         },
         'facts': {
             'cloud_provider': 'AWS',
@@ -117,7 +117,7 @@ pytest --cov=ros tests
     Content-Type: application/json
     Content-Length: 2
 
-    {"host_id": "12345-57575757", "performance_record": "{'avg_memory': '3998008.000', 'avg_memory_used': '2487908.973'}", "performance_score": "{'memory_score': 62}"}
+    {"host_id": "12345-57575757", "performance_record": "{'avg_memory': '3998008.000', 'avg_memory_used': '2487908.973'}", "performance_utilization": "{'memory': 62}"}
 
 
 ### Request

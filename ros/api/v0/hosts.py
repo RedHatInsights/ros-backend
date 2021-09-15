@@ -49,9 +49,14 @@ class IsROSConfiguredApi(Resource):
 
 class HostsApi(Resource):
     display_performance_score_fields = {
-        'cpu_score': fields.Integer,
-        'memory_score': fields.Integer,
-        'io_score': fields.Integer
+        'cpu': fields.Integer,
+        'memory': fields.Integer,
+        'io': fields.Integer
+    }
+    performance_utilization_fields = {
+        'cpu': fields.Integer,
+        'memory': fields.Integer,
+        'io': fields.Integer
     }
     hosts_fields = {
         'fqdn': fields.String,
@@ -60,6 +65,7 @@ class HostsApi(Resource):
         'account': fields.String,
         'number_of_recommendations': fields.Integer,
         'state': fields.String,
+        'performance_utilization': fields.Nested(performance_utilization_fields),
         'display_performance_score': fields.Nested(display_performance_score_fields),
         'cloud_provider': fields.String,
         'instance_type': fields.String,
@@ -129,6 +135,7 @@ class HostsApi(Resource):
                 system_dict = row.System.__dict__
                 host = {skey: system_dict[skey] for skey in SYSTEM_COLUMNS}
                 host['account'] = row.RhAccount.account
+                host['performance_utilization'] = row.PerformanceProfile.performance_utilization
                 host['display_performance_score'] = row.PerformanceProfile.display_performance_score
                 host['idling_time'] = row.PerformanceProfile.idling_time
                 host['io_wait'] = row.PerformanceProfile.io_wait
@@ -178,10 +185,10 @@ class HostsApi(Resource):
             return (sort_order(System.display_name),
                     asc(PerformanceProfile.system_id),)
 
-        score_methods = ['cpu_score', 'memory_score', 'io_score']
+        score_methods = ['cpu', 'memory', 'io']
         if order_method in score_methods:
             return (
-                sort_order(PerformanceProfile.performance_score[
+                sort_order(PerformanceProfile.performance_utilization[
                     order_method].astext.cast(Integer)),
                 asc(PerformanceProfile.system_id),)
 
@@ -199,14 +206,20 @@ class HostsApi(Resource):
 
 class HostDetailsApi(Resource):
     display_performance_score_fields = {
-        'cpu_score': fields.Integer,
-        'memory_score': fields.Integer,
-        'io_score': fields.Integer
+        'cpu': fields.Integer,
+        'memory': fields.Integer,
+        'io': fields.Integer
+    }
+    performance_utilization_fields = {
+        'cpu': fields.Integer,
+        'memory': fields.Integer,
+        'io': fields.Integer
     }
     profile_fields = {
         'fqdn': fields.String,
         'inventory_id': fields.String,
         'display_name': fields.String,
+        'performance_utilization': fields.Nested(performance_utilization_fields),
         'display_performance_score': fields.Nested(display_performance_score_fields),
         'rating': fields.Integer,
         'number_of_recommendations': fields.Integer,
@@ -244,6 +257,7 @@ class HostDetailsApi(Resource):
 
         if profile:
             record = {key: system.__dict__[key] for key in SYSTEM_COLUMNS}
+            record['performance_utilization'] = profile.performance_utilization
             record['display_performance_score'] = profile.display_performance_score
             record['rating'] = rating_record.rating if rating_record else None
             record['report_date'] = profile.report_date
@@ -258,12 +272,11 @@ class HostDetailsApi(Resource):
 
 class HostHistoryApi(Resource):
     display_performance_score_fields = {
-        'cpu_score': fields.Integer,
-        'memory_score': fields.Integer,
-        'io_score': fields.Integer,
+        'cpu': fields.Integer,
+        'memory': fields.Integer,
+        'io': fields.Integer,
         'report_date':  fields.String
     }
-
     meta_fields = {
         'count': fields.Integer,
         'limit': fields.Integer,

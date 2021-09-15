@@ -106,7 +106,9 @@ class InventoryEventsConsumer:
         host = msg['host']
         performance_record = get_performance_profile(msg['platform_metadata']['url'])
         if performance_record:
-            performance_score = self._calculate_performance_score(performance_record, host)
+            performance_utilization = self._calculate_performance_utilization(
+                performance_record, host
+            )
             with app.app_context():
                 account = get_or_create(
                     db.session, RhAccount, 'account',
@@ -128,31 +130,33 @@ class InventoryEventsConsumer:
                     db.session, PerformanceProfile, ['system_id', 'report_date'],
                     system_id=system.id,
                     performance_record=performance_record,
-                    performance_score=performance_score,
+                    performance_utilization=performance_utilization,
                     report_date=datetime.datetime.utcnow().date()
                 )
 
                 # Commit changes
                 db.session.commit()
-                LOG.info("Refreshed system %s (%s) belonging to account: %s (%s) via report-processor",
-                         system.inventory_id, system.id, account.account, account.id)
+                LOG.info(
+                    "Refreshed system %s (%s) belonging to account: %s (%s) via report-processor",
+                    system.inventory_id, system.id, account.account, account.id
+                )
 
-    def _calculate_performance_score(self, performance_record, host):
+    def _calculate_performance_utilization(self, performance_record, host):
         MAX_IOPS_CAPACITY = 16000
-        memory_score = (float(performance_record['mem.util.used']) / float(performance_record['mem.physmem'])) * 100
-        cpu_score = self._calculate_cpu_score(performance_record)
+        memory_utilized = (float(performance_record['mem.util.used']) / float(performance_record['mem.physmem'])) * 100
+        cpu_utilized = self._calculate_cpu_score(performance_record)
         cloud_provider = host['system_profile']['cloud_provider']
         if cloud_provider == 'aws':
             MAX_IOPS_CAPACITY = 16000
         if cloud_provider == 'azure':
             MAX_IOPS_CAPACITY = 20000
-        io_score = (float(performance_record['disk.all.total']) / float(MAX_IOPS_CAPACITY)) * 100
-        performance_score = {
-            'memory_score': int(memory_score),
-            'cpu_score': int(cpu_score),
-            'io_score': int(io_score)
-            }
-        return performance_score
+        io_utilized = (float(performance_record['disk.all.total']) / float(MAX_IOPS_CAPACITY)) * 100
+        performance_utilization = {
+            'memory': int(memory_utilized),
+            'cpu': int(cpu_utilized),
+            'io': int(io_utilized)
+        }
+        return performance_utilization
 
     def _calculate_cpu_score(self, performance_record):
         idle_cpu_percent = ((float(performance_record['kernel.all.cpu.idle']) * 100)
