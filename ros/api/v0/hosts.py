@@ -14,8 +14,8 @@ from ros.api.common.pagination import (
 import logging
 
 LOG = logging.getLogger(__name__)
-SYSTEM_STATES_EXCEPT_OPTIMIZED = [
-    "Oversized", "Undersized", "Idling", "Storage rightsizing"
+SYSTEM_STATES_EXCEPT_EMPTY = [
+    "Oversized", "Undersized", "Idling", "Storage rightsizing", "Optimized"
 ]
 SYSTEM_COLUMNS = [
             'inventory_id', 'display_name',
@@ -81,11 +81,11 @@ class HostsApi(Resource):
             system_query = db.session.query(System.id)\
                 .filter(System.display_name.ilike(f'%{filter_display_name}%'))\
                 .filter(System.account_id.in_(account_query))\
-                .filter(System.state.in_(SYSTEM_STATES_EXCEPT_OPTIMIZED))
+                .filter(System.state.in_(SYSTEM_STATES_EXCEPT_EMPTY))
         else:
             system_query = db.session.query(System.id)\
                 .filter(System.account_id.in_(account_query))\
-                .filter(System.state.in_(SYSTEM_STATES_EXCEPT_OPTIMIZED))
+                .filter(System.state.in_(SYSTEM_STATES_EXCEPT_EMPTY))
 
         last_reported = (
             db.session.query(PerformanceProfile.system_id, func.max(PerformanceProfile.report_date).label('max_date')
