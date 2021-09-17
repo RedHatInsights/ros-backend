@@ -8,13 +8,6 @@ metadata={"branch_info": {"remote_branch": -1, "remote_leaf": -1}, "bios_uuid": 
 identity={"identity": {"account_number": "0000001","type": "User","user": {"username": "tuser@redhat.com","email": "tuser@redhat.com","first_name": "test","last_name": "user","is_active": true,"is_org_admin": false, "is_internal": true, "locale": "en_US"},"internal": { "org_id": "000001"}}}
 b64_identity=$(shell echo '${identity}' | base64 -w 0 -)
 
-
-ros-upload-data:
-	curl -vvvv -F "upload=@sample-files/ros-sample.tar.gz;type=application/vnd.redhat.resource-optimization.sample+tgz" -F 'metadata=${metadata}' \
-		-H "x-rh-identity: ${b64_identity}" \
-		-H "x-rh-request_id: testtesttest" \
-		localhost:3000/api/ingress/v1/upload  | python -m json.tool
-
 insights-upload-data:
 	curl -vvvv -F "upload=@sample-files/insights-aws-sample.tar.gz;type=application/vnd.redhat.advisor.collection+tgz" \
 	    -H "x-rh-identity: ${b64_identity}" \
@@ -22,4 +15,4 @@ insights-upload-data:
 		localhost:3000/api/ingress/v1/upload | python -m json.tool
 
 api-get-hosts:
-	curl -v -H "Content-Type: application/json"  -H "x-rh-identity: ${b64_identity}" localhost:8080/api/ros/v0/systems | python -m json.tool
+	curl -v -H "Content-Type: application/json"  -H "x-rh-identity: ${b64_identity}" localhost:8000/api/ros/v0/systems | python -m json.tool

@@ -21,7 +21,7 @@ objects:
           - command:
             - sh
             - -c
-              python -m manage db upgrade && python -m ros.api.main
+            - python -m manage db upgrade && python -m ros.api.main
         resources:
           requests:
             cpu: ${CPU_REQUEST}
