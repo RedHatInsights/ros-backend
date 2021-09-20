@@ -101,25 +101,14 @@ class HostsApi(Resource):
         # Refer - https://www.postgresql.org/docs/13/queries-limit.html
 
         account_query = db.session.query(RhAccount.id).filter(RhAccount.account == ident['account_number']).subquery()
+        system_query = db.session.query(System.id).filter(System.account_id.in_(account_query))\
+            .filter(System.state.in_(SYSTEM_STATES_EXCEPT_EMPTY))
 
-        if filter_display_name and filter_by_state:
-            system_query = db.session.query(System.id)\
-                .filter(System.display_name.ilike(f'%{filter_display_name}%'))\
-                .filter(System.account_id.in_(account_query))\
-                .filter(System.state.ilike(f'%{filter_by_state}%'))
-        elif filter_display_name:
-            system_query = db.session.query(System.id)\
-                .filter(System.display_name.ilike(f'%{filter_display_name}%'))\
-                .filter(System.account_id.in_(account_query))\
-                .filter(System.state.in_(SYSTEM_STATES_EXCEPT_EMPTY))
-        elif filter_by_state:
-            system_query = db.session.query(System.id)\
-                .filter(System.state.ilike(f'%{filter_by_state}%'))\
-                .filter(System.account_id.in_(account_query))
-        else:
-            system_query = db.session.query(System.id)\
-                .filter(System.account_id.in_(account_query))\
-                .filter(System.state.in_(SYSTEM_STATES_EXCEPT_EMPTY))
+        if filter_display_name:
+            system_query = self.filter_with('display_name', filter_display_name, system_query)
+
+        if filter_by_state:
+            system_query = self.filter_with('state', filter_by_state, system_query)
 
         last_reported = (
             db.session.query(PerformanceProfile.system_id, func.max(PerformanceProfile.report_date).label('max_date')
@@ -162,6 +151,11 @@ class HostsApi(Resource):
         return build_paginated_system_list_response(
             limit, offset, hosts, count
         )
+
+    # Filter systems
+    def filter_with(self, filter_name, filter_param, system_query):
+        return db.session.query(System.id).filter(System.id.in_(system_query.subquery()))\
+                .filter(System.__dict__[filter_name].ilike(f'%{filter_param}%'))
 
     @staticmethod
     def sorting_order(order_how):
