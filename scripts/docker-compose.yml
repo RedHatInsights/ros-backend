@@ -106,7 +106,7 @@ services:
       - INVENTORY_DB_NAME=insights
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - PAYLOAD_TRACKER_ENABLED=false
-      - LISTEN_PORT=8081
+      - LISTEN_PORT=8001
     depends_on:
        - kafka-create-topics
        - db-host-inventory
@@ -119,12 +119,12 @@ services:
     depends_on:
       - insights-inventory-mq
     ports:
-      - 8081:8080
+      - 8001:8000
 
   puptoo:
     image: quay.io/cloudservices/insights-puptoo:latest
     ports:
-      - 8000:8000
+      - 8002:8002
     environment:
       - LOG_LEVEL=INFO
       - FACT_EXTRACT_LOGLEVEL=ERROR
@@ -158,11 +158,11 @@ services:
       - INSIGHTS_KAFKA_HOST=kafka
       - INSIGHTS_KAFKA_PORT=29092
       - INVENTORY_HOST=insights-inventory-web
-      - INVENTORY_PORT=8080
+      - INVENTORY_PORT=8000
       - ROS_DB_HOST=db-ros
       - ROS_DB_PORT=5432
   ros-api:
     <<: *ros
     command: ["bash", "-c", "python -m manage db upgrade && python -m manage seed && python -m ros.api.main"]
     ports:
-      - 8080:8080
+      - 8000:8000
