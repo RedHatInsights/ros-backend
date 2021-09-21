@@ -1,0 +1,51 @@
+{
+    "database": {
+        "adminPassword": "QM2FppyaTcYBcXtl",
+        "adminUsername": "postgres",
+        "hostname": "localhost",
+        "name": "postgres",
+        "password": "postgres",
+        "port": 15432,
+        "username": "postgres"
+    },
+    "kafka": {
+        "brokers": [
+            {
+                "hostname": "localhost",
+                "port": 9092
+            }
+        ],
+        "topics": [
+            {
+                "name": "platform.inventory.events",
+                "requestedName": "platform.inventory.events"
+            },
+            {
+                "name": "platform.engine.results",
+                "requestedName": "platform.engine.results"
+            },
+            {
+                "requestedName": "platform.upload.advisor",
+                "name": "platform.upload.advisor"
+            },
+            {
+                "name": "platform.inventory.host-ingress",
+                "requestedName": "platform.inventory.host-ingress"
+            }
+        ]
+    },
+    "logging": {
+        "cloudwatch": {
+            "accessKeyId": "",
+            "logGroup": "",
+            "region": "",
+            "secretAccessKey": ""
+        },
+        "type": "null"
+    },
+    "metricsPath": "/metrics",
+    "metricsPort": 9000,
+    "privatePort": 8080,
+    "publicPort": 8000,
+    "webPort": 8000
+}
