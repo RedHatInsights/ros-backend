@@ -91,8 +91,6 @@ class HostsApi(Resource):
             request.args.get('order_by') or 'display_name'
         ).strip().lower()
         order_how = (request.args.get('order_how') or 'asc').strip().lower()
-        filter_display_name = request.args.get('display_name')
-        filter_by_state = request.args.get('state')
 
         ident = identity(request)['identity']
         # Note that When using LIMIT, it is important to use an ORDER BY clause
@@ -101,14 +99,8 @@ class HostsApi(Resource):
         # Refer - https://www.postgresql.org/docs/13/queries-limit.html
 
         account_query = db.session.query(RhAccount.id).filter(RhAccount.account == ident['account_number']).subquery()
-        system_query = db.session.query(System.id).filter(System.account_id.in_(account_query))\
-            .filter(System.state.in_(SYSTEM_STATES_EXCEPT_EMPTY))
-
-        if filter_display_name:
-            system_query = self.filter_with('display_name', filter_display_name, system_query)
-
-        if filter_by_state:
-            system_query = self.filter_with('state', filter_by_state, system_query)
+        system_query = db.session.query(System.id).filter(
+            System.account_id.in_(account_query)).filter(*self.build_system_filters())
 
         last_reported = (
             db.session.query(PerformanceProfile.system_id, func.max(PerformanceProfile.report_date).label('max_date')
@@ -152,10 +144,17 @@ class HostsApi(Resource):
             limit, offset, hosts, count
         )
 
-    # Filter systems
-    def filter_with(self, filter_name, filter_param, system_query):
-        return db.session.query(System.id).filter(System.id.in_(system_query.subquery()))\
-                .filter(System.__dict__[filter_name].ilike(f'%{filter_param}%'))
+    @staticmethod
+    def build_system_filters():
+        """Build system filters."""
+        filters = []
+        if filter_display_name := request.args.get('display_name'):
+            filters.append(System.display_name.ilike(f'%{filter_display_name}%'))
+        if filter_by_state := request.args.get('state'):
+            filters.append(System.state.ilike(f'%{filter_by_state}%'))
+        else:
+            filters.append(System.state.in_(SYSTEM_STATES_EXCEPT_EMPTY))
+        return filters
 
     @staticmethod
     def sorting_order(order_how):
