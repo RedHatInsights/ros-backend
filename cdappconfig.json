@@ -1,13 +1,4 @@
 {
-    "database": {
-        "adminPassword": "QM2FppyaTcYBcXtl",
-        "adminUsername": "postgres",
-        "hostname": "localhost",
-        "name": "postgres",
-        "password": "postgres",
-        "port": 15432,
-        "username": "postgres"
-    },
     "kafka": {
         "brokers": [
             {
