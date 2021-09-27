@@ -91,7 +91,6 @@ class HostsApi(Resource):
             request.args.get('order_by') or 'display_name'
         ).strip().lower()
         order_how = (request.args.get('order_how') or 'asc').strip().lower()
-        filter_display_name = request.args.get('display_name')
 
         ident = identity(request)['identity']
         # Note that When using LIMIT, it is important to use an ORDER BY clause
@@ -100,16 +99,8 @@ class HostsApi(Resource):
         # Refer - https://www.postgresql.org/docs/13/queries-limit.html
 
         account_query = db.session.query(RhAccount.id).filter(RhAccount.account == ident['account_number']).subquery()
-
-        if filter_display_name:
-            system_query = db.session.query(System.id)\
-                .filter(System.display_name.ilike(f'%{filter_display_name}%'))\
-                .filter(System.account_id.in_(account_query))\
-                .filter(System.state.in_(SYSTEM_STATES_EXCEPT_EMPTY))
-        else:
-            system_query = db.session.query(System.id)\
-                .filter(System.account_id.in_(account_query))\
-                .filter(System.state.in_(SYSTEM_STATES_EXCEPT_EMPTY))
+        system_query = db.session.query(System.id).filter(
+            System.account_id.in_(account_query)).filter(*self.build_system_filters())
 
         last_reported = (
             db.session.query(PerformanceProfile.system_id, func.max(PerformanceProfile.report_date).label('max_date')
@@ -152,6 +143,18 @@ class HostsApi(Resource):
         return build_paginated_system_list_response(
             limit, offset, hosts, count
         )
+
+    @staticmethod
+    def build_system_filters():
+        """Build system filters."""
+        filters = []
+        if filter_display_name := request.args.get('display_name'):
+            filters.append(System.display_name.ilike(f'%{filter_display_name}%'))
+        if filter_by_state := request.args.get('state'):
+            filters.append(System.state.ilike(f'%{filter_by_state}%'))
+        else:
+            filters.append(System.state.in_(SYSTEM_STATES_EXCEPT_EMPTY))
+        return filters
 
     @staticmethod
     def sorting_order(order_how):
