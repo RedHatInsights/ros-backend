@@ -45,10 +45,12 @@ def test_process_system_details(inventory_event_consumer, inventory_event_messag
     assert str(host.inventory_id) == inventory_event_message['host']['id']
 
 
-def test_calculate_performance_score(inventory_event_consumer, inventory_event_message):
-    expected_scores = {'memory_score': 80, 'cpu_score': 0, 'io_score': 0}
-    scores = inventory_event_consumer._calculate_performance_score(PERFORMANCE_RECORD, inventory_event_message['host'])
-    assert expected_scores == scores
+def test_calculate_performance_utilization(inventory_event_consumer, inventory_event_message):
+    expected_utilization = {'memory': 80, 'cpu': 0, 'io': 0}
+    utilization = inventory_event_consumer._calculate_performance_utilization(
+        PERFORMANCE_RECORD, inventory_event_message['host']
+    )
+    assert expected_utilization == utilization
 
 
 def test_calculate_cpu_score(inventory_event_consumer):
