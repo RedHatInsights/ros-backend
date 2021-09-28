@@ -333,16 +333,30 @@
                     "state": {
                         "type": "string"
                     },
+                    "performance_utilization": {
+                        "type": "object",
+                        "properties": {
+                            "memory": {
+                                "type": "number"
+                            },
+                            "cpu": {
+                                "type": "number"
+                            },
+                            "io": {
+                                "type": "number"
+                            }
+                        }
+                    },
                     "display_performance_score": {
                         "type": "object",
                         "properties": {
-                            "memory_score": {
+                            "memory": {
                                 "type": "number"
                             },
-                            "cpu_score": {
+                            "cpu": {
                                 "type": "number"
                             },
-                            "io_score": {
+                            "io": {
                                 "type": "number"
                             }
                         }
@@ -383,16 +397,30 @@
                     "display_name": {
                         "type": "string"
                     },
+                    "performance_utilization": {
+                        "type": "object",
+                        "properties": {
+                            "memory": {
+                                "type": "number"
+                            },
+                            "cpu": {
+                                "type": "number"
+                            },
+                            "io": {
+                                "type": "number"
+                            }
+                        }
+                    },
                     "display_performance_score": {
                         "type": "object",
                         "properties": {
-                            "memory_score": {
+                            "memory": {
                                 "type": "number"
                             },
-                            "cpu_score": {
+                            "cpu": {
                                 "type": "number"
                             },
-                            "io_score": {
+                            "io": {
                                 "type": "number"
                             }
                         }
@@ -444,13 +472,13 @@
             "PerformanceItem": {
                 "type": "object",
                 "properties": {
-                    "cpu_score": {
+                    "cpu": {
                         "type": "integer"
                     },
-                    "memory_score": {
+                    "memory": {
                         "type": "integer"
                     },
-                    "io_score": {
+                    "io": {
                         "type": "integer"
                     },
                     "report_date": {
@@ -553,9 +581,9 @@
                     "default": "display_name",
                     "enum": [
                         "display_name",
-                        "cpu_score",
-                        "memory_score",
-                        "io_score",
+                        "cpu",
+                        "memory",
+                        "io",
                         "number_of_recommendations",
                         "state"
                     ]

@@ -9,7 +9,7 @@ db = SQLAlchemy()
 
 class PerformanceProfile(db.Model):
     performance_record = db.Column(JSONB)
-    performance_score = db.Column(JSONB)
+    performance_utilization = db.Column(JSONB)
     report_date = db.Column(db.Date, default=date.today())
     system_id = db.Column(db.Integer)
     __table_args__ = (
@@ -23,7 +23,7 @@ class PerformanceProfile(db.Model):
     @property
     def display_performance_score(self):
         display_performance_score = {}
-        for key, value in self.performance_score.items():
+        for key, value in self.performance_utilization.items():
             score = value // 20
             display_performance_score[key] = 1 if score < 1 else score
 
