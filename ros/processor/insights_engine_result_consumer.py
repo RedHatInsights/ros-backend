@@ -6,7 +6,6 @@ from ros.lib.models import RhAccount, System
 from ros.lib.utils import get_or_create
 from confluent_kafka import Consumer, KafkaException
 
-
 SYSTEM_STATES = {
     "INSTANCE_OVERSIZED": "Oversized",
     "INSTANCE_UNDERSIZED": "Undersized",
