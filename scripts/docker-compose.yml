@@ -106,7 +106,6 @@ services:
       - INVENTORY_DB_NAME=insights
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - PAYLOAD_TRACKER_ENABLED=false
-      - LISTEN_PORT=8001
     depends_on:
        - kafka-create-topics
        - db-host-inventory
@@ -119,12 +118,12 @@ services:
     depends_on:
       - insights-inventory-mq
     ports:
-      - 8001:8000
+      - 8001:8080
 
   puptoo:
     image: quay.io/cloudservices/insights-puptoo:latest
     ports:
-      - 8002:8002
+      - 8003:8003
     environment:
       - LOG_LEVEL=INFO
       - FACT_EXTRACT_LOGLEVEL=ERROR
