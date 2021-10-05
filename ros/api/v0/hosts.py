@@ -157,8 +157,8 @@ class HostsApi(Resource):
         filters = []
         if filter_display_name := request.args.get('display_name'):
             filters.append(System.display_name.ilike(f'%{filter_display_name}%'))
-        if filter_by_state := request.args.get('state'):
-            filters.append(System.state.ilike(f'%{filter_by_state}%'))
+        if states := request.args.getlist('state'):
+            filters.append(System.state.in_(states))
         else:
             filters.append(System.state.in_(SYSTEM_STATES_EXCEPT_EMPTY))
         return filters
