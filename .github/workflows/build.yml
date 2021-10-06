@@ -1,0 +1,82 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Python application
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:9.6
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: 'ros_db_test'
+        ports:
+        - 15432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      zookeeper:
+        image: confluentinc/cp-zookeeper
+        env:
+          ZOOKEEPER_CLIENT_PORT: 32181
+          ZOOKEEPER_SERVER_ID: 1
+      kafka:
+        image: confluentinc/cp-kafka
+        ports:
+        - 29092:29092
+        - 9092:9092
+        env:
+          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+          KAFKA_BROKER_ID: 1
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:32181
+          KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/Pipfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - run: |
+        pip --version
+
+    - name: Install pipenv
+      run: |
+        pip install pipenv
+        pipenv install --dev
+
+    - name: Lint with flake8
+      run: |
+        pip install flake8
+        flake8 .
+
+    - name: Test with pytest
+      run: |
+        pip install pytest pytest-cov
+        pipenv run pytest --cov=ros tests
+      env:
+        DB_NAME: ros_db_test
+        DB_HOST: localhost
+        DB_PORT: 15432
+        DB_USER: postgres
+        DB_PASSWORD: postgres
