@@ -11,6 +11,9 @@ from insights.parsers.aws_instance_id import AWSInstanceIdDoc
 from insights.parsers.azure_instance_type import AzureInstanceType
 from insights.core import dr
 from ros.lib.config import INSIGHTS_EXTRACT_LOGLEVEL
+from ros.processor.metrics import (archive_downloaded_success,
+                                   archive_failed_to_download,
+                                   processor_requests_failures)
 
 
 LOG = logging.getLogger(__name__)
@@ -49,23 +52,31 @@ def performance_profile(pmlog_summary, lscpu, aws_instance_id, azure_instance_ty
     return metadata_response
 
 
-def get_performance_profile(report_url):
-    with _download_and_extract_report(report_url) as archive:
+def get_performance_profile(report_url, account_number):
+    with _download_and_extract_report(report_url, account_number) as archive:
         try:
             broker = run(performance_profile, root=archive.tmp_dir)
             result = broker[performance_profile]
             del result["type"]
             return result
         except Exception as e:
+            processor_requests_failures.labels(
+                reporter='INVENTORY EVENTS', account_number=account_number
+            ).inc()
             LOG.error("Failed to extract performance_profile: %s", e)
 
 
 @contextmanager
-def _download_and_extract_report(report_url):
+def _download_and_extract_report(report_url, account_number):
     download_response = requests.get(report_url)
     if download_response.status_code != HTTPStatus.OK:
-        LOG.error("Unable to download the report. ERROR - %s", download_response.reason)
+        archive_failed_to_download.labels(account_number=account_number).inc()
+        LOG.error(
+            "Unable to download the report. ERROR - %s",
+            download_response.reason
+        )
     else:
+        archive_downloaded_success.labels(account_number=account_number).inc()
         with NamedTemporaryFile() as tf:
             tf.write(download_response.content)
             tf.flush()

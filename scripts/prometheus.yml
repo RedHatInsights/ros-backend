@@ -21,4 +21,4 @@ scrape_configs:
       # for docker versions under 18.03 onwards you can use host.docker.internal
       # to point at your localhost from the container
       # for version 17.06 - 18.03 we use docker.for.mac.localhost
-      - targets: ['172.17.0.1:8080'] # Uses /metrics by default
+      - targets: ['host.docker.internal:8000', 'host.docker.internal:5005'] # Uses /metrics by default
