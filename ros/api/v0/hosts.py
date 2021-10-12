@@ -63,7 +63,7 @@ class HostsApi(Resource):
         'display_name': fields.String,
         'inventory_id': fields.String,
         'account': fields.String,
-        'number_of_recommendations': fields.Integer,
+        'number_of_suggestions': fields.Integer(attribute='number_of_recommendations'),
         'state': fields.String,
         'performance_utilization': fields.Nested(performance_utilization_fields),
         'display_performance_score': fields.Nested(display_performance_score_fields),
@@ -192,7 +192,7 @@ class HostsApi(Resource):
                     order_method].astext.cast(Integer)),
                 asc(PerformanceProfile.system_id),)
 
-        if order_method == 'number_of_recommendations':
+        if order_method == 'number_of_suggestions':
             return (sort_order(System.number_of_recommendations),
                     asc(PerformanceProfile.system_id),)
 
@@ -222,7 +222,7 @@ class HostDetailsApi(Resource):
         'performance_utilization': fields.Nested(performance_utilization_fields),
         'display_performance_score': fields.Nested(display_performance_score_fields),
         'rating': fields.Integer,
-        'number_of_recommendations': fields.Integer,
+        'number_of_suggestions': fields.Integer(attribute='number_of_recommendations'),
         'state': fields.String,
         'report_date': fields.String,
         'instance_type': fields.String,

@@ -158,11 +158,11 @@
                 }
             }
         },
-        "/systems/{inventory_id}/recommendations": {
+        "/systems/{inventory_id}/suggestions": {
             "get": {
-                "summary": "Show the list of recommendations by given inventory id",
-                "description": "Show the list of recommendations by given inventory id",
-                "operationId": "getRecommendationsForSystem",
+                "summary": "Show the list of suggestions by given inventory id",
+                "description": "Show the list of suggestions by given inventory id",
+                "operationId": "getSuggestionsForSystem",
                 "parameters": [
                     {
                         "name": "inventory_id",
@@ -189,7 +189,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/RecommendationsList"
+                                    "$ref": "#/components/schemas/SuggestionsList"
                                 }
                             }
                         }
@@ -199,9 +199,9 @@
         },
         "/rating": {
             "post": {
-                "summary": "submit recommendation rating",
-                "description": "submit recommendation rating",
-                "operationId": "addRecommendationRatingToSystem",
+                "summary": "submit suggestion rating",
+                "description": "submit suggestion rating",
+                "operationId": "addSuggestionRatingToSystem",
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -327,7 +327,7 @@
                     "account": {
                         "type": "string"
                     },
-                    "number_of_recommendations": {
+                    "number_of_suggestions": {
                         "type": "integer"
                     },
                     "state": {
@@ -429,7 +429,7 @@
                         "type": "integer",
                         "enum": [-1, 0, 1]
                     },
-                    "number_of_recommendations": {
+                    "number_of_suggestions": {
                         "type": "integer"
                     },
                     "state": {
@@ -486,7 +486,7 @@
                     }
                 }
             },
-            "RecommendationsList": {
+            "SuggestionsList": {
                 "type": "object",
                 "properties": {
                     "host_id": {
@@ -503,12 +503,12 @@
                     "data": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/RecommendationsItem"
+                            "$ref": "#/components/schemas/SuggestionsItem"
                         }
                     }
                 }
             },
-            "RecommendationsItem": {
+            "SuggestionsItem": {
                 "type": "object",
                 "properties": {
                     "rule_id": {
@@ -584,7 +584,7 @@
                         "cpu",
                         "memory",
                         "io",
-                        "number_of_recommendations",
+                        "number_of_suggestions",
                         "state"
                     ]
                 }
