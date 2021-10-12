@@ -11,7 +11,8 @@ SYSTEM_STATES = {
     "INSTANCE_UNDERSIZED": "Undersized",
     "CONSUMPTION_MODEL": "Idling",
     "STORAGE_RIGHTSIZING": "Storage rightsizing",
-    "OPTIMIZED": "Optimized"
+    "OPTIMIZED": "Optimized",
+    "NO_PCP_DATA": "Configured"
 }
 OPTIMIZED_SYSTEM_KEY = "OPTIMIZED"
 LOG = get_logger(__name__)
@@ -81,6 +82,10 @@ class InsightsEngineResultConsumer:
             )
 
             state_key = reports[0].get('key')
+            LOG.info(
+                'Logging the state of system for this run.'
+                "The system is currently %s.", SYSTEM_STATES[state_key]
+            )
             if len(reports) == 0:
                 state_key = OPTIMIZED_SYSTEM_KEY
                 LOG.info(
