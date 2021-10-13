@@ -12,7 +12,7 @@ SYSTEM_STATES = {
     "CONSUMPTION_MODEL": "Idling",
     "STORAGE_RIGHTSIZING": "Storage rightsizing",
     "OPTIMIZED": "Optimized",
-    "NO_PCP_DATA": "Configured"
+    "NO_PCP_DATA": "Waiting for data"
 }
 OPTIMIZED_SYSTEM_KEY = "OPTIMIZED"
 LOG = get_logger(__name__)
