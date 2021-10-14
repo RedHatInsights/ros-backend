@@ -122,7 +122,7 @@ class InsightsEngineResultConsumer:
                 processor_requests_success.labels(
                     reporter=self.reporter, account_number=host['account']
                 ).inc()
-                LOG.info("Refreshed system %s (%s) belonging to account: %s (%s) via engine-result",
+                LOG.info("Refreshed system %s (%s) belonging to account: %s (%s) via engine-result processor.",
                          system.inventory_id, system.id, account.account, account.id)
             except Exception as err:
                 processor_requests_failures.labels(
