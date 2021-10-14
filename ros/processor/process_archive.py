@@ -55,6 +55,7 @@ def performance_profile(pmlog_summary, lscpu, aws_instance_id, azure_instance_ty
 def get_performance_profile(report_url, account_number):
     with _download_and_extract_report(report_url, account_number) as archive:
         try:
+            LOG.info("Starting to extract performance profile from the report present at %s.", report_url)
             broker = run(performance_profile, root=archive.tmp_dir)
             result = broker[performance_profile]
             del result["type"]
@@ -63,22 +64,22 @@ def get_performance_profile(report_url, account_number):
             processor_requests_failures.labels(
                 reporter='INVENTORY EVENTS', account_number=account_number
             ).inc()
-            LOG.error("Failed to extract performance_profile: %s", e)
+            LOG.error("Failed to extract performance_profile from the report present at %s. ERROR - %s", report_url, e)
 
 
 @contextmanager
 def _download_and_extract_report(report_url, account_number):
     download_response = requests.get(report_url)
+    LOG.info("Starting to download the report from %s.", report_url)
+
     if download_response.status_code != HTTPStatus.OK:
         archive_failed_to_download.labels(account_number=account_number).inc()
-        LOG.error(
-            "Unable to download the report. ERROR - %s",
-            download_response.reason
-        )
+        LOG.error("Unable to download the report from %s. ERROR - %s", report_url, download_response.reason)
     else:
         archive_downloaded_success.labels(account_number=account_number).inc()
         with NamedTemporaryFile() as tf:
             tf.write(download_response.content)
+            LOG.info("Downloaded the report successfully from %s.", report_url)
             tf.flush()
             with extract(tf.name) as ex:
                 yield ex
