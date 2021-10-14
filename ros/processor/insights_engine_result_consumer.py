@@ -11,7 +11,8 @@ SYSTEM_STATES = {
     "INSTANCE_UNDERSIZED": "Undersized",
     "CONSUMPTION_MODEL": "Idling",
     "STORAGE_RIGHTSIZING": "Storage rightsizing",
-    "OPTIMIZED": "Optimized"
+    "OPTIMIZED": "Optimized",
+    "NO_PCP_DATA": "Waiting for data"
 }
 OPTIMIZED_SYSTEM_KEY = "OPTIMIZED"
 LOG = get_logger(__name__)
@@ -80,12 +81,15 @@ class InsightsEngineResultConsumer:
                 account=host['account']
             )
 
-            state_key = reports[0].get('key')
             if len(reports) == 0:
                 state_key = OPTIMIZED_SYSTEM_KEY
                 LOG.info(
-                    'There is no ros rule hits. '
-                    "Marking state of system with inventory id: %s as %s",
+                    "There are no ROS rule hits for system with inventory id: %s. Hence, marking it %s.",
+                    host['id'], SYSTEM_STATES[state_key])
+            else:
+                state_key = reports[0].get('key')
+                LOG.info(
+                    "Marking the state of system with inventory id: %s as %s.",
                     host['id'], SYSTEM_STATES[state_key])
 
             system = get_or_create(
