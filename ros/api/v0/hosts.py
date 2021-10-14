@@ -16,7 +16,7 @@ import logging
 
 LOG = logging.getLogger(__name__)
 SYSTEM_STATES_EXCEPT_EMPTY = [
-    "Oversized", "Undersized", "Idling", "Storage rightsizing", "Optimized"
+    "Oversized", "Undersized", "Idling", "Storage rightsizing", "Optimized", "Waiting for data"
 ]
 SYSTEM_COLUMNS = [
             'inventory_id', 'display_name',
