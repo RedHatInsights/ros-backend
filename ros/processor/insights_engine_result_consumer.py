@@ -104,8 +104,6 @@ class InsightsEngineResultConsumer:
                     LOG.info(
                         "Marking the state of system with inventory id: %s as %s.",
                         host['id'], SYSTEM_STATES[state_key])
-                else:
-                    state_key = reports[0].get('key')
 
                 system = get_or_create(
                     db.session, System, 'inventory_id',
