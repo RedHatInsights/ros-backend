@@ -157,8 +157,8 @@ class InventoryEventsConsumer:
                     reporter=self.reporter, account_number=host['account']
                 ).inc()
                 LOG.info(
-                    "Refreshed system %s (%s) belonging to account: %s (%s) via report-processor",
-                    system.inventory_id, system.id, account.account, account.id
+                    "%s - Refreshed system %s (%s) belonging to account: %s (%s) via report-processor",
+                    self.prefix, system.inventory_id, system.id, account.account, account.id
                 )
             except Exception as err:
                 processor_requests_failures.labels(

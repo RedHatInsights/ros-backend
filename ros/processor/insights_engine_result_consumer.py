@@ -98,14 +98,14 @@ class InsightsEngineResultConsumer:
                     rec_count = len(reports)
                     state_key = OPTIMIZED_SYSTEM_KEY
                     LOG.info(
-                        "There are no ROS rule hits for system with inventory id: %s. Hence, marking it %s.",
-                        host['id'], SYSTEM_STATES[state_key])
+                        "%s - There are no ROS rule hits for system with inventory id: %s. Hence, marking it %s.",
+                        self.prefix, host['id'], SYSTEM_STATES[state_key])
                 else:
                     state_key = reports[0].get('key')
                     rec_count = 0 if state_key == 'NO_PCP_DATA' else len(reports)
                     LOG.info(
-                        "Marking the state of system with inventory id: %s as %s.",
-                        host['id'], SYSTEM_STATES[state_key])
+                        "%s - Marking the state of system with inventory id: %s as %s.",
+                        self.prefix, host['id'], SYSTEM_STATES[state_key])
 
                 system = get_or_create(
                     db.session, System, 'inventory_id',
@@ -122,8 +122,8 @@ class InsightsEngineResultConsumer:
                 processor_requests_success.labels(
                     reporter=self.reporter, account_number=host['account']
                 ).inc()
-                LOG.info("Refreshed system %s (%s) belonging to account: %s (%s) via engine-result processor.",
-                         system.inventory_id, system.id, account.account, account.id)
+                LOG.info("%s - Refreshed system %s (%s) belonging to account: %s (%s) via engine-result processor.",
+                         self.prefix, system.inventory_id, system.id, account.account, account.id)
             except Exception as err:
                 processor_requests_failures.labels(
                     reporter=self.reporter, account_number=host['account']

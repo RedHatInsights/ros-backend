@@ -9,6 +9,9 @@ LOG = get_logger(__name__)
 
 
 class GarbageCollector():
+    def __init__(self):
+        self.prefix = 'GARBAGE COLLECTOR'
+
     def run(self):
         while True:
             self.remove_outdated_data()
@@ -24,8 +27,8 @@ class GarbageCollector():
                 for record in stale_performance_profiles:
                     selected_system = db.session.query(System).filter(System.id == record.system_id).first()
 
-                    LOG.info("Deleting performance profile of the system: %s older than %d days",
-                             selected_system.inventory_id, DAYS_UNTIL_STALE)
-                delete_record(db.session, PerformanceProfile, system_id=record.system_id)
+                    LOG.info("%s - Deleting performance profile of the system: %s older than %d days",
+                             self.prefix, selected_system.inventory_id, DAYS_UNTIL_STALE)
+                    delete_record(db.session, PerformanceProfile, system_id=record.system_id)
 
             time.sleep(GARBAGE_COLLECTION_INTERVAL)
