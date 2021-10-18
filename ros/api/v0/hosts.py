@@ -158,7 +158,13 @@ class HostsApi(Resource):
         if filter_display_name := request.args.get('display_name'):
             filters.append(System.display_name.ilike(f'%{filter_display_name}%'))
         if states := request.args.getlist('state'):
-            filters.append(System.state.in_(states))
+            modified_states = []
+            for state in states:
+                state = state.capitalize()
+                modified_states.append(state)
+                if state not in SYSTEM_STATES_EXCEPT_EMPTY:
+                    abort(400, message='Invalid state entered')
+            filters.append(System.state.in_(modified_states))
         else:
             filters.append(System.state.in_(SYSTEM_STATES_EXCEPT_EMPTY))
         return filters
