@@ -20,7 +20,7 @@ kafka_failures = Counter(
 
 archive_downloaded_success = Counter(
     "ros_archive_downloaded_success",
-    "Total number of archive downloaded successfully",
+    "Total number of archives downloaded successfully",
     ["account_number"]
 )
 
