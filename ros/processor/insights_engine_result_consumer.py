@@ -5,6 +5,9 @@ from ros.lib.config import (INSIGHTS_KAFKA_ADDRESS, GROUP_ID,
 from ros.lib.models import RhAccount, System
 from ros.lib.utils import get_or_create
 from confluent_kafka import Consumer, KafkaException
+from ros.processor.metrics import (processor_requests_success,
+                                   processor_requests_failures,
+                                   kafka_failures)
 
 SYSTEM_STATES = {
     "INSTANCE_OVERSIZED": "Oversized",
@@ -30,6 +33,7 @@ class InsightsEngineResultConsumer:
         self.consumer.subscribe([ENGINE_RESULT_TOPIC])
 
         self.prefix = 'PROCESSING ENGINE RESULTS'
+        self.reporter = 'INSIGHTS ENGINE'
 
     def __iter__(self):
         return self
@@ -49,11 +53,19 @@ class InsightsEngineResultConsumer:
                 msg = json.loads(msg.value().decode("utf-8"))
                 self.handle_msg(msg)
             except json.decoder.JSONDecodeError:
+                kafka_failures.labels(
+                    reporter=self.reporter,
+                    account_number=msg['input']['host']['account']
+                ).inc()
                 LOG.error(
                     'Unable to decode kafka message: %s - %s',
                     msg.value(), self.prefix
                 )
             except Exception as err:
+                processor_requests_failures.labels(
+                    reporter=self.reporter,
+                    account_number=msg['input']['host']['account']
+                ).inc()
                 LOG.error(
                     'An error occurred during message processing: %s - %s',
                     repr(err),
@@ -76,33 +88,43 @@ class InsightsEngineResultConsumer:
     def process_report(self, host, reports):
         """create/update system based on reports data."""
         with app.app_context():
-            account = get_or_create(
-                db.session, RhAccount, 'account',
-                account=host['account']
-            )
+            try:
+                account = get_or_create(
+                    db.session, RhAccount, 'account',
+                    account=host['account']
+                )
 
-            if len(reports) == 0:
-                state_key = OPTIMIZED_SYSTEM_KEY
-                LOG.info(
-                    "There are no ROS rule hits for system with inventory id: %s. Hence, marking it %s.",
-                    host['id'], SYSTEM_STATES[state_key])
-            else:
-                state_key = reports[0].get('key')
-                LOG.info(
-                    "Marking the state of system with inventory id: %s as %s.",
-                    host['id'], SYSTEM_STATES[state_key])
+                if len(reports) == 0:
+                    state_key = OPTIMIZED_SYSTEM_KEY
+                    LOG.info(
+                        "There are no ROS rule hits for system with inventory id: %s. Hence, marking it %s.",
+                        host['id'], SYSTEM_STATES[state_key])
+                else:
+                    state_key = reports[0].get('key')
+                    LOG.info(
+                        "Marking the state of system with inventory id: %s as %s.",
+                        host['id'], SYSTEM_STATES[state_key])
 
-            system = get_or_create(
-                db.session, System, 'inventory_id',
-                account_id=account.id,
-                inventory_id=host['id'],
-                display_name=host['display_name'],
-                fqdn=host['fqdn'],
-                rule_hit_details=reports,
-                number_of_recommendations=len(reports),
-                state=SYSTEM_STATES[state_key]
-            )
+                system = get_or_create(
+                    db.session, System, 'inventory_id',
+                    account_id=account.id,
+                    inventory_id=host['id'],
+                    display_name=host['display_name'],
+                    fqdn=host['fqdn'],
+                    rule_hit_details=reports,
+                    number_of_recommendations=len(reports),
+                    state=SYSTEM_STATES[state_key]
+                )
 
-            db.session.commit()
-            LOG.info("Refreshed system %s (%s) belonging to account: %s (%s) via engine-result",
-                     system.inventory_id, system.id, account.account, account.id)
+                db.session.commit()
+                processor_requests_success.labels(
+                    reporter=self.reporter, account_number=host['account']
+                ).inc()
+                LOG.info("Refreshed system %s (%s) belonging to account: %s (%s) via engine-result",
+                         system.inventory_id, system.id, account.account, account.id)
+            except Exception as err:
+                processor_requests_failures.labels(
+                    reporter=self.reporter, account_number=host['account']
+                ).inc()
+                LOG.error("Unable to add host %s to DB belonging to account: %s via engine-result - %s",
+                          host['fqdn'], host['account'], err)

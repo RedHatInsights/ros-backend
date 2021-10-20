@@ -33,6 +33,7 @@ if CLOWDER_ENABLED:
     DB_PASSWORD = LoadedConfig.database.password
     DB_HOST = LoadedConfig.database.hostname
     DB_PORT = LoadedConfig.database.port
+    METRICS_PORT = LoadedConfig.metricsPort
     INSIGHTS_KAFKA_ADDRESS = LoadedConfig.kafka.brokers[0].hostname + ":" + str(LoadedConfig.kafka.brokers[0].port)
     INVENTORY_EVENTS_TOPIC = KafkaTopics["platform.inventory.events"].name
     ENGINE_RESULT_TOPIC = KafkaTopics["platform.engine.results"].name
@@ -47,6 +48,7 @@ else:
     INSIGHTS_KAFKA_ADDRESS = f"{INSIGHTS_KAFKA_HOST}:{INSIGHTS_KAFKA_PORT}"
     INVENTORY_EVENTS_TOPIC = os.getenv("INVENTORY_EVENTS_TOPIC", "platform.inventory.events")
     ENGINE_RESULT_TOPIC = os.getenv("ENGINE_RESULT_TOPIC", "platform.engine.results")
+    METRICS_PORT = os.getenv("METRICS_PORT", 5005)
 
 DB_URI = f"postgresql://{DB_USER}:{DB_PASSWORD}"\
                 f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
@@ -58,6 +60,7 @@ RBAC_HOST = os.getenv("RBAC_HOST", "localhost")
 RBAC_PORT = os.getenv("RBAC_PORT", "8114")
 RBAC_SVC_URL = os.getenv("RBAC_SVC_URL", f"http://{RBAC_HOST}:{RBAC_PORT}/")
 ENABLE_RBAC = str_to_bool(os.getenv("ENABLE_RBAC", "True"))
+
 # Time interval after which garbage collector is involved to check for outdated data.
 GARBAGE_COLLECTION_INTERVAL = os.getenv("GARBAGE_COLLECTION_INTERVAL", 86400)
 # Number of days after which data is considered to be outdated.

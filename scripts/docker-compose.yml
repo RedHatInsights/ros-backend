@@ -165,3 +165,21 @@ services:
     command: ["bash", "-c", "python -m manage db upgrade && python -m manage seed && python -m ros.api.main"]
     ports:
       - 8000:8000
+  # logging and Monitoring
+  grafana:
+      ports:
+          - 3001:3000
+      container_name: grafana
+      environment:
+          - GF_SERVER_ROOT_URL=http://grafana.server.name
+          - GF_SECURITY_ADMIN_PASSWORD=secret
+      image: grafana/grafana
+  prometheus:
+      container_name: example-prometheus
+      ports:
+          - 9090:9090
+      extra_hosts:
+          - "host.docker.internal:host-gateway"
+      volumes:
+          - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      image: prom/prometheus
