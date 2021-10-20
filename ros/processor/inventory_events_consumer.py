@@ -6,6 +6,9 @@ from ros.lib.app import app, db
 from ros.lib.models import PerformanceProfile, RhAccount, System
 from ros.lib.utils import get_or_create
 from ros.processor.process_archive import get_performance_profile
+from ros.processor.metrics import (processor_requests_success,
+                                   processor_requests_failures,
+                                   kafka_failures)
 
 
 LOG = get_logger(__name__)
@@ -30,6 +33,7 @@ class InventoryEventsConsumer:
             'updated': self.host_create_update_events
         }
         self.prefix = 'PROCESSING INVENTORY EVENTS'
+        self.reporter = 'INVENTORY EVENTS'
 
     def __iter__(self):
         return self
@@ -58,11 +62,17 @@ class InventoryEventsConsumer:
                         event_type, self.prefix
                     )
             except json.decoder.JSONDecodeError:
+                kafka_failures.labels(
+                    reporter=self.reporter, account_number=msg['host']['account']
+                ).inc()
                 LOG.error(
                     'Unable to decode kafka message: %s - %s',
                     msg.value(), self.prefix
                 )
             except Exception as err:
+                processor_requests_failures.labels(
+                    reporter=self.reporter, account_number=msg['host']['account']
+                ).inc()
                 LOG.error(
                     'An error occurred during message processing: %s in the system %s created from account: %s - %s',
                     repr(err),
@@ -88,6 +98,9 @@ class InventoryEventsConsumer:
             )
             rows_deleted = db.session.query(System.id).filter(System.inventory_id == host_id).delete()
             if rows_deleted > 0:
+                processor_requests_success.labels(
+                    reporter=self.reporter, account_number=msg['host']['account']
+                ).inc()
                 LOG.info(
                     'Deleted host from inventory with id: %s - %s',
                     host_id,
@@ -104,42 +117,52 @@ class InventoryEventsConsumer:
     def process_system_details(self, msg):
         """ Store new system information (stale, stale_warning timestamp) and return internal DB id"""
         host = msg['host']
-        performance_record = get_performance_profile(msg['platform_metadata']['url'])
+        performance_record = get_performance_profile(msg['platform_metadata']['url'], host['account'])
         if performance_record:
             performance_utilization = self._calculate_performance_utilization(
                 performance_record, host
             )
             with app.app_context():
-                account = get_or_create(
-                    db.session, RhAccount, 'account',
-                    account=host['account']
-                )
+                try:
+                    account = get_or_create(
+                        db.session, RhAccount, 'account',
+                        account=host['account']
+                    )
 
-                system = get_or_create(
-                    db.session, System, 'inventory_id',
-                    account_id=account.id,
-                    inventory_id=host['id'],
-                    display_name=host['display_name'],
-                    fqdn=host['fqdn'],
-                    cloud_provider=host['system_profile']['cloud_provider'],
-                    instance_type=performance_record.get('instance_type'),
-                    stale_timestamp=host['stale_timestamp']
-                )
+                    system = get_or_create(
+                        db.session, System, 'inventory_id',
+                        account_id=account.id,
+                        inventory_id=host['id'],
+                        display_name=host['display_name'],
+                        fqdn=host['fqdn'],
+                        cloud_provider=host['system_profile']['cloud_provider'],
+                        instance_type=performance_record.get('instance_type'),
+                        stale_timestamp=host['stale_timestamp']
+                    )
 
-                get_or_create(
-                    db.session, PerformanceProfile, ['system_id', 'report_date'],
-                    system_id=system.id,
-                    performance_record=performance_record,
-                    performance_utilization=performance_utilization,
-                    report_date=datetime.datetime.utcnow().date()
-                )
+                    get_or_create(
+                        db.session, PerformanceProfile, ['system_id', 'report_date'],
+                        system_id=system.id,
+                        performance_record=performance_record,
+                        performance_utilization=performance_utilization,
+                        report_date=datetime.datetime.utcnow().date()
+                    )
 
-                # Commit changes
-                db.session.commit()
-                LOG.info(
-                    "Refreshed system %s (%s) belonging to account: %s (%s) via report-processor",
-                    system.inventory_id, system.id, account.account, account.id
-                )
+                    # Commit changes
+                    db.session.commit()
+                    processor_requests_success.labels(
+                        reporter=self.reporter, account_number=host['account']
+                    ).inc()
+                    LOG.info(
+                        "Refreshed system %s (%s) belonging to account: %s (%s) via report-processor",
+                        system.inventory_id, system.id, account.account, account.id
+                    )
+                except Exception as err:
+                    processor_requests_failures.labels(
+                        reporter=self.reporter, account_number=host['account']
+                    ).inc()
+                    LOG.error("Unable to add host %s to DB belonging to account: %s via report-processor - %s",
+                              host['fqdn'], host['account'], err)
 
     def _calculate_performance_utilization(self, performance_record, host):
         MAX_IOPS_CAPACITY = 16000
