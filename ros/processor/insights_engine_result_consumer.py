@@ -101,6 +101,10 @@ class InsightsEngineResultConsumer:
                         host['id'], SYSTEM_STATES[state_key])
                 else:
                     state_key = reports[0].get('key')
+                    if state_key == 'NO_PCP_DATA':
+                        rec_count = 0
+                    else:
+                        rec_count = len(reports)
                     LOG.info(
                         "Marking the state of system with inventory id: %s as %s.",
                         host['id'], SYSTEM_STATES[state_key])
@@ -112,7 +116,7 @@ class InsightsEngineResultConsumer:
                     display_name=host['display_name'],
                     fqdn=host['fqdn'],
                     rule_hit_details=reports,
-                    number_of_recommendations=len(reports),
+                    number_of_recommendations=rec_count,
                     state=SYSTEM_STATES[state_key]
                 )
 

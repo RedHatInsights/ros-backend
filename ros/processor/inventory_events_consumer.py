@@ -140,21 +140,16 @@ class InventoryEventsConsumer:
                     performance_utilization = self._calculate_performance_utilization(
                         performance_record, host
                     )
-                    get_or_create(
-                        db.session, PerformanceProfile, ['system_id', 'report_date'],
-                        system_id=system.id,
-                        performance_record=performance_record,
-                        performance_utilization=performance_utilization,
-                        report_date=datetime.datetime.utcnow().date()
-                    )
                 else:
-                    get_or_create(
-                        db.session, PerformanceProfile, ['system_id', 'report_date'],
-                        system_id=system.id,
-                        performance_record=performance_record,
-                        performance_utilization={'memory': 0, 'cpu': 0, 'io': 0},
-                        report_date=datetime.datetime.utcnow().date()
-                    )
+                    performance_utilization = {'memory': 0, 'cpu': 0, 'io': 0}
+
+                get_or_create(
+                    db.session, PerformanceProfile, ['system_id', 'report_date'],
+                    system_id=system.id,
+                    performance_record=performance_record,
+                    performance_utilization=performance_utilization,
+                    report_date=datetime.datetime.utcnow().date()
+                )
 
                 # Commit changes
                 db.session.commit()
