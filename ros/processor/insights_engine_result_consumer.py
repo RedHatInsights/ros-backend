@@ -95,16 +95,14 @@ class InsightsEngineResultConsumer:
                 )
 
                 if len(reports) == 0:
+                    rec_count = len(reports)
                     state_key = OPTIMIZED_SYSTEM_KEY
                     LOG.info(
                         "There are no ROS rule hits for system with inventory id: %s. Hence, marking it %s.",
                         host['id'], SYSTEM_STATES[state_key])
                 else:
                     state_key = reports[0].get('key')
-                    if state_key == 'NO_PCP_DATA':
-                        rec_count = 0
-                    else:
-                        rec_count = len(reports)
+                    rec_count = 0 if state_key == 'NO_PCP_DATA' else len(reports)
                     LOG.info(
                         "Marking the state of system with inventory id: %s as %s.",
                         host['id'], SYSTEM_STATES[state_key])

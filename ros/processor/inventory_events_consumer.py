@@ -136,12 +136,12 @@ class InventoryEventsConsumer:
                     stale_timestamp=host['stale_timestamp']
                 )
 
-                if performance_record:
+                if len(performance_record) == 2 and ('total_cpus' and 'instance_type' in performance_record):
+                    performance_utilization = {'memory': 0, 'cpu': 0, 'io': 0}
+                else:
                     performance_utilization = self._calculate_performance_utilization(
                         performance_record, host
                     )
-                else:
-                    performance_utilization = {'memory': 0, 'cpu': 0, 'io': 0}
 
                 get_or_create(
                     db.session, PerformanceProfile, ['system_id', 'report_date'],
