@@ -618,7 +618,18 @@
                 "required": false,
                 "description": "Filter system with the given state",
                 "schema": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "Idling",
+                            "Oversized",
+                            "Undersized",
+                            "Optimized",
+                            "Storage rightsizing",
+                            "Waiting for data"
+                        ]
+                    }
                 }
             }
 
