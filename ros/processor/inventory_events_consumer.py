@@ -118,51 +118,54 @@ class InventoryEventsConsumer:
         """ Store new system information (stale, stale_warning timestamp) and return internal DB id"""
         host = msg['host']
         performance_record = get_performance_profile(msg['platform_metadata']['url'], host['account'])
-        if performance_record:
-            performance_utilization = self._calculate_performance_utilization(
-                performance_record, host
-            )
-            with app.app_context():
-                try:
-                    account = get_or_create(
-                        db.session, RhAccount, 'account',
-                        account=host['account']
+        with app.app_context():
+            try:
+                account = get_or_create(
+                    db.session, RhAccount, 'account',
+                    account=host['account']
+                )
+
+                system = get_or_create(
+                    db.session, System, 'inventory_id',
+                    account_id=account.id,
+                    inventory_id=host['id'],
+                    display_name=host['display_name'],
+                    fqdn=host['fqdn'],
+                    cloud_provider=host['system_profile']['cloud_provider'],
+                    instance_type=performance_record.get('instance_type'),
+                    stale_timestamp=host['stale_timestamp']
+                )
+
+                if len(performance_record) == 2 and ('total_cpus' and 'instance_type' in performance_record):
+                    performance_utilization = {'memory': 0, 'cpu': 0, 'io': 0}
+                else:
+                    performance_utilization = self._calculate_performance_utilization(
+                        performance_record, host
                     )
 
-                    system = get_or_create(
-                        db.session, System, 'inventory_id',
-                        account_id=account.id,
-                        inventory_id=host['id'],
-                        display_name=host['display_name'],
-                        fqdn=host['fqdn'],
-                        cloud_provider=host['system_profile']['cloud_provider'],
-                        instance_type=performance_record.get('instance_type'),
-                        stale_timestamp=host['stale_timestamp']
-                    )
+                get_or_create(
+                    db.session, PerformanceProfile, ['system_id', 'report_date'],
+                    system_id=system.id,
+                    performance_record=performance_record,
+                    performance_utilization=performance_utilization,
+                    report_date=datetime.datetime.utcnow().date()
+                )
 
-                    get_or_create(
-                        db.session, PerformanceProfile, ['system_id', 'report_date'],
-                        system_id=system.id,
-                        performance_record=performance_record,
-                        performance_utilization=performance_utilization,
-                        report_date=datetime.datetime.utcnow().date()
-                    )
-
-                    # Commit changes
-                    db.session.commit()
-                    processor_requests_success.labels(
-                        reporter=self.reporter, account_number=host['account']
-                    ).inc()
-                    LOG.info(
-                        "Refreshed system %s (%s) belonging to account: %s (%s) via report-processor",
-                        system.inventory_id, system.id, account.account, account.id
-                    )
-                except Exception as err:
-                    processor_requests_failures.labels(
-                        reporter=self.reporter, account_number=host['account']
-                    ).inc()
-                    LOG.error("Unable to add host %s to DB belonging to account: %s via report-processor - %s",
-                              host['fqdn'], host['account'], err)
+                # Commit changes
+                db.session.commit()
+                processor_requests_success.labels(
+                    reporter=self.reporter, account_number=host['account']
+                ).inc()
+                LOG.info(
+                    "Refreshed system %s (%s) belonging to account: %s (%s) via report-processor",
+                    system.inventory_id, system.id, account.account, account.id
+                )
+            except Exception as err:
+                processor_requests_failures.labels(
+                    reporter=self.reporter, account_number=host['account']
+                ).inc()
+                LOG.error("Unable to add host %s to DB belonging to account: %s via report-processor - %s",
+                          host['fqdn'], host['account'], err)
 
     def _calculate_performance_utilization(self, performance_record, host):
         MAX_IOPS_CAPACITY = 16000
