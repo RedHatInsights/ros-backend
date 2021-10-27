@@ -93,12 +93,11 @@ class InsightsEngineResultConsumer:
                     db.session, RhAccount, 'account',
                     account=host['account']
                 )
-
                 if len(reports) == 0:
                     rec_count = len(reports)
                     state_key = OPTIMIZED_SYSTEM_KEY
                     LOG.info(
-                        "%s - There are no ROS rule hits for system with inventory id: %s. Hence, marking it %s.",
+                        "%s - No ROS rule hits found for system with inventory id: %s. Hence, marking the state as %s.",
                         self.prefix, host['id'], SYSTEM_STATES[state_key])
                 else:
                     state_key = reports[0].get('key')
@@ -122,11 +121,11 @@ class InsightsEngineResultConsumer:
                 processor_requests_success.labels(
                     reporter=self.reporter, account_number=host['account']
                 ).inc()
-                LOG.info("%s - Refreshed system %s (%s) belonging to account: %s (%s) via engine-result processor.",
+                LOG.info("%s - Refreshed system %s (%s) belonging to account: %s (%s).",
                          self.prefix, system.inventory_id, system.id, account.account, account.id)
             except Exception as err:
                 processor_requests_failures.labels(
                     reporter=self.reporter, account_number=host['account']
                 ).inc()
-                LOG.error("Unable to add host %s to DB belonging to account: %s via engine-result - %s",
-                          host['fqdn'], host['account'], err)
+                LOG.error("%s - Unable to add host %s to DB belonging to account: %s - %s",
+                          self.prefix, host['fqdn'], host['account'], err)
