@@ -347,20 +347,6 @@
                             }
                         }
                     },
-                    "display_performance_score": {
-                        "type": "object",
-                        "properties": {
-                            "memory": {
-                                "type": "number"
-                            },
-                            "cpu": {
-                                "type": "number"
-                            },
-                            "io": {
-                                "type": "number"
-                            }
-                        }
-                    },
                     "cloud_provider": {
                         "type": "string"
                     },
@@ -398,20 +384,6 @@
                         "type": "string"
                     },
                     "performance_utilization": {
-                        "type": "object",
-                        "properties": {
-                            "memory": {
-                                "type": "number"
-                            },
-                            "cpu": {
-                                "type": "number"
-                            },
-                            "io": {
-                                "type": "number"
-                            }
-                        }
-                    },
-                    "display_performance_score": {
                         "type": "object",
                         "properties": {
                             "memory": {

@@ -48,11 +48,6 @@ class IsROSConfiguredApi(Resource):
 
 
 class HostsApi(Resource):
-    display_performance_score_fields = {
-        'cpu': fields.Integer,
-        'memory': fields.Integer,
-        'io': fields.Integer
-    }
     performance_utilization_fields = {
         'cpu': fields.Integer,
         'memory': fields.Integer,
@@ -66,7 +61,6 @@ class HostsApi(Resource):
         'number_of_suggestions': fields.Integer(attribute='number_of_recommendations'),
         'state': fields.String,
         'performance_utilization': fields.Nested(performance_utilization_fields),
-        'display_performance_score': fields.Nested(display_performance_score_fields),
         'cloud_provider': fields.String,
         'instance_type': fields.String,
         'idling_time': fields.String,
@@ -136,7 +130,6 @@ class HostsApi(Resource):
                 host = {skey: system_dict[skey] for skey in SYSTEM_COLUMNS}
                 host['account'] = row.RhAccount.account
                 host['performance_utilization'] = row.PerformanceProfile.performance_utilization
-                host['display_performance_score'] = row.PerformanceProfile.display_performance_score
                 host['idling_time'] = row.PerformanceProfile.idling_time
                 host['io_wait'] = row.PerformanceProfile.io_wait
                 hosts.append(host)
@@ -172,6 +165,7 @@ class HostsApi(Resource):
     @staticmethod
     def sorting_order(order_how):
         """Sorting order method."""
+        method_name = None
         if order_how == 'asc':
             method_name = asc
         elif order_how == 'desc':
@@ -211,11 +205,6 @@ class HostsApi(Resource):
 
 
 class HostDetailsApi(Resource):
-    display_performance_score_fields = {
-        'cpu': fields.Integer,
-        'memory': fields.Integer,
-        'io': fields.Integer
-    }
     performance_utilization_fields = {
         'cpu': fields.Integer,
         'memory': fields.Integer,
@@ -226,7 +215,6 @@ class HostDetailsApi(Resource):
         'inventory_id': fields.String,
         'display_name': fields.String,
         'performance_utilization': fields.Nested(performance_utilization_fields),
-        'display_performance_score': fields.Nested(display_performance_score_fields),
         'rating': fields.Integer,
         'number_of_suggestions': fields.Integer(attribute='number_of_recommendations'),
         'state': fields.String,
@@ -261,10 +249,10 @@ class HostDetailsApi(Resource):
 
         system = db.session.query(System).filter(System.inventory_id == host_id).first()
 
+        record = None
         if profile:
             record = {key: system.__dict__[key] for key in SYSTEM_COLUMNS}
             record['performance_utilization'] = profile.performance_utilization
-            record['display_performance_score'] = profile.display_performance_score
             record['rating'] = rating_record.rating if rating_record else None
             record['report_date'] = profile.report_date
             record['idling_time'] = profile.idling_time
