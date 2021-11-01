@@ -157,15 +157,15 @@ class InventoryEventsConsumer:
                     reporter=self.reporter, account_number=host['account']
                 ).inc()
                 LOG.info(
-                    "Refreshed system %s (%s) belonging to account: %s (%s) via report-processor",
-                    system.inventory_id, system.id, account.account, account.id
+                    "%s - Refreshed system %s (%s) belonging to account: %s (%s).",
+                    self.prefix, system.inventory_id, system.id, account.account, account.id
                 )
             except Exception as err:
                 processor_requests_failures.labels(
                     reporter=self.reporter, account_number=host['account']
                 ).inc()
-                LOG.error("Unable to add host %s to DB belonging to account: %s via report-processor - %s",
-                          host['fqdn'], host['account'], err)
+                LOG.error("%s - Unable to add host %s to DB belonging to account: %s - %s",
+                          self.prefix, host['fqdn'], host['account'], err)
 
     def _calculate_performance_utilization(self, performance_record, host):
         MAX_IOPS_CAPACITY = 16000

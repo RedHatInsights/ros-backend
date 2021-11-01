@@ -8,6 +8,9 @@ LOG = get_logger(__name__)
 
 
 class GarbageCollector():
+    def __init__(self):
+        self.prefix = 'GARBAGE COLLECTOR'
+
     def run(self):
         while True:
             self.remove_outdated_data()
@@ -21,6 +24,7 @@ class GarbageCollector():
                 )).delete()
             db.session.commit()
             if results:
-                LOG.info("Deleted %s performance profiles older than %d days", results, DAYS_UNTIL_STALE)
+                LOG.info("%s - Deleted %s performance profiles older than %d days",
+                         self.prefix, results, DAYS_UNTIL_STALE)
 
             time.sleep(GARBAGE_COLLECTION_INTERVAL)
