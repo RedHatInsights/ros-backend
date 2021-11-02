@@ -42,18 +42,16 @@
         dest: /var/lib/pcp/config/pmlogger/config.ros
         content: |
           log mandatory on default {
-            mem.util.used
+            hinv.ncpu
             mem.physmem
-            kernel.all.cpu.user
-            kernel.all.cpu.sys
-            kernel.all.cpu.nice
-            kernel.all.cpu.steal
+            mem.util.used
+            disk.dev.total
             kernel.all.cpu.idle
-            kernel.all.cpu.wait.total
-            disk.all.total
-            mem.util.cached
-            mem.util.bufmem
-            mem.util.free
+            kernel.all.pressure.cpu.some.avg
+            kernel.all.pressure.io.full.avg
+            kernel.all.pressure.io.some.avg
+            kernel.all.pressure.memory.full.avg
+            kernel.all.pressure.memory.some.avg
           }
           [access]
           disallow .* : all;
