@@ -17,11 +17,8 @@ objects:
       podSpec:
         image: ${IMAGE}:${IMAGE_TAG}
         minReplicas: 1
-        initContainers:
-          - command:
-            - sh
-            - -c
-            - python -m manage db upgrade && python -m ros.api.main
+        command: ["sh"]
+        args: ["-c", "python -m manage db upgrade && python -m ros.api.main"]
         resources:
           requests:
             cpu: ${CPU_REQUEST}
@@ -120,4 +117,4 @@ parameters:
   value: '1'
 - description: Is clowder enabled
   name: CLOWDER_ENABLED
-  value: "False"
+  value: "True"
