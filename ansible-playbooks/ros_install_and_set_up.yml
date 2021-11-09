@@ -44,7 +44,7 @@
           log mandatory on default {
             hinv.ncpu
             mem.physmem
-            mem.util.used
+            mem.util.available
             disk.dev.total
             kernel.all.cpu.idle
             kernel.all.pressure.cpu.some.avg
