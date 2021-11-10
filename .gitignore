@@ -133,7 +133,3 @@ dmypy.json
 
 scripts/minio-conf/
 scripts/minio-data/
-
-# Editor/Local
-.idea/
-.vscode/

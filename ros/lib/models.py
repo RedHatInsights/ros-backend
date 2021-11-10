@@ -21,15 +21,6 @@ class PerformanceProfile(db.Model):
     )
 
     @property
-    def display_performance_score(self):
-        display_performance_score = {}
-        for key, value in self.performance_utilization.items():
-            score = value // 20
-            display_performance_score[key] = 1 if score < 1 else score
-
-        return display_performance_score
-
-    @property
     def idling_time(self):
         if 'kernel.all.cpu.idle' in self.performance_record:
             idling_percent = ((float(self.performance_record['kernel.all.cpu.idle']) * 100)

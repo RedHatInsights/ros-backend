@@ -265,11 +265,11 @@ class HostDetailsApi(Resource):
 
 
 class HostHistoryApi(Resource):
-    display_performance_score_fields = {
+    performance_utilization_fields = {
         'cpu': fields.Integer,
         'memory': fields.Integer,
         'io': fields.Integer,
-        'report_date':  fields.String
+        'report_date': fields.String
     }
     meta_fields = {
         'count': fields.Integer,
@@ -286,7 +286,7 @@ class HostHistoryApi(Resource):
         'meta': fields.Nested(meta_fields),
         'links': fields.Nested(links_fields),
         'inventory_id': fields.String,
-        'data': fields.List(fields.Nested(display_performance_score_fields))
+        'data': fields.List(fields.Nested(performance_utilization_fields))
     }
 
     @marshal_with(history_fields)
@@ -316,7 +316,7 @@ class HostHistoryApi(Resource):
 
         performance_history = []
         for profile in query_results:
-            performance_record = profile.display_performance_score
+            performance_record = profile.performance_utilization
             performance_record['report_date'] = profile.report_date
             performance_history.append(performance_record)
 
