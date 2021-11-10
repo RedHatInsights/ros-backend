@@ -10,11 +10,6 @@
         },
         "version": "v0.1"
     },
-    "servers": [
-        {
-            "url": "{{ PATH_PREFIX }}/{{ APP_NAME }}/v0"
-        }
-    ],
     "paths": {
         "/status": {
             "get": {
