@@ -81,25 +81,21 @@ pytest --cov=ros tests
     Content-Length: 2
 
     [{
-        'fqdn': 'machine1.local.company.com',
-        'display_name': 'machine1-rhel_test123',
-        'id': '12345-57575757',
-        'account': '12345',
-        'vm_uuid': '12345a1',
-        'state': 'Crashloop',
-        'recommendation_count': 5,
-        'organization_id': 1,
-        'performance_utilization': {
-            'cpu': 20,
-            'memory': 20,
-            'io': 20
-        },
-        'facts': {
-            'cloud_provider': 'AWS',
-            'instance_type': 'm4large',
-            'idling_time': '20',
-            'io_wait': '180'
-        }
+      "fqdn": "string",
+      "display_name": "string",
+      "inventory_id": "string",
+      "account": "string",
+      "number_of_suggestions": 0,
+      "state": "string",
+      "performance_utilization": {
+        "memory": 0,
+        "cpu": 0,
+        "io": 0
+      },
+      "cloud_provider": "string",
+      "instance_type": "string",
+      "idling_time": 0,
+      "io_wait": 0
     }]
 
 
