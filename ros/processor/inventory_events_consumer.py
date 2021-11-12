@@ -32,7 +32,7 @@ class InventoryEventsConsumer:
             'created': self.host_create_update_events,
             'updated': self.host_create_update_events
         }
-        self.prefix = 'PROCESSING INVENTORY EVENTS'
+        self.prefix = 'INVENTORY EVENTS'
         self.reporter = 'INVENTORY EVENTS'
 
     def __iter__(self):
@@ -68,27 +68,29 @@ class InventoryEventsConsumer:
                     handler(msg)
                 else:
                     LOG.info(
-                        'Event Handling is not found for event %s - %s',
-                        event_type, self.prefix
+                        '%s - Event Handling is not found for event %s',
+                        self.prefix,
+                        event_type
                     )
             except json.decoder.JSONDecodeError:
                 kafka_failures.labels(
                     reporter=self.reporter, account_number=account
                 ).inc()
                 LOG.error(
-                    'Unable to decode kafka message: %s - %s',
-                    msg.value(), self.prefix
+                    '%s - Unable to decode kafka message: %s',
+                    self.prefix,
+                    msg.value()
                 )
             except Exception as err:
                 processor_requests_failures.labels(
                     reporter=self.reporter, account_number=account
                 ).inc()
                 LOG.error(
-                    'An error occurred during message processing: %s in the system %s created from account: %s - %s',
+                    '%s - An error occurred during message processing: %s in the system %s created from account: %s',
+                    self.prefix,
                     repr(err),
                     host_id,
-                    account,
-                    self.prefix,
+                    account
                 )
             finally:
                 self.consumer.commit()
@@ -97,14 +99,14 @@ class InventoryEventsConsumer:
 
     def host_delete_event(self, msg):
         """Process delete message."""
-        self.prefix = "PROCESSING DELETE EVENT"
+        self.prefix = "INVENTORY DELETE EVENT"
         host_id = msg['id']
         insights_id = msg['insights_id']
         with app.app_context():
             LOG.info(
-                'Deleting performance profile records with insights_id %s - %s',
-                insights_id,
-                self.prefix
+                '%s - Deleting performance profile records with insights_id %s',
+                self.prefix,
+                insights_id
             )
             rows_deleted = db.session.query(System.id).filter(System.inventory_id == host_id).delete()
             db.session.commit()
@@ -113,18 +115,18 @@ class InventoryEventsConsumer:
                     reporter=self.reporter, account_number=msg['account']
                 ).inc()
                 LOG.info(
-                    'Deleted host from inventory with id: %s - %s',
-                    host_id,
-                    self.prefix
+                    '%s - Deleted host with inventory id: %s',
+                    self.prefix,
+                    host_id
                 )
 
     def host_create_update_events(self, msg):
         """ Process created/updated message ( create system record, store new report )"""
-        self.prefix = "PROCESSING Create/Update EVENT"
+        self.prefix = "INVENTORY Create/Update EVENT"
         if 'is_ros' in msg['platform_metadata']:
             LOG.info(
-                'Process a msg for host(%s) belonging to account %s - %s',
-                msg['host']['id'], msg['host']['account'], self.prefix
+                '%s - Processing a message for host(%s) belonging to account %s',
+                self.prefix, msg['host']['id'], msg['host']['account']
             )
             self.process_system_details(msg)
 
