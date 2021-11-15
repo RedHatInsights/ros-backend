@@ -22,7 +22,9 @@ class InventoryEventsConsumer:
         self.consumer = Consumer({
             'bootstrap.servers': INSIGHTS_KAFKA_ADDRESS,
             'group.id': GROUP_ID,
-            'enable.auto.commit': False
+            'enable.auto.commit': False,
+            'session.timeout.ms': 90000,  # default 45000 (45 seconds)
+            'heartbeat.interval.ms': 10000  # default 3000 (3 seconds)
         })
 
         # Subscribe to topic
