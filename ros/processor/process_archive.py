@@ -26,22 +26,24 @@ def performance_profile(lscpu, aws_instance_id, azure_instance_type, pmlog_summa
     profile = {}
     if pmlog_summary is not None:
         performance_metrics = [
+            'hinv.ncpu',
             'mem.physmem',
-            'mem.util.used',
-            'kernel.all.cpu.user',
-            'kernel.all.cpu.sys',
-            'kernel.all.cpu.nice',
-            'kernel.all.cpu.steal',
+            'mem.util.available',
+            'disk.dev.total',
             'kernel.all.cpu.idle',
-            'kernel.all.cpu.wait.total',
-            'disk.all.total',
-            'mem.util.cached',
-            'mem.util.bufmem',
-            'mem.util.free'
+            'kernel.all.pressure.cpu.some.avg',
+            'kernel.all.pressure.io.full.avg',
+            'kernel.all.pressure.io.some.avg',
+            'kernel.all.pressure.memory.full.avg',
+            'kernel.all.pressure.memory.some.avg',
             ]
         for i in performance_metrics:
-            profile[i] = _.get(pmlog_summary, f'{i}.val')
-
+            if i != 'disk.dev.total':
+                profile[i] = _.get(pmlog_summary, f'{i}.val')
+        disks_object = _.get(pmlog_summary, 'disk.dev.total')
+        for i in disks_object:
+            disk = 'disk.dev.total' + f'.{i}'
+            profile[disk] = _.get(pmlog_summary, f'{disk}.val')
     profile["total_cpus"] = int(lscpu.info.get('CPUs'))
     if aws_instance_id:
         profile["instance_type"] = aws_instance_id.get('instanceType')
