@@ -26,6 +26,12 @@
       file:
         state: absent
         path: /var/lib/pcp/config/pmlogger/config.ros
+      tags:
+        - always
+    - name: Remove pcp package
+      yum:
+        name: pcp
+        state: absent
       when: "'clean-up' in ansible_run_tags"
       tags:
         - always
@@ -37,5 +43,6 @@
       with_items:
         - 'pmcd'
         - 'pmlogger'
+      when: "'clean-up' not in ansible_run_tags"
       tags:
         - always
