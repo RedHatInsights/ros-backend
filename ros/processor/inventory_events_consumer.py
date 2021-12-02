@@ -1,9 +1,8 @@
 import json
-import datetime
 from confluent_kafka import Consumer, KafkaException
 from ros.lib.config import INSIGHTS_KAFKA_ADDRESS, INVENTORY_EVENTS_TOPIC, GROUP_ID, get_logger
 from ros.lib.app import app, db
-from ros.lib.models import PerformanceProfile, RhAccount, System
+from ros.lib.models import RhAccount, System
 from ros.lib.utils import get_or_create
 from ros.processor.process_archive import get_performance_profile
 from ros.processor.metrics import (processor_requests_success,
@@ -152,21 +151,6 @@ class InventoryEventsConsumer:
                     stale_timestamp=host['stale_timestamp']
                 )
 
-                if len(performance_record) == 2 and ('total_cpus' and 'instance_type' in performance_record):
-                    performance_utilization = {'memory': 0, 'cpu': 0, 'io': 0}
-                else:
-                    performance_utilization = self._calculate_performance_utilization(
-                        performance_record, host
-                    )
-
-                get_or_create(
-                    db.session, PerformanceProfile, ['system_id', 'report_date'],
-                    system_id=system.id,
-                    performance_record=performance_record,
-                    performance_utilization=performance_utilization,
-                    report_date=datetime.datetime.utcnow().date()
-                )
-
                 # Commit changes
                 db.session.commit()
                 processor_requests_success.labels(
@@ -183,20 +167,3 @@ class InventoryEventsConsumer:
                 LOG.error("%s - Unable to add host %s to DB belonging to account: %s - %s",
                           self.prefix, host['fqdn'], host['account'], err)
 
-    # TODO -temporary values are assigned to both score and utilization.
-    def _calculate_performance_utilization(self, performance_record, host):
-        memory_utilized = 0
-        cpu_utilized = 0
-        io_utilized = 0
-        performance_utilization = {
-            'memory': int(memory_utilized),
-            'cpu': int(cpu_utilized),
-            'io': int(io_utilized)
-        }
-        return performance_utilization
-
-    def _calculate_cpu_score(self, performance_record):
-        idle_cpu_percent = ((float(performance_record['kernel.all.cpu.idle']) * 100)
-                            / int(performance_record['total_cpus']))
-        cpu_utilized_percent = 100 - idle_cpu_percent
-        return cpu_utilized_percent

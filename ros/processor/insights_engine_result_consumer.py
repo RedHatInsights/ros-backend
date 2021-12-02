@@ -1,13 +1,16 @@
+import datetime
 import json
 from ros.lib.app import app, db
 from ros.lib.config import (INSIGHTS_KAFKA_ADDRESS, GROUP_ID,
                             ENGINE_RESULT_TOPIC, get_logger)
-from ros.lib.models import RhAccount, System
+from ros.lib.models import RhAccount, System, PerformanceProfile
 from ros.lib.utils import get_or_create
 from confluent_kafka import Consumer, KafkaException
 from ros.processor.metrics import (processor_requests_success,
                                    processor_requests_failures,
                                    kafka_failures)
+from ros.processor.process_archive import get_performance_profile
+from ros.processor.utils import validate_type
 
 SYSTEM_STATES = {
     "INSTANCE_OVERSIZED": "Oversized",
@@ -75,17 +78,28 @@ class InsightsEngineResultConsumer:
                 self.consumer.commit()
 
     def handle_msg(self, msg):
-        if msg["input"]["platform_metadata"]["is_ros"]:
+        # Checking for match in a value list:
+        # An attempt to reduce dependency on foreign data, i.e. msg
+        is_ros_flag = validate_type(msg["input"]["platform_metadata"]["is_ros"], bool)
+        if is_ros_flag is True:
             host = msg["input"]["host"]
-            reports = msg["results"]["reports"]
-            if reports:
-                ros_reports = []
-                for report in reports:
-                    if 'cloud_instance_ros_evaluation' in report["rule_id"]:
-                        ros_reports.append(report)
-                self.process_report(host, ros_reports)
+            system_metadata = msg["results"]["system"]["metadata"]
+            performance_record = get_performance_profile(
+                msg['input']['platform_metadata']['url'],
+                msg['input']['platform_metadata']['account'],
+                custom_prefix=self.prefix
+            )
+            reports = msg["results"]["reports"]  \
+                if msg["results"]["reports"] \
+                and type(msg["results"]["reports"]) == list \
+                else []
+            ros_reports = [
+                report for report in reports
+                if 'cloud_instance_ros_evaluation' in report["rule_id"]
+            ]
+            self.process_report(host, ros_reports, system_metadata, performance_record)
 
-    def process_report(self, host, reports):
+    def process_report(self, host, reports, system_details, performance_record):
         """create/update system based on reports data."""
         with app.app_context():
             try:
@@ -106,7 +120,7 @@ class InsightsEngineResultConsumer:
                         "%s - Marking the state of system with inventory id: %s as %s.",
                         self.prefix, host['id'], SYSTEM_STATES[state_key])
 
-                system = get_or_create(
+                _system = get_or_create(
                     db.session, System, 'inventory_id',
                     account_id=account.id,
                     inventory_id=host['id'],
@@ -116,16 +130,37 @@ class InsightsEngineResultConsumer:
                     number_of_recommendations=rec_count,
                     state=SYSTEM_STATES[state_key]
                 )
+                LOG.info(
+                    f"{self.prefix} - System created/updated successfully: {host['id']}"
+                )
+
+                performance_utilization = {
+                    'memory': system_details['mem_utilization'],
+                    'cpu': system_details['cpu_utilization'],
+                    'io': system_details['io_utilization']
+                }
+
+                _profile = get_or_create(
+                    db.session, PerformanceProfile, ['system_id', 'report_date'],
+                    system_id=_system.id,
+                    performance_record=performance_record,
+                    performance_utilization=performance_utilization,
+                    report_date=datetime.datetime.utcnow().date()
+                )
+                LOG.info(
+                    f"{self.prefix} - Performance profile created successfully: {host['id']}"
+                )
 
                 db.session.commit()
                 processor_requests_success.labels(
                     reporter=self.reporter, account_number=host['account']
                 ).inc()
                 LOG.info("%s - Refreshed system %s (%s) belonging to account: %s (%s).",
-                         self.prefix, system.inventory_id, system.id, account.account, account.id)
+                         self.prefix, _system.inventory_id, _system.id, account.account, account.id)
             except Exception as err:
                 processor_requests_failures.labels(
                     reporter=self.reporter, account_number=host['account']
                 ).inc()
                 LOG.error("%s - Unable to add host %s to DB belonging to account: %s - %s",
                           self.prefix, host['fqdn'], host['account'], err)
+
