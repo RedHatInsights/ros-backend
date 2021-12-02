@@ -196,6 +196,7 @@ class InventoryEventsConsumer:
         return performance_utilization
 
     def _calculate_cpu_score(self, performance_record):
-        idle_cpu_percent = 0
+        idle_cpu_percent = ((float(performance_record['kernel.all.cpu.idle']) * 100)
+                            / int(performance_record['total_cpus']))
         cpu_utilized_percent = 100 - idle_cpu_percent
         return cpu_utilized_percent
