@@ -166,4 +166,3 @@ class InventoryEventsConsumer:
                 ).inc()
                 LOG.error("%s - Unable to add host %s to DB belonging to account: %s - %s",
                           self.prefix, host['fqdn'], host['account'], err)
-
