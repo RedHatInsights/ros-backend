@@ -183,16 +183,11 @@ class InventoryEventsConsumer:
                 LOG.error("%s - Unable to add host %s to DB belonging to account: %s - %s",
                           self.prefix, host['fqdn'], host['account'], err)
 
+    # TODO -temporary values are assigned to both score and utilization.
     def _calculate_performance_utilization(self, performance_record, host):
-        MAX_IOPS_CAPACITY = 16000
-        memory_utilized = (float(performance_record['mem.util.used']) / float(performance_record['mem.physmem'])) * 100
-        cpu_utilized = self._calculate_cpu_score(performance_record)
-        cloud_provider = host['system_profile']['cloud_provider']
-        if cloud_provider == 'aws':
-            MAX_IOPS_CAPACITY = 16000
-        if cloud_provider == 'azure':
-            MAX_IOPS_CAPACITY = 20000
-        io_utilized = (float(performance_record['disk.all.total']) / float(MAX_IOPS_CAPACITY)) * 100
+        memory_utilized = 0
+        cpu_utilized = 0
+        io_utilized = 0
         performance_utilization = {
             'memory': int(memory_utilized),
             'cpu': int(cpu_utilized),
@@ -201,7 +196,6 @@ class InventoryEventsConsumer:
         return performance_utilization
 
     def _calculate_cpu_score(self, performance_record):
-        idle_cpu_percent = ((float(performance_record['kernel.all.cpu.idle']) * 100)
-                            / int(performance_record['total_cpus']))
+        idle_cpu_percent = 0
         cpu_utilized_percent = 100 - idle_cpu_percent
         return cpu_utilized_percent
