@@ -120,7 +120,7 @@ class InsightsEngineResultConsumer:
                         "%s - Marking the state of system with inventory id: %s as %s.",
                         self.prefix, host['id'], SYSTEM_STATES[state_key])
 
-                _system = get_or_create(
+                system = get_or_create(
                     db.session, System, 'inventory_id',
                     account_id=account.id,
                     inventory_id=host['id'],
@@ -140,9 +140,9 @@ class InsightsEngineResultConsumer:
                     'io': system_details['io_utilization']
                 }
 
-                _profile = get_or_create(
+                get_or_create(
                     db.session, PerformanceProfile, ['system_id', 'report_date'],
-                    system_id=_system.id,
+                    system_id=system.id,
                     performance_record=performance_record,
                     performance_utilization=performance_utilization,
                     report_date=datetime.datetime.utcnow().date()
@@ -156,7 +156,7 @@ class InsightsEngineResultConsumer:
                     reporter=self.reporter, account_number=host['account']
                 ).inc()
                 LOG.info("%s - Refreshed system %s (%s) belonging to account: %s (%s).",
-                         self.prefix, _system.inventory_id, _system.id, account.account, account.id)
+                         self.prefix, system.inventory_id, system.id, account.account, account.id)
             except Exception as err:
                 processor_requests_failures.labels(
                     reporter=self.reporter, account_number=host['account']
