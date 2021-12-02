@@ -44,17 +44,3 @@ def test_process_system_details(inventory_event_consumer, inventory_event_messag
     inventory_event_consumer.process_system_details(inventory_event_message)
     host = db_get_host(inventory_event_message['host']['id'])
     assert str(host.inventory_id) == inventory_event_message['host']['id']
-
-
-def test_calculate_performance_utilization(inventory_event_consumer, inventory_event_message):
-    expected_utilization = {'memory': 80, 'cpu': 0, 'io': 0}
-    utilization = inventory_event_consumer._calculate_performance_utilization(
-        PERFORMANCE_RECORD, inventory_event_message['host']
-    )
-    assert expected_utilization == utilization
-
-
-def test_calculate_cpu_score(inventory_event_consumer):
-    expected_result = 0.5999999999999943
-    result = inventory_event_consumer._calculate_cpu_score(PERFORMANCE_RECORD)
-    assert expected_result == result
