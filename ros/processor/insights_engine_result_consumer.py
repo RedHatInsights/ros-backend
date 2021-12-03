@@ -100,7 +100,7 @@ class InsightsEngineResultConsumer:
             self.process_report(host, ros_reports, system_metadata, performance_record)
 
     def process_report(self, host, reports, system_details, performance_record):
-        """create/update system based on reports data."""
+        """create/update system and performance_profile based on reports data."""
         with app.app_context():
             try:
                 account = get_or_create(
