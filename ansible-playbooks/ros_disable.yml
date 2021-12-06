@@ -1,6 +1,6 @@
 # This playbook will take care of all steps required to remove
 # Insights resource-optimization (pcp packages)
-# Optionally with the tag "clean-up", it will remove pcp packages
+# Optionally with the tag "clean-up", it will remove pcp package and its dependencies
 
 - hosts: all
   become: yes
@@ -28,7 +28,7 @@
         path: /var/lib/pcp/config/pmlogger/config.ros
       tags:
         - always
-    - name: Remove pcp package
+    - name: Remove pcp package and dependencies
       yum:
         name: pcp
         state: absent
