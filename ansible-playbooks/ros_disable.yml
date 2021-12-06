@@ -1,6 +1,6 @@
 # This playbook will take care of all steps required to remove
 # Insights resource-optimization (pcp packages)
-# Optionally with the tag "clean-up", it will remove the ROS config file as well
+# Optionally with the tag "clean-up", it will remove pcp packages
 
 - hosts: all
   become: yes
