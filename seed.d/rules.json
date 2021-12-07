@@ -21,6 +21,13 @@
         "condition":"CPU and memory average usage is over 80% for 24 hours"
     },
     {
+        "rule_id": "cloud_instance_ros_evaluation|INSTANCE_UNDER_PRESSURE",
+        "description":"This instance is sized properly but it is suffering from pressure.",
+        "reason": "Based on the host metrics set, we have detected that this {system.instance_type} instance on {system.cloud_provider.upper()} is correctly sized according to its utilization but it is experiencing bottlenecks, probably due to peaks.\nThe specific issues identified by ROS are:\n{system.summary}",
+        "resolution": "Please pay attention to the specific pressure conditions (CPU, memory and/or disk I/O) and try to identify the hours where peaks are happening and why. You may use logs, your PCP tools or third party application specific tools (an APM, for instance). \nYou may also want to consider changing the instance type from {system.instance_type} to a larger one in the dimensions where pressure was identified.",
+        "condition":"System is optimized but Kernel PSI is detected"
+    },
+    {
         "rule_id": "cloud_instance_ros_evaluation|STORAGE_RIGHTSIZING",
         "description":"This instance is not sized properly so consider enhancing the storage capabilities.",
         "reason": "Based on the host metrics set, we have detected that this {system.instance_type} instance on {system.cloud_provider.upper()} is running into the storage I/O bottleneck.\nThe specific issues identified by ROS are:\n{system.summary}",
