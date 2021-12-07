@@ -10,7 +10,7 @@ from ros.processor.metrics import (processor_requests_success,
                                    processor_requests_failures,
                                    kafka_failures)
 from ros.processor.process_archive import get_performance_profile
-from ros.processor.utils import validate_type
+from ros.lib.utils import validate_type
 
 SYSTEM_STATES = {
     "INSTANCE_OVERSIZED": "Oversized",
