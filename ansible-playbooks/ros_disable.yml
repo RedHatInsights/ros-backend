@@ -1,0 +1,49 @@
+# This playbook will take care of all steps required to remove
+# Insights resource-optimization (pcp packages)
+# Optionally with the tag "clean-up", it will remove pcp package and its dependencies
+
+- hosts: all
+  become: yes
+  tasks:
+    - name: Ensure PCP service is stopped
+      systemd:
+        state: stopped
+        enabled: no
+        name: "{{ item }}"
+      with_items:
+        - 'pmcd'
+        - 'pmlogger'
+      tags:
+        - always
+    - name: Remove ROS pmlogger service instance
+      lineinfile:
+        dest: /etc/pcp/pmlogger/control.d/local
+        regexp: ".*config.ros.*"
+        state: absent
+      tags:
+        - always
+    - name: Remove ROS configuration file
+      file:
+        state: absent
+        path: /var/lib/pcp/config/pmlogger/config.ros
+      tags:
+        - always
+    - name: Remove pcp package and dependencies
+      yum:
+        name: pcp
+        state: absent
+      when: "'clean-up' in ansible_run_tags"
+      tags:
+        - always
+    - name: Restart PCP service
+      systemd:
+        state: restarted
+        enabled: yes
+        name: "{{ item }}"
+      with_items:
+        - 'pmcd'
+        - 'pmlogger'
+      when: "'clean-up' not in ansible_run_tags"
+      tags:
+        - always
+
