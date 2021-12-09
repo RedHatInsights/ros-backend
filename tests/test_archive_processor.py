@@ -2,7 +2,7 @@ from unittest import mock
 
 from ros.processor.process_archive import performance_profile
 
-EXPECTED_PERFORMANCE_PROFILE = {
+EXPECTED_PERFORMANCE_RECORD = {
     'disk.dev.total': {'nvme0n1': {'units': 'count / sec', 'val': 7.22}},
     'hinv.ncpu': 8.0,
     'instance_type': 't2.micro',
@@ -92,5 +92,5 @@ def test_performance_profile_response():
         }
       }
     }
-    generated_performance_profile = performance_profile(lscpu, aws_instance_id, None, sample_pmlog_summary)
-    assert generated_performance_profile == EXPECTED_PERFORMANCE_PROFILE
+    generated_performance_record = performance_profile(lscpu, aws_instance_id, None, sample_pmlog_summary)
+    assert generated_performance_record == EXPECTED_PERFORMANCE_RECORD
