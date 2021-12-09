@@ -71,7 +71,7 @@ def test_performance_profile_response():
                 'some': {'avg': {
                     '10 second': {'val': 0.013, 'units': 'none'},
                     '1 minute': {'val': 0.006, 'units': 'none'},
-                    '5 minute': { 'val': 0.004, 'units': 'none'}}
+                    '5 minute': {'val': 0.004, 'units': 'none'}}
                 }
             },
             'memory': {
