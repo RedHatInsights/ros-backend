@@ -12,6 +12,9 @@ objects:
     envName: ${ENV_NAME}
     dependencies:
     - rbac
+    optionalDependencies:
+    - puptoo
+    - ingress
     deployments:
     - name: backend
       webServices:
