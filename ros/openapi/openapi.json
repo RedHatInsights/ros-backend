@@ -593,6 +593,7 @@
                             "Oversized",
                             "Undersized",
                             "Optimized",
+                            "Under Pressure",
                             "Storage rightsizing",
                             "Waiting for data"
                         ]
