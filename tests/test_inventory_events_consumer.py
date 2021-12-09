@@ -56,7 +56,7 @@ def test_host_update_events(inventory_event_consumer, inventory_event_message, d
     updated_display_name = 'Test - Display Name Update'  # Test case change
     inventory_event_message['host']['display_name'] = updated_display_name
     inventory_event_consumer.host_create_update_events(inventory_event_message)
-    inventory_event_consumer.process_system_details.assert_called_once()
+    inventory_event_consumer.process_system_details.call_count = 2
     inventory_event_consumer.process_system_details(msg=inventory_event_message)
     with app.app_context():
         updated_system = db_get_host(inventory_event_message['host']['id'])
