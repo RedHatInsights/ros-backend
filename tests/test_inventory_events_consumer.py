@@ -19,7 +19,7 @@ def inventory_event_consumer():
     return InventoryEventsConsumer()
 
 
-def test_process_system_details(inventory_event_consumer, inventory_event_message, db_setup, mocker):
+def test_process_system_details(inventory_event_consumer, inventory_event_message, db_setup):
     inventory_event_consumer.process_system_details(inventory_event_message)
     with app.app_context():
         host = db_get_host(inventory_event_message['host']['id'])
@@ -50,7 +50,10 @@ def test_host_update_events(inventory_event_consumer, inventory_event_message, d
         side_effect=inventory_event_consumer.process_system_details,
         autospec=True
     )
+
     # Setup to meet test case conditions
+    inventory_event_message['type'] = 'created'
+    inventory_event_consumer.host_create_update_events(inventory_event_message)  # creating system for test
     inventory_event_message['type'] = 'updated'
     inventory_event_message['platform_metadata'] = None
     updated_display_name = 'Test - Display Name Update'  # Test case change
