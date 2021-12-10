@@ -13,7 +13,7 @@ SYSTEM_STATES = {
     "INSTANCE_OVERSIZED": "Oversized",
     "INSTANCE_UNDERSIZED": "Undersized",
     "INSTANCE_IDLE": "Idling",
-    "INSTANCE_UNDER_PRESSURE": "Under Pressure",
+    "INSTANCE_UNDER_PRESSURE": "Under pressure",
     "STORAGE_RIGHTSIZING": "Storage rightsizing",
     "OPTIMIZED": "Optimized",
     "NO_PCP_DATA": "Waiting for data"
