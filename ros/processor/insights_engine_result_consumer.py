@@ -12,7 +12,8 @@ from ros.processor.metrics import (processor_requests_success,
 SYSTEM_STATES = {
     "INSTANCE_OVERSIZED": "Oversized",
     "INSTANCE_UNDERSIZED": "Undersized",
-    "CONSUMPTION_MODEL": "Idling",
+    "INSTANCE_IDLE": "Idling",
+    "INSTANCE_UNDER_PRESSURE": "Under Pressure",
     "STORAGE_RIGHTSIZING": "Storage rightsizing",
     "OPTIMIZED": "Optimized",
     "NO_PCP_DATA": "Waiting for data"
