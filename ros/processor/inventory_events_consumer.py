@@ -4,7 +4,6 @@ from ros.lib.config import INSIGHTS_KAFKA_ADDRESS, INVENTORY_EVENTS_TOPIC, GROUP
 from ros.lib.app import app, db
 from ros.lib.models import RhAccount, System
 from ros.lib.utils import get_or_create
-from ros.processor.process_archive import get_performance_profile
 from ros.processor.metrics import (processor_requests_success,
                                    processor_requests_failures,
                                    kafka_failures)
