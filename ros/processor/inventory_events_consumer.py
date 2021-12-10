@@ -1,3 +1,4 @@
+
 import json
 from confluent_kafka import Consumer, KafkaException
 from ros.lib.config import INSIGHTS_KAFKA_ADDRESS, INVENTORY_EVENTS_TOPIC, GROUP_ID, get_logger
