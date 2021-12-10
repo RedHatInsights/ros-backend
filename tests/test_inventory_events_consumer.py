@@ -38,9 +38,7 @@ def test_host_create_update_events(inventory_event_consumer, inventory_event_mes
     inventory_event_consumer.process_system_details.assert_called_once()
 
 
-def test_process_system_details(inventory_event_consumer, inventory_event_message, mocker):
-    mocker.patch('ros.processor.inventory_events_consumer.get_performance_profile',
-                 return_value=PERFORMANCE_RECORD, autospec=True)
+def test_process_system_details(inventory_event_consumer, inventory_event_message):
     inventory_event_consumer.process_system_details(inventory_event_message)
     host = db_get_host(inventory_event_message['host']['id'])
     assert str(host.inventory_id) == inventory_event_message['host']['id']
