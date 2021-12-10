@@ -225,16 +225,16 @@
         "system_id": "677fb960-e164-48a4-929f-59e2d917b444"
       },
       {
-        "rule_id": "cloud_instance_ros_evaluation|CONSUMPTION_MODEL",
-        "component": "telemetry.rules.plugins.ros.cloud_instance_ros_evaluation.report_consumption_model",
+        "rule_id": "ros_instance_evaluation|INSTANCE_IDLE",
+        "component": "telemetry.rules.plugins.ros.ros_instance_evaluation.report_instance_idle",
         "type": "rule",
-        "key": "CONSUMPTION_MODEL",
+        "key": "INSTANCE_IDLE",
         "details": {
           "rhel": "8.3",
           "cloud_provider": "aws",
           "instance_type": "t2.micro",
           "type": "rule",
-          "error_key": "CONSUMPTION_MODEL"
+          "error_key": "INSTANCE_IDLE"
         },
         "tags": [],
         "links": {

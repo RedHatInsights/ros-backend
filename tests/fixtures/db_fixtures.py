@@ -52,11 +52,12 @@ def db_create_system(db_create_account):
         instance_type='t2.micro',
         state='Idling',
         number_of_recommendations=1,
-        rule_hit_details='{"rule_id": "cloud_instance_ros_evaluation|CONSUMPTION_MODEL","component":'
-                         '"telemetry.rules.plugins.ros.cloud_instance_ros_evaluation.report_consumption_model",'
-                         '"type": "rule","key": "CONSUMPTION_MODEL","details": {"rhel": "8.3","cloud_provider": "aws",'
-                         '"instance_type": "t2.micro","type": "rule","error_key": "CONSUMPTION_MODEL"},"tags": [],'
-                         '"links": {"jira": ["https://issues.redhat.com/browse/CEECBA-5092"],"kcs": ["T.B.D"]},'
+        rule_hit_details='{"rule_id": "ros_instance_evaluation|","component":'
+                         '"telemetry.rules.plugins.ros.ros_instance_evaluation.report_instance_idle",'
+                         '"type": "rule","key": "INSTANCE_IDLE","details": {"rhel": "8.3","cloud_provider": "aws",'
+                         '"instance_type": "t2.micro","type": "rule","error_key": "INSTANCE_IDLE"},"tags": [],'
+                         '"links": {"jira": ["https://issues.redhat.com/browse/CEECBA-5092",\
+                                    "https://issues.redhat.com/browse/CEECBA-5875"],"kcs": ["T.B.D"]},'
                          '"system_id": "677fb960-e164-48a4-929f-59e2d917b444"}')
     db.session.add(system)
     db.session.commit()
