@@ -132,7 +132,6 @@ class InventoryEventsConsumer:
     def process_system_details(self, msg):
         """ Store new system information (stale, stale_warning timestamp) and return internal DB id"""
         host = msg['host']
-        performance_record = get_performance_profile(msg['platform_metadata']['url'], host['account'])
         with app.app_context():
             try:
                 account = get_or_create(
@@ -147,7 +146,6 @@ class InventoryEventsConsumer:
                     display_name=host['display_name'],
                     fqdn=host['fqdn'],
                     cloud_provider=host['system_profile']['cloud_provider'],
-                    instance_type=performance_record.get('instance_type'),
                     stale_timestamp=host['stale_timestamp']
                 )
 

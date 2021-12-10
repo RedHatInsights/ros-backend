@@ -61,5 +61,6 @@ def test_process_report(engine_result_message, engine_consumer, db_setup):
     data = db_get_host(host['id'])
     assert str(data.inventory_id) == host['id']
     with app.app_context():
+        assert data.instance_type == PERFORMANCE_RECORD['instance_type']
         assert db.session.query(PerformanceProfile).filter_by(system_id=data.id).first().performance_record ==\
                PERFORMANCE_RECORD

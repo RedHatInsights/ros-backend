@@ -127,7 +127,8 @@ class InsightsEngineResultConsumer:
                     fqdn=host['fqdn'],
                     rule_hit_details=reports,
                     number_of_recommendations=rec_count,
-                    state=SYSTEM_STATES[state_key]
+                    state=SYSTEM_STATES[state_key],
+                    instance_type=performance_record.get('instance_type')
                 )
                 LOG.info(
                     f"{self.prefix} - System created/updated successfully: {host['id']}"
