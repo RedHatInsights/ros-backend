@@ -93,7 +93,7 @@ class InsightsEngineResultConsumer:
                 else []
             ros_reports = [
                 report for report in reports
-                if 'cloud_instance_ros_evaluation' in report["rule_id"]
+                if 'ros_instance_evaluation' in report["rule_id"]
             ]
             self.process_report(host, ros_reports, system_metadata, performance_record)
 
