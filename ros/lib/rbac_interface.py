@@ -123,4 +123,4 @@ def _is_openapi_url(path, app_name):
     """
     Small helper to test if URL is the openapi spec
     """
-    return path == "%s%s/v0/openapi.json" % (PATH_PREFIX, app_name)
+    return path == "%s%s/v1/openapi.json" % (PATH_PREFIX, app_name)

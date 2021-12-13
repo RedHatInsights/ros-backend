@@ -15,4 +15,4 @@ insights-upload-data:
 		localhost:3000/api/ingress/v1/upload | python -m json.tool
 
 api-get-hosts:
-	curl -v -H "Content-Type: application/json" -H "x-rh-identity: ${b64_identity}" "localhost:8000/api/ros/v0/systems?order_by=max_io&order_how=DESC" | python -m json.tool
+	curl -v -H "Content-Type: application/json"  -H "x-rh-identity: ${b64_identity}" "localhost:8000/api/ros/v1/systems?order_by=max_io&order_how=DESC" | python -m json.tool
