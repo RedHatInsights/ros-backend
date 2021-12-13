@@ -53,7 +53,32 @@ class RecommendationsApi(Resource):
                 if rule_data:
                     rule_dict = rule_data.__dict__
                     recommendation = {}
+                    instance_price = ""
+                    candidates = system.rule_hit_details[0].get('details').get('candidate')
+                    summaries = system.rule_hit_details[0].get('details').get('summary')
+                    instance_price += system.rule_hit_details[0].get('details').get('price')
+                    newline = '\n'
+                    candidates_length = len(candidates)
+                    summeries_length = len(summaries)
                     for skey in rules_columns:
+                        if skey == 'reason':
+                            summary = ""
+                            counter = 1
+                            for x in summaries:
+                                if counter != summeries_length:
+                                    summary += f'\t\u2022 {x}{newline}'
+                                else:
+                                    summary += f'\t{x}'
+                                counter+1
+                        elif skey == 'resolution':
+                            candidate_string = ""
+                            counter = 1
+                            for x in candidates:
+                                if counter != candidates_length:
+                                    candidate_string += f'{x[0]} ({x[1]} USD/hour), '
+                                else:
+                                    candidate_string += f'{x[0]} ({x[1]} USD/hour).'
+                                counter += 1
                         recommendation[skey] = eval("f'{}'".format(rule_dict[skey]))
                     recommendations_list.append(recommendation)
         return {
