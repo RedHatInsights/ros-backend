@@ -78,7 +78,6 @@ class InsightsEngineResultConsumer:
                 self.consumer.commit()
 
     def handle_msg(self, msg):
-        # Checking for boolean value in is_ros key
         is_ros_flag = validate_type(msg["input"]["platform_metadata"]["is_ros"], bool)
         if is_ros_flag is True:
             host = msg["input"]["host"]
