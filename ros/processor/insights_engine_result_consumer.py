@@ -147,11 +147,16 @@ class InsightsEngineResultConsumer:
                         'cpu': utilization_info['cpu_utilization'],
                         'io': convert_iops_from_percentage(utilization_info['io_utilization'])
                     }
+                    # Adding max_io to utilization dict
+                    performance_utilization.update(
+                       {'max_io': max(performance_utilization['io'].values())}
+                    )
                 else:
                     LOG.info(f"{self.prefix} - Setting default utilization for performance profile")
                     performance_utilization = {
                         'memory': 0,
                         'cpu': 0,
+                        'max_io': 0,
                         'io': {}
                     }
 
