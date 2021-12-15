@@ -3,35 +3,35 @@
         "rule_id": "ros_instance_evaluation|INSTANCE_IDLE",
         "description":"This instance is idling so consider switching to a consumption model.",
         "reason": "Based on the host metrics set, we have detected that this {system.instance_type} instance on {system.cloud_provider.upper()} region {system.region} is displaying a higher amount of idling cycles within a 24h time frame. It can be potentially explained by the non-business hours. This idling state may be caused by picking an inappropriate consumption model.",
-        "resolution": "Please verify that this instance and its workload is having an appropriate consumption model for this specific workload.{newline}You may also want to consider changing the instance type from {system.instance_type} ({instance_price} USD/hour)to one of the following instance types, which fit the load better: {system.candidates}",
+        "resolution": "Please verify that this instance and its workload is having an appropriate consumption model for this specific workload.{newline}You may also want to consider changing the instance type from {system.instance_type} ({instance_price} USD/hour)to one of the following instance types, which fit the load better: {candidate_string}",
         "condition":"CPU and memory average usage is under 5% for 24 hours"
     },
     {
         "rule_id": "ros_instance_evaluation|INSTANCE_OVERSIZED",
         "description":"The instance is oversized and optimization is possible.",
         "reason": "Based on the host metrics set, we have detected that this {system.instance_type} instance on {system.cloud_provider.upper()} region {system.region} is not consuming fully the provided resources. It is leading us to a judgement that it can be oversized.{newline}The specific issues identified by ROS are:{newline}{system.summary}",
-        "resolution": "Please pay attention to workloads running inside this RHEL instance, either utilizing your PCP tools or third party application specific tools to verify that the sizing of this ordered instance type from provider is optimized for your workload.{newline}You may also want to consider changing the instance type from {system.instance_type} ({instance_price} USD/hour)to one of the following instance types, which fit the load better: {system.candidates}",
+        "resolution": "Please pay attention to workloads running inside this RHEL instance, either utilizing your PCP tools or third party application specific tools to verify that the sizing of this ordered instance type from provider is optimized for your workload.{newline}You may also want to consider changing the instance type from {system.instance_type} ({instance_price} USD/hour)to one of the following instance types, which fit the load better: {candidate_string}",
         "condition":"CPU and memory average usage is between 5% and 20% for 24 hours"
     },
     {
         "rule_id": "ros_instance_evaluation|INSTANCE_UNDERSIZED",
         "description":"This instance is undersized and optimization is possible.",
         "reason": "Based on the host metrics set, we have detected that this {system.instance_type} instance on {system.cloud_provider.upper()} region {system.region} is depleting the provided resources. It is leading us to a judgement that it can be undersized.{newline}The specific issues identified by ROS are:{newline}{system.summary}",
-        "resolution": "Please pay attention to workloads running inside the RHEL instance, either utilizing your PCP tools or third party application specific tools to verify that the sizing of this ordered instance type from provider is optimized for your workload.{newline}You may also want to consider changing the instance type from {system.instance_type} ({instance_price} USD/hour)to one of the following instance types, which fit the load better: {system.candidates}",
+        "resolution": "Please pay attention to workloads running inside the RHEL instance, either utilizing your PCP tools or third party application specific tools to verify that the sizing of this ordered instance type from provider is optimized for your workload.{newline}You may also want to consider changing the instance type from {system.instance_type} ({instance_price} USD/hour)to one of the following instance types, which fit the load better: {candidate_string}",
         "condition":"CPU and memory average usage is over 80% for 24 hours"
     },
     {
         "rule_id": "ros_instance_evaluation|INSTANCE_OPTIMIZED_UNDER_PRESSURE",
         "description":"This instance is sized properly but it is suffering from pressure.",
         "reason": "Based on the host metrics set, we have detected that this {system.instance_type} instance on {system.cloud_provider.upper()} region {system.region} is correctly sized according to its utilization but it is experiencing bottlenecks, probably due to peaks.{newline}The specific issues identified by ROS are:{newline}{system.summary}",
-        "resolution": "Please pay attention to the specific pressure conditions (CPU, memory and/or disk I/O) and try to identify the hours where peaks are happening and why. You may use logs, your PCP tools or third party application specific tools (an APM, for instance). You may also want to consider changing the instance type from {system.instance_type} ({instance_price} USD/hour)to a larger one in the dimensions where pressure was identified: {system.candidates}",
+        "resolution": "Please pay attention to the specific pressure conditions (CPU, memory and/or disk I/O) and try to identify the hours where peaks are happening and why. You may use logs, your PCP tools or third party application specific tools (an APM, for instance). You may also want to consider changing the instance type from {system.instance_type} ({instance_price} USD/hour)to a larger one in the dimensions where pressure was identified: {candidate_string}",
         "condition":"System is optimized but Kernel PSI is detected"
     },
     {
         "rule_id": "ros_instance_evaluation|STORAGE_RIGHTSIZING",
         "description":"This instance is not sized properly so consider enhancing the storage capabilities.",
         "reason": "Based on the host metrics set, we have detected that this {system.instance_type} instance on {system.cloud_provider.upper()} region {system.region} is running into the storage I/O bottleneck.{newline}The specific issues identified by ROS are:{newline}{system.summary}",
-        "resolution": "Please pay attention to attached Storage of the RHEL instance, either utilizing your PCP tools or third party application specific tools to verify that the sizing of storage for this ordered instance type from provider is optimized for your workload.{newline}You may also want to consider changing the instance type from {system.instance_type} ({instance_price} USD/hour)to one of the following instance types, which fit the load better: {system.candidates}",
+        "resolution": "Please pay attention to attached Storage of the RHEL instance, either utilizing your PCP tools or third party application specific tools to verify that the sizing of storage for this ordered instance type from provider is optimized for your workload.{newline}You may also want to consider changing the instance type from {system.instance_type} ({instance_price} USD/hour)to one of the following instance types, which fit the load better: {candidate_string}",
         "condition":"IOPS average usage in the last 24 hours is over 80% the provisioned IOPS"
     }
 ]
