@@ -74,10 +74,12 @@ class RecommendationsApi(Resource):
                             candidate_string = ""
                             counter = 1
                             for candidate in candidates:
-                                if counter != length_of_candidates:
+                                if (counter < 3 and length_of_candidates >= 3) or \
+                                 (length_of_candidates < 3 and counter < length_of_candidates):
                                     candidate_string += f'{candidate[0]} ({candidate[1]} USD/hour), '
                                 else:
                                     candidate_string += f'{candidate[0]} ({candidate[1]} USD/hour).'
+                                    break
                                 counter += 1
                         recommendation[skey] = eval("f'{}'".format(rule_dict[skey]))
                     recommendations_list.append(recommendation)
