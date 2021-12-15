@@ -49,7 +49,7 @@ class InsightsEngineResultConsumer:
         return msg
 
     def run(self):
-        LOG.info("Processor is running. Awaiting msgs.")
+        LOG.info(f"{self.prefix} - Processor is running. Awaiting msgs.")
         for msg in iter(self):
             if msg.error():
                 print(msg.error())
