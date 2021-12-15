@@ -15,7 +15,8 @@ from ros.lib.utils import validate_type
 SYSTEM_STATES = {
     "INSTANCE_OVERSIZED": "Oversized",
     "INSTANCE_UNDERSIZED": "Undersized",
-    "CONSUMPTION_MODEL": "Idling",
+    "INSTANCE_IDLE": "Idling",
+    "INSTANCE_UNDER_PRESSURE": "Under pressure",
     "STORAGE_RIGHTSIZING": "Storage rightsizing",
     "OPTIMIZED": "Optimized",
     "NO_PCP_DATA": "Waiting for data"
