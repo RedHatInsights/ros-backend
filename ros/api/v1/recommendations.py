@@ -53,8 +53,8 @@ class RecommendationsApi(Resource):
                 if rule_data:
                     rule_dict = rule_data.__dict__
                     recommendation = {}
-                    instance_price = ""
-                    candidates = system.rule_hit_details[0].get('details').get('candidate')
+                    instance_price = 0
+                    candidates = system.rule_hit_details[0].get('details').get('candidates')
                     summaries = system.rule_hit_details[0].get('details').get('summary')
                     instance_price += system.rule_hit_details[0].get('details').get('price')
                     newline = '\n'
