@@ -4,7 +4,7 @@ from ros.lib.app import app, db
 from ros.lib.config import (INSIGHTS_KAFKA_ADDRESS, GROUP_ID,
                             ENGINE_RESULT_TOPIC, get_logger)
 from ros.lib.models import RhAccount, System, PerformanceProfile
-from ros.lib.utils import get_or_create
+from ros.lib.utils import get_or_create, convert_iops_from_percentage
 from confluent_kafka import Consumer, KafkaException
 from ros.processor.metrics import (processor_requests_success,
                                    processor_requests_failures,
@@ -16,7 +16,7 @@ SYSTEM_STATES = {
     "INSTANCE_OVERSIZED": "Oversized",
     "INSTANCE_UNDERSIZED": "Undersized",
     "INSTANCE_IDLE": "Idling",
-    "INSTANCE_UNDER_PRESSURE": "Under pressure",
+    "INSTANCE_OPTIMIZED_UNDER_PRESSURE": "Under pressure",
     "STORAGE_RIGHTSIZING": "Storage rightsizing",
     "OPTIMIZED": "Optimized",
     "NO_PCP_DATA": "Waiting for data"
@@ -49,6 +49,7 @@ class InsightsEngineResultConsumer:
         return msg
 
     def run(self):
+        LOG.info("Processor is up, awaiting msgs ...")
         for msg in iter(self):
             if msg.error():
                 print(msg.error())
@@ -98,7 +99,7 @@ class InsightsEngineResultConsumer:
             ]
             self.process_report(host, ros_reports, system_metadata, performance_record)
 
-    def process_report(self, host, reports, system_details, performance_record):
+    def process_report(self, host, reports, utilization_info, performance_record):
         """create/update system and performance_profile based on reports data."""
         with app.app_context():
             try:
@@ -134,11 +135,25 @@ class InsightsEngineResultConsumer:
                     f"{self.prefix} - System created/updated successfully: {host['id']}"
                 )
 
-                performance_utilization = {
-                    'memory': system_details['mem_utilization'],
-                    'cpu': system_details['cpu_utilization'],
-                    'io': system_details['io_utilization']
-                }
+                # For Optimized state, reports would be empty, but utilization_info would be present
+                if reports:
+                    set_default_utilization = True if reports[0].get('key') == 'NO_PCP_DATA' else False
+                else:
+                    set_default_utilization = False
+
+                if set_default_utilization is False:
+                    performance_utilization = {
+                        'memory': utilization_info['mem_utilization'],
+                        'cpu': utilization_info['cpu_utilization'],
+                        'io': convert_iops_from_percentage(utilization_info['io_utilization'])
+                    }
+                else:
+                    LOG.info(f"{self.prefix} - Setting default utilization for performance profile")
+                    performance_utilization = {
+                        'memory': 0,
+                        'cpu': 0,
+                        'io': {}
+                    }
 
                 get_or_create(
                     db.session, PerformanceProfile, ['system_id', 'report_date'],
@@ -162,4 +177,4 @@ class InsightsEngineResultConsumer:
                     reporter=self.reporter, account_number=host['account']
                 ).inc()
                 LOG.error("%s - Unable to add host %s to DB belonging to account: %s - %s",
-                          self.prefix, host['fqdn'], host['account'], err)
+                          self.prefix, host['id'], host['account'], err)

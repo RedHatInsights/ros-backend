@@ -106,7 +106,9 @@
         },
         "cpu_utilization": 1,
         "mem_utilization": 4,
-        "io_utilization": 1,
+        "io_utilization": {
+          "xvda": "0.314"
+        },
         "release": "Red Hat Enterprise Linux release 8.3 (Ootpa)"
       },
       "hostname": "ip-172-31-11-67.ap-south-1.compute.internal",
