@@ -54,30 +54,30 @@ class RecommendationsApi(Resource):
                     rule_dict = rule_data.__dict__
                     recommendation = {}
                     instance_price = 0
-                    candidates = system.rule_hit_details[0].get('details').get('candidates')
-                    summaries = system.rule_hit_details[0].get('details').get('summary')
-                    instance_price += system.rule_hit_details[0].get('details').get('price')
+                    candidates = rule_hit.get('details').get('candidates')
+                    summaries = rule_hit.get('details').get('summary')
+                    instance_price += rule_hit.get('details').get('price')
                     newline = '\n'
-                    candidates_length = len(candidates)
-                    summeries_length = len(summaries)
+                    length_of_candidates = len(candidates)
+                    length_of_summaries = len(summaries)
                     for skey in rules_columns:
                         if skey == 'reason':
                             summary = ""
                             counter = 1
-                            for x in summaries:
-                                if counter != summeries_length:
-                                    summary += f'\t\u2022 {x}{newline}'
+                            for msg in summaries:
+                                if counter != length_of_summaries:
+                                    summary += f'\t\u2022 {msg}{newline}'
                                 else:
-                                    summary += f'\t{x}'
+                                    summary += f'\t{msg}'
                                 counter+1
                         elif skey == 'resolution':
                             candidate_string = ""
                             counter = 1
-                            for x in candidates:
-                                if counter != candidates_length:
-                                    candidate_string += f'{x[0]} ({x[1]} USD/hour), '
+                            for candidate in candidates:
+                                if counter != length_of_candidates:
+                                    candidate_string += f'{candidate[0]} ({candidate[1]} USD/hour), '
                                 else:
-                                    candidate_string += f'{x[0]} ({x[1]} USD/hour).'
+                                    candidate_string += f'{candidate[0]} ({candidate[1]} USD/hour).'
                                 counter += 1
                         recommendation[skey] = eval("f'{}'".format(rule_dict[skey]))
                     recommendations_list.append(recommendation)
