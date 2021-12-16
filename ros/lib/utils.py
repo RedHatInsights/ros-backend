@@ -88,3 +88,17 @@ def convert_iops_from_percentage(iops_dict):
     for key, value in iops_dict.items():
         iops_in_mbps[key] = float(value) * 100
     return iops_in_mbps
+
+
+def sort_io_dict(performance_utilization: dict, remove_io_dict: bool = True):
+    """
+    Sorts io dict by max_io in descending order.
+    """
+    io_dict = performance_utilization['io']
+    io_dict_key = 'io_all' if remove_io_dict is True else 'io'
+    del performance_utilization['io']
+    sorted_io_dict = {
+        io_dict_key: dict(sorted(io_dict.items(), key=lambda x: x[1], reverse=True))
+    }
+    performance_utilization.update({**sorted_io_dict})
+    return performance_utilization
