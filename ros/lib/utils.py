@@ -5,7 +5,6 @@ from flask import jsonify, make_response
 from flask_restful import abort
 
 
-
 def is_valid_uuid(val):
     try:
         uuid.UUID(str(val), version=4)
