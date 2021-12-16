@@ -168,7 +168,7 @@ class InsightsEngineResultConsumer:
                     report_date=datetime.datetime.utcnow().date()
                 )
                 LOG.info(
-                    f"{self.prefix} - Performance profile created successfully for the system: {host['id']}"
+                    f"{self.prefix} - Performance profile created/updated successfully for the system: {host['id']}"
                 )
 
                 db.session.commit()
