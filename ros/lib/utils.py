@@ -3,6 +3,7 @@ import base64
 import json
 from flask import jsonify, make_response
 from flask_restful import abort
+import ast as type_evaluation
 
 
 def is_valid_uuid(val):
@@ -89,15 +90,13 @@ def convert_iops_from_percentage(iops_dict):
     return iops_in_mbps
 
 
-def sort_io_dict(performance_utilization: dict, remove_io_dict: bool = True):
+def sort_io_dict(performance_utilization: dict):
     """
     Sorts io dict by max_io in descending order.
     """
-    io_dict = performance_utilization['io']
-    io_dict_key = 'io_all' if remove_io_dict is True else 'io'
-    del performance_utilization['io']
     sorted_io_dict = {
-        io_dict_key: dict(sorted(io_dict.items(), key=lambda x: x[1], reverse=True))
+        'io_all': dict(sorted(performance_utilization['io'].items(), key=lambda x: x[1], reverse=True))
     }
     performance_utilization.update({**sorted_io_dict})
+    del performance_utilization['io']
     return performance_utilization

@@ -272,7 +272,8 @@ class HostHistoryApi(Resource):
     performance_utilization_fields = {
         'cpu': fields.Integer,
         'memory': fields.Integer,
-        'io': fields.Raw,
+        'io_all': fields.Raw,
+        'max_io': fields.Float,
         'report_date': fields.String
     }
     meta_fields = {
@@ -320,7 +321,7 @@ class HostHistoryApi(Resource):
 
         performance_history = []
         for profile in query_results:
-            performance_record = sort_io_dict(profile.performance_utilization, remove_io_dict=False)
+            performance_record = sort_io_dict(profile.performance_utilization)
             performance_record['report_date'] = profile.report_date
             performance_history.append(performance_record)
 
