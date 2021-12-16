@@ -152,7 +152,7 @@ class InsightsEngineResultConsumer:
                        {'max_io': max(performance_utilization['io'].values())}
                     )
                 else:
-                    LOG.info(f"{self.prefix} - Setting default utilization for performance profile")
+                    LOG.debug(f"{self.prefix} - Setting default utilization for performance profile")
                     performance_utilization = {
                         'memory': 0,
                         'cpu': 0,
