@@ -135,11 +135,10 @@ class InsightsEngineResultConsumer:
                     f"{self.prefix} - System created/updated successfully: {host['id']}"
                 )
 
+                set_default_utilization = False
                 # For Optimized state, reports would be empty, but utilization_info would be present
                 if reports:
                     set_default_utilization = True if reports[0].get('key') == 'NO_PCP_DATA' else False
-                else:
-                    set_default_utilization = False
 
                 if set_default_utilization is False:
                     performance_utilization = {
@@ -147,7 +146,7 @@ class InsightsEngineResultConsumer:
                         'cpu': utilization_info['cpu_utilization'],
                         'io': convert_iops_from_percentage(utilization_info['io_utilization'])
                     }
-                    # Adding max_io to utilization dict
+                    # max_io will be used to sort systems endpoint response instead of io
                     performance_utilization.update(
                        {'max_io': max(performance_utilization['io'].values())}
                     )
