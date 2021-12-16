@@ -137,8 +137,8 @@ class InsightsEngineResultConsumer:
 
                 set_default_utilization = False
                 # For Optimized state, reports would be empty, but utilization_info would be present
-                if reports:
-                    set_default_utilization = True if reports[0].get('key') == 'NO_PCP_DATA' else False
+                if reports and reports[0].get('key') == 'NO_PCP_DATA':
+                    set_default_utilization = True
 
                 if set_default_utilization is False:
                     performance_utilization = {
