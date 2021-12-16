@@ -3,7 +3,7 @@ import base64
 import json
 from flask import jsonify, make_response
 from flask_restful import abort
-import ast as type_evaluation
+
 
 
 def is_valid_uuid(val):
