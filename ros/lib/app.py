@@ -17,7 +17,7 @@ db.init_app(app)
 
 @app.before_request
 def ensure_rbac():
-    if request.endpoint != 'status':
+    if request.endpoint not in ['status', 'prometheus_metrics']:
         ensure_has_permission(
             permissions=["ros:*:*", "ros:*:read"],
             application="ros",
