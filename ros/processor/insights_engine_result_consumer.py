@@ -1,19 +1,22 @@
+import datetime
 import json
 from ros.lib.app import app, db
 from ros.lib.config import (INSIGHTS_KAFKA_ADDRESS, GROUP_ID,
                             ENGINE_RESULT_TOPIC, get_logger)
-from ros.lib.models import RhAccount, System
-from ros.lib.utils import get_or_create
+from ros.lib.models import RhAccount, System, PerformanceProfile
+from ros.lib.utils import get_or_create, convert_iops_from_percentage
 from confluent_kafka import Consumer, KafkaException
 from ros.processor.metrics import (processor_requests_success,
                                    processor_requests_failures,
                                    kafka_failures)
+from ros.processor.process_archive import get_performance_profile
+from ros.lib.utils import validate_type
 
 SYSTEM_STATES = {
     "INSTANCE_OVERSIZED": "Oversized",
     "INSTANCE_UNDERSIZED": "Undersized",
     "INSTANCE_IDLE": "Idling",
-    "INSTANCE_UNDER_PRESSURE": "Under pressure",
+    "INSTANCE_OPTIMIZED_UNDER_PRESSURE": "Under pressure",
     "STORAGE_RIGHTSIZING": "Storage rightsizing",
     "OPTIMIZED": "Optimized",
     "NO_PCP_DATA": "Waiting for data"
@@ -46,6 +49,7 @@ class InsightsEngineResultConsumer:
         return msg
 
     def run(self):
+        LOG.info(f"{self.prefix} - Processor is running. Awaiting msgs.")
         for msg in iter(self):
             if msg.error():
                 print(msg.error())
@@ -76,18 +80,27 @@ class InsightsEngineResultConsumer:
                 self.consumer.commit()
 
     def handle_msg(self, msg):
-        if msg["input"]["platform_metadata"]["is_ros"]:
+        is_ros_flag = validate_type(msg["input"]["platform_metadata"]["is_ros"], bool)
+        if is_ros_flag is True:
             host = msg["input"]["host"]
-            reports = msg["results"]["reports"]
-            if reports:
-                ros_reports = []
-                for report in reports:
-                    if 'cloud_instance_ros_evaluation' in report["rule_id"]:
-                        ros_reports.append(report)
-                self.process_report(host, ros_reports)
+            system_metadata = msg["results"]["system"]["metadata"]
+            performance_record = get_performance_profile(
+                msg['input']['platform_metadata']['url'],
+                msg['input']['platform_metadata']['account'],
+                custom_prefix=self.prefix
+            )
+            reports = msg["results"]["reports"]  \
+                if msg["results"]["reports"] \
+                and type(msg["results"]["reports"]) == list \
+                else []
+            ros_reports = [
+                report for report in reports
+                if 'ros_instance_evaluation' in report["rule_id"]
+            ]
+            self.process_report(host, ros_reports, system_metadata, performance_record)
 
-    def process_report(self, host, reports):
-        """create/update system based on reports data."""
+    def process_report(self, host, reports, utilization_info, performance_record):
+        """create/update system and performance_profile based on reports data."""
         with app.app_context():
             try:
                 account = get_or_create(
@@ -115,7 +128,46 @@ class InsightsEngineResultConsumer:
                     fqdn=host['fqdn'],
                     rule_hit_details=reports,
                     number_of_recommendations=rec_count,
-                    state=SYSTEM_STATES[state_key]
+                    state=SYSTEM_STATES[state_key],
+                    instance_type=performance_record.get('instance_type')
+                )
+                LOG.info(
+                    f"{self.prefix} - System created/updated successfully: {host['id']}"
+                )
+
+                set_default_utilization = False
+                # For Optimized state, reports would be empty, but utilization_info would be present
+                if reports and reports[0].get('key') == 'NO_PCP_DATA':
+                    set_default_utilization = True
+
+                if set_default_utilization is False:
+                    performance_utilization = {
+                        'memory': utilization_info['mem_utilization'],
+                        'cpu': utilization_info['cpu_utilization'],
+                        'io': convert_iops_from_percentage(utilization_info['io_utilization'])
+                    }
+                    # max_io will be used to sort systems endpoint response instead of io
+                    performance_utilization.update(
+                       {'max_io': max(performance_utilization['io'].values())}
+                    )
+                else:
+                    LOG.debug(f"{self.prefix} - Setting default utilization for performance profile")
+                    performance_utilization = {
+                        'memory': 0,
+                        'cpu': 0,
+                        'max_io': 0,
+                        'io': {}
+                    }
+
+                get_or_create(
+                    db.session, PerformanceProfile, ['system_id', 'report_date'],
+                    system_id=system.id,
+                    performance_record=performance_record,
+                    performance_utilization=performance_utilization,
+                    report_date=datetime.datetime.utcnow().date()
+                )
+                LOG.info(
+                    f"{self.prefix} - Performance profile created/updated successfully for the system: {host['id']}"
                 )
 
                 db.session.commit()
@@ -129,4 +181,4 @@ class InsightsEngineResultConsumer:
                     reporter=self.reporter, account_number=host['account']
                 ).inc()
                 LOG.error("%s - Unable to add host %s to DB belonging to account: %s - %s",
-                          self.prefix, host['fqdn'], host['account'], err)
+                          self.prefix, host['id'], host['account'], err)

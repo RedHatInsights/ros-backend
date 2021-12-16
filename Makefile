@@ -9,7 +9,7 @@ identity={"identity": {"account_number": "0000001","type": "User","user": {"user
 b64_identity=$(shell echo '${identity}' | base64 -w 0 -)
 
 insights-upload-data:
-	curl -vvvv -F "upload=@sample-files/insights-aws-sample-new.tar.gz;type=application/vnd.redhat.advisor.collection+tgz" \
+	curl -vvvv -F "upload=@sample-files/insights-ip-aws-idle.tar.gz;type=application/vnd.redhat.advisor.collection+tgz" \
 	    -H "x-rh-identity: ${b64_identity}" \
 		-H "x-rh-request_id: testtesttest" \
 		localhost:3000/api/ingress/v1/upload | python -m json.tool
