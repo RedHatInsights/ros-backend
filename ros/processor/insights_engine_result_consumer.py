@@ -129,7 +129,8 @@ class InsightsEngineResultConsumer:
                     rule_hit_details=reports,
                     number_of_recommendations=rec_count,
                     state=SYSTEM_STATES[state_key],
-                    instance_type=performance_record.get('instance_type')
+                    instance_type=performance_record.get('instance_type'),
+                    region=reports[0].get('details').get('region')
                 )
                 LOG.info(
                     f"{self.prefix} - System created/updated successfully: {host['id']}"

@@ -1,5 +1,6 @@
 from ros.lib.models import Rule, RhAccount, System, db
 from ros.lib.utils import is_valid_uuid, identity
+from ros.lib.config import INSTANCE_PRICE_UNIT
 from flask_restful import Resource, abort, fields, marshal_with
 from flask import request
 
@@ -53,7 +54,25 @@ class RecommendationsApi(Resource):
                 if rule_data:
                     rule_dict = rule_data.__dict__
                     recommendation = {}
+                    instance_price = ''
+                    summary = ''
+                    candidate_string = ''
+                    rule_hit_details = rule_hit.get('details')
+                    candidates = rule_hit_details.get('candidates')
+                    summaries = rule_hit_details.get('summary')
+                    instance_price += f'{rule_hit_details.get("price")} {INSTANCE_PRICE_UNIT}'
+                    newline = '\n'
                     for skey in rules_columns:
+                        if skey == 'reason':
+                            formatted_summary = []
+                            for msg in summaries:
+                                formatted_summary.append(f'\t\u2022 {msg}')
+                            summary += newline.join(formatted_summary)
+                        elif skey == 'resolution':
+                            formatted_candidates = []
+                            for candidate in candidates[0:3]:
+                                formatted_candidates.append(f'{candidate[0]} ({candidate[1]} {INSTANCE_PRICE_UNIT})')
+                            candidate_string += ', '.join(formatted_candidates)
                         recommendation[skey] = eval("f'{}'".format(rule_dict[skey]))
                     recommendations_list.append(recommendation)
         return {

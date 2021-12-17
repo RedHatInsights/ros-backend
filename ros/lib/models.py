@@ -47,6 +47,7 @@ class System(db.Model):
     state = db.Column(db.String(25))
     number_of_recommendations = db.Column(db.Integer)
     stale_timestamp = db.Column(db.DateTime(timezone=True))
+    region = db.Column(db.String(25))
     __table_args__ = (
         db.UniqueConstraint('inventory_id'),
         db.ForeignKeyConstraint(['account_id'], ['rh_accounts.id'], name='systems_account_id_fkey'),
