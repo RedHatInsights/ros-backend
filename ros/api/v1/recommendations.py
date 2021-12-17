@@ -54,13 +54,13 @@ class RecommendationsApi(Resource):
                 if rule_data:
                     rule_dict = rule_data.__dict__
                     recommendation = {}
-                    instance_price = 0
+                    instance_price = ''
                     summary = ''
                     candidate_string = ''
                     rule_hit_details = rule_hit.get('details')
                     candidates = rule_hit_details.get('candidates')
                     summaries = rule_hit_details.get('summary')
-                    instance_price += rule_hit_details.get('price')
+                    instance_price += f'{rule_hit_details.get("price")} {INSTANCE_PRICE_UNIT}'
                     newline = '\n'
                     for skey in rules_columns:
                         if skey == 'reason':
