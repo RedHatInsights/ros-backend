@@ -45,7 +45,7 @@ def db_create_system(db_create_account):
     system = System(
         id=1,
         account_id=1,
-        inventory_id='ee0b9978-fe1b-4191-8408-cbadbd47f7a2',
+        inventory_id='ee0b9978-fe1b-4191-8408-cbadbd47f7a3',
         display_name='ip-172-31-11-67.ap-south-1.compute.internal',
         fqdn='ip-172-31-11-67.ap-south-1.compute.internal',
         cloud_provider='aws',

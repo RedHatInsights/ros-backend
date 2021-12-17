@@ -1,3 +1,4 @@
+
 import json
 from confluent_kafka import Consumer, KafkaException
 from ros.lib.config import INSIGHTS_KAFKA_ADDRESS, INVENTORY_EVENTS_TOPIC, GROUP_ID, get_logger
@@ -120,8 +121,11 @@ class InventoryEventsConsumer:
 
     def host_create_update_events(self, msg):
         """ Process created/updated message ( create system record, store new report )"""
-        self.prefix = "INVENTORY Create/Update EVENT"
-        if 'is_ros' in msg['platform_metadata']:
+        self.prefix = "INVENTORY Update EVENT" if msg['type'] == 'updated' else "INVENTORY CREATE EVENT"
+        if (
+                msg['platform_metadata'] is None
+                and msg['type'] == 'updated'
+        ) or 'is_ros' in msg['platform_metadata']:
             LOG.info(
                 '%s - Processing a message for host(%s) belonging to account %s',
                 self.prefix, msg['host']['id'], msg['host']['account']
@@ -137,16 +141,15 @@ class InventoryEventsConsumer:
                     db.session, RhAccount, 'account',
                     account=host['account']
                 )
-
-                system = get_or_create(
-                    db.session, System, 'inventory_id',
-                    account_id=account.id,
-                    inventory_id=host['id'],
-                    display_name=host['display_name'],
-                    fqdn=host['fqdn'],
-                    cloud_provider=host['system_profile']['cloud_provider'],
-                    stale_timestamp=host['stale_timestamp']
-                )
+                update_fields = {
+                    "account_id": account.id,
+                    "inventory_id": host['id'],
+                    "display_name": host['display_name'],
+                    "fqdn": host['fqdn'],
+                    "cloud_provider": host['system_profile']['cloud_provider'],
+                    "stale_timestamp": host['stale_timestamp']
+                }
+                system = get_or_create(db.session, System, 'inventory_id', **update_fields)
 
                 # Commit changes
                 db.session.commit()
