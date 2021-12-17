@@ -32,6 +32,12 @@ class IsROSConfiguredApi(Resource):
             RhAccount.account == ident['account_number']).subquery()
         system_count = db.session.query(System.id)\
             .filter(System.account_id.in_(account_query)).count()
+        systems_with_suggestions = db.session.query(System.id)\
+            .filter(System.account_id.in_(account_query))\
+            .filter(System.number_of_recommendations > 0).count()
+        systems_waiting_for_data = db.session.query(System.id)\
+            .filter(System.account_id.in_(account_query))\
+            .filter(System.state == 'Waiting for data').count()
 
         if system_count <= 0:
             return {
@@ -43,7 +49,11 @@ class IsROSConfiguredApi(Resource):
         return {
             'success': True,
             'code': 'SYSTEMSEXIST',
-            'count': system_count
+            'count': system_count,
+            'systems_stats': {
+                'waiting_for_data': systems_waiting_for_data,
+                'with_suggestions': systems_with_suggestions
+            }
         }
 
 
