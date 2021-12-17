@@ -337,8 +337,11 @@
                             "cpu": {
                                 "type": "number"
                             },
-                            "io": {
-                                "type": "number"
+                            "max_io": {
+                                "type": "integer"
+                            },
+                            "io_all": {
+                                "type": "object"
                             }
                         }
                     },
@@ -387,8 +390,11 @@
                             "cpu": {
                                 "type": "number"
                             },
-                            "io": {
-                                "type": "number"
+                            "max_io": {
+                                "type": "integer"
+                            },
+                            "io_all": {
+                                "type": "object"
                             }
                         }
                     },
@@ -445,8 +451,11 @@
                     "memory": {
                         "type": "integer"
                     },
-                    "io": {
+                    "max_io": {
                         "type": "integer"
+                    },
+                    "io_all": {
+                        "type": "object"
                     },
                     "report_date": {
                         "type": "string"

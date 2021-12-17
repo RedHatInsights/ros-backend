@@ -6,7 +6,7 @@ from flask_restful import Resource, abort, fields, marshal_with
 from ros.lib.models import (
     PerformanceProfile, RhAccount, System,
     db, RecommendationRating)
-from ros.lib.utils import is_valid_uuid, identity, user_data_from_identity
+from ros.lib.utils import is_valid_uuid, identity, user_data_from_identity, sort_io_dict
 from ros.api.common.pagination import (
     build_paginated_system_list_response,
     limit_value,
@@ -51,7 +51,8 @@ class HostsApi(Resource):
     performance_utilization_fields = {
         'cpu': fields.Integer,
         'memory': fields.Integer,
-        'io': fields.Integer
+        'max_io': fields.Integer,
+        'io_all': fields.Raw
     }
     hosts_fields = {
         'fqdn': fields.String,
@@ -129,7 +130,9 @@ class HostsApi(Resource):
                 system_dict = row.System.__dict__
                 host = {skey: system_dict[skey] for skey in SYSTEM_COLUMNS}
                 host['account'] = row.RhAccount.account
-                host['performance_utilization'] = row.PerformanceProfile.performance_utilization
+                host['performance_utilization'] = sort_io_dict(
+                    row.PerformanceProfile.performance_utilization
+                )
                 host['idling_time'] = row.PerformanceProfile.idling_time
                 host['io_wait'] = row.PerformanceProfile.io_wait
                 hosts.append(host)
@@ -185,7 +188,7 @@ class HostsApi(Resource):
             return (sort_order(System.display_name),
                     asc(PerformanceProfile.system_id),)
 
-        score_methods = ['cpu', 'memory', 'io']
+        score_methods = ['cpu', 'memory', 'max_io']
         if order_method in score_methods:
             return (
                 sort_order(PerformanceProfile.performance_utilization[
@@ -208,7 +211,8 @@ class HostDetailsApi(Resource):
     performance_utilization_fields = {
         'cpu': fields.Integer,
         'memory': fields.Integer,
-        'io': fields.Integer
+        'max_io': fields.Integer,
+        'io_all': fields.Raw
     }
     profile_fields = {
         'fqdn': fields.String,
@@ -252,7 +256,7 @@ class HostDetailsApi(Resource):
         record = None
         if profile:
             record = {key: system.__dict__[key] for key in SYSTEM_COLUMNS}
-            record['performance_utilization'] = profile.performance_utilization
+            record['performance_utilization'] = sort_io_dict(profile.performance_utilization)
             record['rating'] = rating_record.rating if rating_record else None
             record['report_date'] = profile.report_date
             record['idling_time'] = profile.idling_time
@@ -268,7 +272,8 @@ class HostHistoryApi(Resource):
     performance_utilization_fields = {
         'cpu': fields.Integer,
         'memory': fields.Integer,
-        'io': fields.Integer,
+        'io_all': fields.Raw,
+        'max_io': fields.Integer,
         'report_date': fields.String
     }
     meta_fields = {
@@ -316,7 +321,7 @@ class HostHistoryApi(Resource):
 
         performance_history = []
         for profile in query_results:
-            performance_record = profile.performance_utilization
+            performance_record = sort_io_dict(profile.performance_utilization)
             performance_record['report_date'] = profile.report_date
             performance_history.append(performance_record)
 
