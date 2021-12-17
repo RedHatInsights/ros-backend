@@ -1,3 +1,3 @@
 module.exports.routes = {
-    '/api/ros/v0' : { host: 'http://localhost:8080' },
+    '/api/ros/v1' : { host: 'http://localhost:8080' },
 }

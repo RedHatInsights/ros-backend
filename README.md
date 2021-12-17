@@ -67,9 +67,9 @@ pytest --cov=ros tests
 ## Available v0 API endpoints
 
 ### Request
-`GET /api/ros/v0/systems` Shows list of all systems from Host Inventory having a Performance Profile
+`GET /api/ros/v1/systems` Shows list of all systems from Host Inventory having a Performance Profile
 
-    curl -v -H "Content-Type: application/json" https://cloud.redhat.com/api/ros/v0/systems -u rhn-username:redhat
+    curl -v -H "Content-Type: application/json" https://cloud.redhat.com/api/ros/v1/systems -u rhn-username:redhat
 
 ### Response
 
@@ -100,9 +100,9 @@ pytest --cov=ros tests
 
 
 ### Request
-`GET /api/ros/v0/systems/<host_id>` To get the individual system details using their <host_id>
+`GET /api/ros/v1/systems/<host_id>` To get the individual system details using their <host_id>
 
-    curl -v -H "Content-Type: application/json" https://cloud.redhat.com/api/ros/v0/systems/<host_id>
+    curl -v -H "Content-Type: application/json" https://cloud.redhat.com/api/ros/v1/systems/<host_id>
 
 ### Response
 
@@ -117,9 +117,9 @@ pytest --cov=ros tests
 
 
 ### Request
-`GET /api/ros/v0/status` Shows the status of the server
+`GET /api/ros/v1/status` Shows the status of the server
 
-    curl -v -H "Content-Type: application/json" https://cloud.redhat.com/api/ros/v0/status
+    curl -v -H "Content-Type: application/json" https://cloud.redhat.com/api/ros/v1/status
 
 ### Response
 
