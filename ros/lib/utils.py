@@ -78,13 +78,18 @@ def validate_type(value, type_):
     return True if type(evaluated_value) == type_ else False
 
 
-def convert_iops_from_percentage(iops_dict):
+def convert_to_iops_actuals(iops_dict):
     """
-    Convert IOPS to MBPS
+    Convert IOPS to MBPS fom percentage.
+    In case IOPS values are actual,
+    converts them to int from str
     :param iops_dict: IOPS dict to convert.
     :return: IOPS values converted to MBPS.
     """
     iops_in_mbps = {}
     for key, value in iops_dict.items():
-        iops_in_mbps[key] = float(value) * 100
+        if float(value) < 1.0:
+            iops_in_mbps[key] = int(float(value) * 1000)
+        else:
+            iops_in_mbps[key] = int(value)
     return iops_in_mbps
