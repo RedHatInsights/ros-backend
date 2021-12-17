@@ -1,5 +1,6 @@
 from ros.lib.models import Rule, RhAccount, System, db
 from ros.lib.utils import is_valid_uuid, identity
+from ros.lib.config import INSTANCE_PRICE_UNIT
 from flask_restful import Resource, abort, fields, marshal_with
 from flask import request
 
@@ -54,33 +55,24 @@ class RecommendationsApi(Resource):
                     rule_dict = rule_data.__dict__
                     recommendation = {}
                     instance_price = 0
-                    candidates = rule_hit.get('details').get('candidates')
-                    summaries = rule_hit.get('details').get('summary')
-                    instance_price += rule_hit.get('details').get('price')
+                    summary = ''
+                    candidate_string = ''
+                    rule_hit_details = rule_hit.get('details')
+                    candidates = rule_hit_details.get('candidates')
+                    summaries = rule_hit_details.get('summary')
+                    instance_price += rule_hit_details.get('price')
                     newline = '\n'
-                    length_of_candidates = len(candidates)
-                    length_of_summaries = len(summaries)
                     for skey in rules_columns:
                         if skey == 'reason':
-                            summary = ""
-                            counter = 1
+                            formatted_summary = []
                             for msg in summaries:
-                                if counter != length_of_summaries:
-                                    summary += f'\t\u2022 {msg}{newline}'
-                                else:
-                                    summary += f'\t{msg}'
-                                counter+1
+                                formatted_summary.append(f'\t\u2022 {msg}')
+                            summary += newline.join(formatted_summary)
                         elif skey == 'resolution':
-                            candidate_string = ""
-                            counter = 1
-                            for candidate in candidates:
-                                if (counter < 3 and length_of_candidates >= 3) or \
-                                 (length_of_candidates < 3 and counter < length_of_candidates):
-                                    candidate_string += f'{candidate[0]} ({candidate[1]} USD/hour), '
-                                else:
-                                    candidate_string += f'{candidate[0]} ({candidate[1]} USD/hour).'
-                                    break
-                                counter += 1
+                            formatted_candidates = []
+                            for candidate in candidates[0:3]:
+                                formatted_candidates.append(f'{candidate[0]} ({candidate[1]} {INSTANCE_PRICE_UNIT})')
+                            candidate_string += ', '.join(formatted_candidates)
                         recommendation[skey] = eval("f'{}'".format(rule_dict[skey]))
                     recommendations_list.append(recommendation)
         return {
