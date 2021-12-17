@@ -46,10 +46,12 @@ def performance_profile(lscpu, aws_instance_id, azure_instance_type, pmlog_summa
     profile["total_cpus"] = int(lscpu.info.get('CPUs'))
     if aws_instance_id:
         profile["instance_type"] = aws_instance_id.get('instanceType')
+        profile["region"] = aws_instance_id.get('region')
     elif azure_instance_type:
         profile["instance_type"] = azure_instance_type.raw
     else:
         profile["instance_type"] = None
+        profile["region"] = None
 
     metadata_response = make_metadata()
     metadata_response.update(profile)
