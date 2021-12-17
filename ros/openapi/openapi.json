@@ -304,7 +304,19 @@
                     },
                     "count": {
                         "type": "integer"
+                    },
+                    "systems_stats": {
+                        "type": "object",
+                        "properties": {
+                            "waiting_for_data": {
+                                "type": "number"
+                            },
+                            "with_suggestions": {
+                                "type": "number"
+                            }
+                        }
                     }
+
                 }
             },
             "SystemItem": {
