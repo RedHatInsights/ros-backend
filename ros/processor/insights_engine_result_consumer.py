@@ -142,8 +142,8 @@ class InsightsEngineResultConsumer:
 
                 if set_default_utilization is False:
                     performance_utilization = {
-                        'memory': utilization_info['mem_utilization'],
-                        'cpu': utilization_info['cpu_utilization'],
+                        'memory': int(utilization_info['mem_utilization']),
+                        'cpu': int(utilization_info['cpu_utilization']),
                         'io': convert_iops_from_percentage(utilization_info['io_utilization'])
                     }
                     # max_io will be used to sort systems endpoint response instead of io
