@@ -29,7 +29,7 @@ if __name__ == "__main__":
     events.start()
     engine_results.start()
     collector.start()
-    start_http_server(METRICS_PORT)
+    start_http_server(int(METRICS_PORT))
     # Wait for threads to finish
     events.join()
     engine_results.join()
