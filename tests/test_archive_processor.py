@@ -34,6 +34,7 @@ EXPECTED_PERFORMANCE_RECORD = {
     },
     'mem.physmem': 32617072.0,
     'mem.util.available': 27455175.254,
+    'region': 'ap-northeast-1',
     'total_cpus': 1,
     'type': 'metadata'
 }
@@ -43,7 +44,7 @@ def test_performance_profile_response():
     # test setup
     lscpu = mock.Mock()
     setattr(lscpu, 'info', {'CPUs': '1'})
-    aws_instance_id = {'instanceType': 't2.micro'}
+    aws_instance_id = {'instanceType': 't2.micro', 'region': 'ap-northeast-1'}
     sample_pmlog_summary = {
       'hinv': {'ncpu': {'val': 8.0, 'units': 'none'}},
       'mem': {
