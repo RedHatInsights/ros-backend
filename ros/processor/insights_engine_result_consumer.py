@@ -130,7 +130,7 @@ class InsightsEngineResultConsumer:
                     number_of_recommendations=rec_count,
                     state=SYSTEM_STATES[state_key],
                     instance_type=performance_record.get('instance_type'),
-                    region=reports[0].get('details').get('region')
+                    region=performance_record.get('region')
                 )
                 LOG.info(
                     f"{self.prefix} - System created/updated successfully: {host['id']}"
@@ -159,7 +159,8 @@ class InsightsEngineResultConsumer:
                         'max_io': 0,
                         'io': {}
                     }
-
+                del performance_record['instance_type']
+                del performance_record['region']
                 get_or_create(
                     db.session, PerformanceProfile, ['system_id', 'report_date'],
                     system_id=system.id,
