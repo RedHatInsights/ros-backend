@@ -100,7 +100,8 @@ def test_system_rating(
         auth_token,
         db_setup,
         db_create_account,
-        db_create_system
+        db_create_system,
+        db_create_performance_profile
 ):
     with app.test_client() as client:
         data_dict = {
@@ -115,6 +116,13 @@ def test_system_rating(
         assert response.status_code == 201
         assert response.json["inventory_id"] == data_dict['inventory_id']
         assert response.json["rating"] == data_dict['rating']
+
+        # Checking if the set rating shows up on system detail
+        test_host_detail = client.get(
+            '/api/ros/v1/systems/ee0b9978-fe1b-4191-8408-cbadbd47f7a3',
+            headers={"x-rh-identity": auth_token}
+        )
+        assert test_host_detail.json["rating"] == data_dict['rating']
 
 
 def test_openapi_endpoint():
