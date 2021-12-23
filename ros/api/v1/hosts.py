@@ -25,30 +25,46 @@ SYSTEM_COLUMNS = [
 ]
 
 
+def default_queries(ident, additional_filter=None):
+    account_query = db.session.query(RhAccount.id).filter(RhAccount.account == ident['account_number']).subquery()
+    if additional_filter is None:
+        return db.session.query(System.id).filter(System.account_id.in_(account_query))
+    return db.session.query(System.id).filter(System.account_id.in_(account_query)).filter(additional_filter)
+
+
 class IsROSConfiguredApi(Resource):
     def get(self):
         ident = identity(request)['identity']
-        account_query = db.session.query(RhAccount.id).filter(
-            RhAccount.account == ident['account_number']).subquery()
-        system_count = db.session.query(System.id)\
-            .filter(System.account_id.in_(account_query)).count()
-        systems_with_suggestions = db.session.query(System.id)\
-            .filter(System.account_id.in_(account_query))\
-            .filter(System.number_of_recommendations > 0).count()
-        systems_waiting_for_data = db.session.query(System.id)\
-            .filter(System.account_id.in_(account_query))\
-            .filter(System.state == 'Waiting for data').count()
+
+        system_query = default_queries(ident)
+
+        last_reported = (
+            db.session.query(PerformanceProfile.system_id, func.max(PerformanceProfile.report_date).label('max_date')
+                             )
+            .filter(PerformanceProfile.system_id.in_(system_query.subquery()))
+            .group_by(PerformanceProfile.system_id)
+            .subquery()
+        )
+        print(last_reported)
+        query = (
+            db.session.query(PerformanceProfile, System, RhAccount)
+            .join(last_reported, (last_reported.c.max_date == PerformanceProfile.report_date) &
+                  (PerformanceProfile.system_id == last_reported.c.system_id))
+            .join(System, System.id == last_reported.c.system_id)
+            .join(RhAccount, RhAccount.id == System.account_id)
+        )
+        system_count = query.count()
+        print(system_count)
+        systems_with_suggestions = query.filter(System.number_of_recommendations > 0).count()
+        systems_waiting_for_data = query.filter(System.state == 'Waiting for data').count()
 
         if system_count <= 0:
-            return {
-                'success': False,
-                'code': 'NOSYSTEMS',
-                'count': system_count
-            }
-
+            status, code = False, 'NO_SYSTEMS'
+        else:
+            status, code = True, 'SYSTEMSEXIST'
         return {
-            'success': True,
-            'code': 'SYSTEMSEXIST',
+            'success': status,
+            'code': code,
             'count': system_count,
             'systems_stats': {
                 'waiting_for_data': systems_waiting_for_data,
@@ -109,9 +125,7 @@ class HostsApi(Resource):
         # Otherwise you will get an unpredictable subset of the query's rows.
         # Refer - https://www.postgresql.org/docs/13/queries-limit.html
 
-        account_query = db.session.query(RhAccount.id).filter(RhAccount.account == ident['account_number']).subquery()
-        system_query = db.session.query(System.id).filter(
-            System.account_id.in_(account_query)).filter(*self.build_system_filters())
+        system_query = default_queries(ident, *self.build_system_filters())
 
         last_reported = (
             db.session.query(PerformanceProfile.system_id, func.max(PerformanceProfile.report_date).label('max_date')
@@ -248,9 +262,7 @@ class HostDetailsApi(Resource):
         user = user_data_from_identity(ident)
         username = user['username'] if 'username' in user else None
 
-        account_query = db.session.query(RhAccount.id).filter(RhAccount.account == ident['account_number']).subquery()
-        system_query = db.session.query(System.id) \
-            .filter(System.account_id.in_(account_query)).filter(System.inventory_id == host_id).subquery()
+        system_query = default_queries(ident, System.inventory_id == host_id).subquery()
 
         profile = PerformanceProfile.query.filter(
             PerformanceProfile.system_id.in_(system_query)
@@ -313,9 +325,7 @@ class HostHistoryApi(Resource):
 
         ident = identity(request)['identity']
 
-        account_query = db.session.query(RhAccount.id).filter(RhAccount.account == ident['account_number']).subquery()
-        system_query = db.session.query(System.id) \
-            .filter(System.account_id.in_(account_query)).filter(System.inventory_id == host_id).subquery()
+        system_query = default_queries(ident, System.inventory_id == host_id).subquery()
 
         query = PerformanceProfile.query.filter(
             PerformanceProfile.system_id.in_(system_query)
