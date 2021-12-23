@@ -47,7 +47,6 @@ class RecommendationRatingsApi(Resource):
             RecommendationRating.system_id == system.id,
             RecommendationRating.rated_by == username).first()
 
-        status_code = None
         if rating_record:
             rating_record.rating = rating
             db.session.commit()

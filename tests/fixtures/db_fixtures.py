@@ -1,8 +1,10 @@
+import datetime
+import json
 import os
 import pytest
 from ros.lib.app import app, db
 from sqlalchemy_utils import database_exists, create_database, drop_database
-from ros.lib.models import RhAccount, System
+from ros.lib.models import RhAccount, System, PerformanceProfile, Rule
 
 
 @pytest.fixture(scope="session")
@@ -52,15 +54,117 @@ def db_create_system(db_create_account):
         instance_type='t2.micro',
         state='Idling',
         number_of_recommendations=1,
-        rule_hit_details='{"rule_id": "ros_instance_evaluation|","component":'
-                         '"telemetry.rules.plugins.ros.ros_instance_evaluation.report_instance_idle",'
-                         '"type": "rule","key": "INSTANCE_IDLE","details": {"rhel": "8.3","cloud_provider": "aws",'
-                         '"instance_type": "t2.micro","type": "rule","error_key": "INSTANCE_IDLE"},"tags": [],'
-                         '"links": {"jira": ["https://issues.redhat.com/browse/CEECBA-5092",\
-                                    "https://issues.redhat.com/browse/CEECBA-5875"],"kcs": ["T.B.D"]},'
-                         '"system_id": "677fb960-e164-48a4-929f-59e2d917b444"}')
+        region='ap-south-1',
+        rule_hit_details=[{
+          "key": "INSTANCE_IDLE",
+          "tags": [],
+          "type": "rule",
+          "links": {
+            "kcs": [],
+            "jira": [
+              "https://issues.redhat.com/browse/CEECBA-5875"
+            ]
+          },
+          "details": {
+            "rhel": "8.4",
+            "type": "rule",
+            "price": 0.0116,
+            "region": "us-east-1",
+            "summary": [
+              "System is IDLE"
+            ],
+            "error_key": "INSTANCE_IDLE",
+            "candidates": [
+              [
+                "t2.nano",
+                0.0058
+              ]
+            ],
+            "instance_type": "t2.micro",
+            "cloud_provider": "Amazon Web Services"
+          },
+          "rule_id": "ros_instance_evaluation|INSTANCE_IDLE",
+          "component": "telemetry.rules.plugins.ros.ros_instance_evaluation.report",
+          "system_id": "ee0b9978-fe1b-4191-8408-cbadbd47f7a3"
+        }]
+    )
+
     db.session.add(system)
     db.session.commit()
+
+
+@pytest.fixture(scope="function")
+def db_create_performance_profile():
+    # dummy record values
+    performance_record = {
+      "hinv.ncpu": 2.0,
+      "total_cpus": 1,
+      "mem.physmem": 825740.0,
+      "instance_type": "t2.micro",
+      "disk.dev.total": {
+        "xvda": {
+          "val": 0.314,
+          "units": "count / sec"
+        }
+      },
+      "mem.util.available": 825040.0,
+      "kernel.all.cpu.idle": 1.997,
+      "kernel.all.pressure.io.full.avg": {
+        "1 minute": {
+          "val": 0.0,
+          "units": "none"
+        }
+      },
+      "kernel.all.pressure.io.some.avg": {
+        "1 minute": {
+          "val": 0.0,
+          "units": "none"
+        }
+      },
+      "kernel.all.pressure.cpu.some.avg": {
+        "1 minute": {
+          "val": 0.06,
+          "units": "none"
+        }
+      },
+      "kernel.all.pressure.memory.full.avg": {
+        "1 minute": {
+          "val": 0.0,
+          "units": "none"
+        }
+      },
+      "kernel.all.pressure.memory.some.avg": {
+        "1 minute": {
+          "val": 0.0,
+          "units": "none"
+        }
+      }
+    }
+    performance_utilization = {"io": {"xvda": 314}, "cpu": 0, "max_io": 314, "memory": 0}
+    performance_profile = PerformanceProfile(
+        system_id=1,
+        performance_record=performance_record,
+        performance_utilization=performance_utilization,
+        report_date=datetime.datetime.utcnow().date()
+    )
+    db.session.add(performance_profile)
+    db.session.commit()
+
+
+@pytest.fixture(scope="function")
+def db_instantiate_rules(db_setup):
+    with open("seed.d/rules.json") as f:
+        rules = json.loads(f.read())
+        for data in rules:
+            rule = Rule(
+                rule_id=data['rule_id'],
+                description=data['description'],
+                reason=data['reason'],
+                resolution=data['resolution'],
+                condition=data['condition']
+            )
+            db.session.add(rule)
+        db.session.commit()
 
 
 def clean_tables():
