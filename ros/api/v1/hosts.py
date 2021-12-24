@@ -29,9 +29,8 @@ SYSTEM_COLUMNS = [
 
 class IsROSConfiguredApi(Resource):
     def get(self):
-        ident = identity(request)['identity']
-
-        system_query = default_queries(ident)
+        account_number = identity(request)['identity']['account_number']
+        system_query = default_queries(account_number)
 
         last_reported = (
             db.session.query(PerformanceProfile.system_id, func.max(PerformanceProfile.report_date).label('max_date')
@@ -112,13 +111,13 @@ class HostsApi(Resource):
         ).strip().lower()
         order_how = (request.args.get('order_how') or 'asc').strip().lower()
 
-        ident = identity(request)['identity']
+        account_number = identity(request)['identity']['account_number']
         # Note that When using LIMIT, it is important to use an ORDER BY clause
         # that constrains the result rows into a unique order.
         # Otherwise you will get an unpredictable subset of the query's rows.
         # Refer - https://www.postgresql.org/docs/13/queries-limit.html
 
-        system_query = default_queries(ident, *self.build_system_filters())
+        system_query = default_queries(account_number, *self.build_system_filters())
 
         last_reported = (
             db.session.query(PerformanceProfile.system_id, func.max(PerformanceProfile.report_date).label('max_date')
@@ -254,8 +253,9 @@ class HostDetailsApi(Resource):
         ident = identity(request)['identity']
         user = user_data_from_identity(ident)
         username = user['username'] if 'username' in user else None
+        account_number = identity(request)['identity']['account_number']
 
-        system_query = default_queries(ident, System.inventory_id == host_id).subquery()
+        system_query = default_queries(account_number, System.inventory_id == host_id).subquery()
 
         profile = PerformanceProfile.query.filter(
             PerformanceProfile.system_id.in_(system_query)
@@ -316,9 +316,9 @@ class HostHistoryApi(Resource):
         if not is_valid_uuid(host_id):
             abort(404, message='Invalid host_id, Id should be in form of UUID4')
 
-        ident = identity(request)['identity']
+        account_number = identity(request)['identity']['account_number']
 
-        system_query = default_queries(ident, System.inventory_id == host_id).subquery()
+        system_query = default_queries(account_number, System.inventory_id == host_id).subquery()
 
         query = PerformanceProfile.query.filter(
             PerformanceProfile.system_id.in_(system_query)
