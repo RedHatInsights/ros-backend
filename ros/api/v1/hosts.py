@@ -117,7 +117,7 @@ class HostsApi(Resource):
         # Otherwise you will get an unpredictable subset of the query's rows.
         # Refer - https://www.postgresql.org/docs/13/queries-limit.html
 
-        system_query = default_queries(account_number, *self.build_system_filters())
+        system_query = default_queries(account_number).filter(*self.build_system_filters())
 
         last_reported = (
             db.session.query(PerformanceProfile.system_id, func.max(PerformanceProfile.report_date).label('max_date')
@@ -255,7 +255,7 @@ class HostDetailsApi(Resource):
         username = user['username'] if 'username' in user else None
         account_number = identity(request)['identity']['account_number']
 
-        system_query = default_queries(account_number, System.inventory_id == host_id).subquery()
+        system_query = default_queries(account_number).filter(System.inventory_id == host_id).subquery()
 
         profile = PerformanceProfile.query.filter(
             PerformanceProfile.system_id.in_(system_query)
@@ -318,7 +318,7 @@ class HostHistoryApi(Resource):
 
         account_number = identity(request)['identity']['account_number']
 
-        system_query = default_queries(account_number, System.inventory_id == host_id).subquery()
+        system_query = default_queries(account_number).filter(System.inventory_id == host_id).subquery()
 
         query = PerformanceProfile.query.filter(
             PerformanceProfile.system_id.in_(system_query)
