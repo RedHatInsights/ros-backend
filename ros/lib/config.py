@@ -59,7 +59,7 @@ INSIGHTS_EXTRACT_LOGLEVEL = os.getenv("INSIGHTS_EXTRACT_LOGLEVEL", "ERROR")
 RBAC_HOST = os.getenv("RBAC_HOST", "localhost")
 RBAC_PORT = os.getenv("RBAC_PORT", "8114")
 RBAC_SVC_URL = os.getenv("RBAC_SVC_URL", f"http://{RBAC_HOST}:{RBAC_PORT}/")
-ENABLE_RBAC = str_to_bool(os.getenv("ENABLE_RBAC", "False"))
+ENABLE_RBAC = str_to_bool(os.getenv("ENABLE_RBAC", "True"))
 # Time interval after which garbage collector is involved to check for outdated data.
 GARBAGE_COLLECTION_INTERVAL = os.getenv("GARBAGE_COLLECTION_INTERVAL", 86400)
 # Number of days after which data is considered to be outdated.
