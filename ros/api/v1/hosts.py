@@ -6,11 +6,13 @@ from flask_restful import Resource, abort, fields, marshal_with
 from ros.lib.models import (
     PerformanceProfile, RhAccount, System,
     db, RecommendationRating)
-from ros.lib.utils import is_valid_uuid, identity, user_data_from_identity, sort_io_dict
+from ros.lib.utils import (
+    is_valid_uuid, identity,
+    user_data_from_identity,
+    sort_io_dict, default_queries)
 from ros.api.common.pagination import (
     build_paginated_system_list_response,
-    limit_value,
-    offset_value)
+    limit_value, offset_value)
 import logging
 
 
@@ -23,13 +25,6 @@ SYSTEM_COLUMNS = [
             'instance_type', 'cloud_provider',
             'rule_hit_details', 'state', 'number_of_recommendations', 'fqdn'
 ]
-
-
-def default_queries(ident, additional_filter=None):
-    account_query = db.session.query(RhAccount.id).filter(RhAccount.account == ident['account_number']).subquery()
-    if additional_filter is None:
-        return db.session.query(System.id).filter(System.account_id.in_(account_query))
-    return db.session.query(System.id).filter(System.account_id.in_(account_query)).filter(additional_filter)
 
 
 class IsROSConfiguredApi(Resource):
@@ -45,7 +40,6 @@ class IsROSConfiguredApi(Resource):
             .group_by(PerformanceProfile.system_id)
             .subquery()
         )
-        print(last_reported)
         query = (
             db.session.query(PerformanceProfile, System, RhAccount)
             .join(last_reported, (last_reported.c.max_date == PerformanceProfile.report_date) &
@@ -54,7 +48,6 @@ class IsROSConfiguredApi(Resource):
             .join(RhAccount, RhAccount.id == System.account_id)
         )
         system_count = query.count()
-        print(system_count)
         systems_with_suggestions = query.filter(System.number_of_recommendations > 0).count()
         systems_waiting_for_data = query.filter(System.state == 'Waiting for data').count()
 
