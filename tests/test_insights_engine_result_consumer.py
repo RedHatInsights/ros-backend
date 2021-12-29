@@ -88,3 +88,35 @@ def test_process_report_under_pressure(engine_result_message, engine_consumer, d
         assert data.state == SYSTEM_STATES['INSTANCE_OPTIMIZED_UNDER_PRESSURE']
         assert db.session.query(PerformanceProfile).filter_by(system_id=data.id).first().performance_record ==\
                performance_record
+
+
+def test_process_report_no_pcp(engine_result_message, engine_consumer, db_setup, performance_record):
+    engine_result_message = engine_result_message("insights-engine-result-no-pcp.json")
+    host = engine_result_message["input"]["host"]
+    ros_reports = [engine_result_message["results"]["reports"][7]]
+    system_metadata = engine_result_message["results"]["system"]["metadata"]
+    current_performance_record = copy.copy(performance_record)
+    engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
+    data = db_get_host(host['id'])
+    assert str(data.inventory_id) == host['id']
+    with app.app_context():
+        assert data.instance_type == current_performance_record['instance_type']
+        assert data.state == SYSTEM_STATES['NO_PCP_DATA']
+        assert db.session.query(PerformanceProfile).filter_by(system_id=data.id).first().performance_record ==\
+               performance_record
+
+
+def test_process_report_undersized(engine_result_message, engine_consumer, db_setup, performance_record):
+    engine_result_message = engine_result_message("insights-engine-result-undersized.json")
+    host = engine_result_message["input"]["host"]
+    ros_reports = [engine_result_message["results"]["reports"][7]]
+    system_metadata = engine_result_message["results"]["system"]["metadata"]
+    current_performance_record = copy.copy(performance_record)
+    engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
+    data = db_get_host(host['id'])
+    assert str(data.inventory_id) == host['id']
+    with app.app_context():
+        assert data.instance_type == current_performance_record['instance_type']
+        assert data.state == SYSTEM_STATES['INSTANCE_UNDERSIZED']
+        assert db.session.query(PerformanceProfile).filter_by(system_id=data.id).first().performance_record ==\
+               performance_record
