@@ -128,7 +128,7 @@ def test_process_report_undersized(engine_result_message, engine_consumer, db_se
 
 
 def test_process_report_optimized(engine_result_message, engine_consumer, db_setup, performance_record):
-    engine_result_message = engine_result_message("insights-engine-result-under-pressure.json")
+    engine_result_message = engine_result_message("insights-engine-result-optimized.json")
     host = engine_result_message["input"]["host"]
     ros_reports = []
     system_metadata = engine_result_message["results"]["system"]["metadata"]
