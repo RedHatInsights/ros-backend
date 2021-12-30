@@ -48,7 +48,7 @@ def engine_consumer():
 
 
 def test_handle_msg(engine_result_message, engine_consumer, mocker, performance_record):
-    engine_result_message = engine_result_message("insights-engine-result-idle-old.json")
+    engine_result_message = engine_result_message("insights-engine-result-idle.json")
     mocker.patch(
         'ros.processor.insights_engine_result_consumer.get_performance_profile',
         return_value=performance_record,
@@ -60,9 +60,9 @@ def test_handle_msg(engine_result_message, engine_consumer, mocker, performance_
 
 
 def test_process_report_idle(engine_result_message, engine_consumer, db_setup, performance_record):
-    engine_result_message = engine_result_message("insights-engine-result-idle-old.json")
+    engine_result_message = engine_result_message("insights-engine-result-idle.json")
     host = engine_result_message["input"]["host"]
-    ros_reports = [engine_result_message["results"]["reports"][4]]
+    ros_reports = [engine_result_message["results"]["reports"][7]]
     system_metadata = engine_result_message["results"]["system"]["metadata"]
     _performance_record = copy.copy(performance_record)
     engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
@@ -71,6 +71,7 @@ def test_process_report_idle(engine_result_message, engine_consumer, db_setup, p
     with app.app_context():
         assert data.instance_type == _performance_record['instance_type']
         assert data.region == _performance_record['region']
+        assert data.state == SYSTEM_STATES['INSTANCE_IDLE']
         assert db.session.query(PerformanceProfile).filter_by(system_id=data.id).first().performance_record ==\
                performance_record
 
@@ -127,7 +128,7 @@ def test_process_report_undersized(engine_result_message, engine_consumer, db_se
 
 
 def test_process_report_optimized(engine_result_message, engine_consumer, db_setup, performance_record):
-    engine_result_message = engine_result_message("insights-engine-result-optimized.json")
+    engine_result_message = engine_result_message("insights-engine-result-under-pressure.json")
     host = engine_result_message["input"]["host"]
     ros_reports = []
     system_metadata = engine_result_message["results"]["system"]["metadata"]
@@ -136,6 +137,7 @@ def test_process_report_optimized(engine_result_message, engine_consumer, db_set
     data = db_get_host(host['id'])
     assert str(data.inventory_id) == host['id']
     with app.app_context():
+        assert data.rule_hit_details == ros_reports
         assert data.instance_type == _performance_record['instance_type']
         assert data.region == _performance_record['region']
         assert data.state == SYSTEM_STATES['OPTIMIZED']
