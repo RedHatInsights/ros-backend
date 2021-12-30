@@ -159,8 +159,10 @@ class InsightsEngineResultConsumer:
                         'max_io': 0,
                         'io': {}
                     }
+                # Following are saved on respective system record
                 del performance_record['instance_type']
                 del performance_record['region']
+
                 get_or_create(
                     db.session, PerformanceProfile, ['system_id', 'report_date'],
                     system_id=system.id,
