@@ -52,7 +52,7 @@ class InsightsEngineResultConsumer:
         LOG.info(f"{self.prefix} - Processor is running. Awaiting msgs.")
         for msg in iter(self):
             if msg.error():
-                print(msg.error())
+                LOG.error("%s - Consumer error: %s", self.prefix, msg.error())
                 kafka_failures.labels(reporter=self.reporter).inc()
                 raise KafkaException(msg.error())
             try:

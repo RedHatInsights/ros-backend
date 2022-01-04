@@ -47,7 +47,7 @@ class InventoryEventsConsumer:
         """Initialize Consumer."""
         for msg in iter(self):
             if msg.error():
-                print(msg.error())
+                LOG.error("%s - Consumer error: %s", self.prefix, msg.error())
                 kafka_failures.labels(reporter=self.reporter).inc()
                 raise KafkaException(msg.error())
 
