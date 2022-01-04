@@ -40,15 +40,12 @@ class IsROSConfiguredApi(Resource):
             .filter(System.state == 'Waiting for data').count()
 
         if system_count <= 0:
-            return {
-                'success': False,
-                'code': 'NOSYSTEMS',
-                'count': system_count
-            }
-
+            status, code = False, 'NO_SYSTEMS'
+        else:
+            status, code = True, 'SYSTEMSEXIST'
         return {
-            'success': True,
-            'code': 'SYSTEMSEXIST',
+            'success': status,
+            'code': code,
             'count': system_count,
             'systems_stats': {
                 'waiting_for_data': systems_waiting_for_data,
