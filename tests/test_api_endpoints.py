@@ -38,7 +38,7 @@ def test_status():
         assert response.json["status"] == "Application is running!"
 
 
-def test_is_configured(auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile):
+def test_is_configured(auth_token, db_setup, db_create_account, db_create_system):
     with app.test_client() as client:
         response = client.get('/api/ros/v1/is_configured', headers={"x-rh-identity": auth_token})
         assert response.status_code == 200

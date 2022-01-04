@@ -4,7 +4,6 @@ import json
 from flask import jsonify, make_response
 from flask_restful import abort
 import ast as type_evaluation
-from ros.lib.models import RhAccount, System, db
 
 
 def is_valid_uuid(val):
@@ -106,8 +105,3 @@ def sort_io_dict(performance_utilization: dict):
     performance_utilization.update({**sorted_io_dict})
     del performance_utilization['io']
     return performance_utilization
-
-
-def default_queries(account_number):
-    account_query = db.session.query(RhAccount.id).filter(RhAccount.account == account_number).subquery()
-    return db.session.query(System.id).filter(System.account_id.in_(account_query))
