@@ -344,10 +344,10 @@
                         "type": "object",
                         "properties": {
                             "memory": {
-                                "type": "number"
+                                "type": "integer"
                             },
                             "cpu": {
-                                "type": "number"
+                                "type": "integer"
                             },
                             "max_io": {
                                 "type": "integer"
@@ -397,10 +397,10 @@
                         "type": "object",
                         "properties": {
                             "memory": {
-                                "type": "number"
+                                "type": "integer"
                             },
                             "cpu": {
-                                "type": "number"
+                                "type": "integer"
                             },
                             "max_io": {
                                 "type": "integer"
