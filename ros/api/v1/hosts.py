@@ -32,19 +32,10 @@ class IsROSConfiguredApi(Resource):
     def get(self):
         account_number = identity(request)['identity']['account_number']
         system_query = default_queries(account_number)
-        last_reported = (
-            db.session.query(PerformanceProfile.system_id, func.max(PerformanceProfile.report_date).label('max_date')
-                             )
-            .filter(PerformanceProfile.system_id.in_(system_query.subquery()))
-            .group_by(PerformanceProfile.system_id)
-            .subquery()
-        )
         query = (
-            db.session.query(PerformanceProfile.system_id, System.id, RhAccount.id)
-            .join(last_reported, (last_reported.c.max_date == PerformanceProfile.report_date) &
-                  (PerformanceProfile.system_id == last_reported.c.system_id))
-            .join(System, System.id == last_reported.c.system_id)
-            .join(RhAccount, RhAccount.id == System.account_id)
+            db.session.query(System.id)
+            .filter(PerformanceProfile.system_id.in_(system_query.subquery()))
+            .distinct()
         )
         system_count = query.count()
         systems_with_suggestions = query.filter(System.number_of_recommendations > 0).count()
