@@ -128,7 +128,8 @@ class InsightsEngineResultConsumer:
                     number_of_recommendations=-1 if state_key == 'NO_PCP_DATA' else rec_count,
                     state=SYSTEM_STATES[state_key],
                     instance_type=performance_record.get('instance_type'),
-                    region=performance_record.get('region')
+                    region=performance_record.get('region'),
+                    release_version=utilization_info.get('release', 'NA'),
                 )
                 LOG.info(
                     f"{self.prefix} - System created/updated successfully: {host['id']}"

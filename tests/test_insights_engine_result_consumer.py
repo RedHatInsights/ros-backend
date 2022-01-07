@@ -145,3 +145,14 @@ def test_process_report_optimized(engine_result_message, engine_consumer, db_set
         assert system_record.state == SYSTEM_STATES['OPTIMIZED']
         assert db.session.query(PerformanceProfile).filter_by(system_id=system_record.id).\
                first().performance_record == performance_record
+
+
+def test_system_properties(engine_result_message, engine_consumer, db_setup, performance_record):
+    engine_result_message = engine_result_message("insights-engine-result-idle.json")
+    host = engine_result_message["input"]["host"]
+    ros_reports = [engine_result_message["results"]["reports"][7]]
+    system_metadata = engine_result_message["results"]["system"]["metadata"]
+    engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
+    data = db_get_host(host['id'])
+    assert str(data.inventory_id) == host['id']
+    assert data.release_version == system_metadata['release']

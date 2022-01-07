@@ -55,6 +55,7 @@ def db_create_system(db_create_account):
         state='Idling',
         number_of_recommendations=1,
         region='ap-south-1',
+        release_version='Red Hat Enterprise Linux release 8.4 (Ootpa)',
         rule_hit_details=[{
           "key": "INSTANCE_IDLE",
           "tags": [],
