@@ -22,9 +22,15 @@ SYSTEM_STATES_EXCEPT_EMPTY = [
     "Oversized", "Undersized", "Idling", "Under pressure", "Storage rightsizing", "Optimized", "Waiting for data"
 ]
 SYSTEM_COLUMNS = [
-            'inventory_id', 'display_name',
-            'instance_type', 'cloud_provider',
-            'rule_hit_details', 'state', 'number_of_recommendations', 'fqdn'
+    'inventory_id',
+    'display_name',
+    'instance_type',
+    'cloud_provider',
+    'rule_hit_details',
+    'state',
+    'number_of_recommendations',
+    'fqdn',
+    'release_version',
 ]
 
 
@@ -74,7 +80,8 @@ class HostsApi(Resource):
         'performance_utilization': fields.Nested(performance_utilization_fields),
         'cloud_provider': fields.String,
         'instance_type': fields.String,
-        'idling_time': fields.String
+        'idling_time': fields.String,
+        'release_version': fields.String,
     }
     meta_fields = {
         'count': fields.Integer,
@@ -231,7 +238,8 @@ class HostDetailsApi(Resource):
         'report_date': fields.String,
         'instance_type': fields.String,
         'cloud_provider': fields.String,
-        'idling_time': fields.String
+        'idling_time': fields.String,
+        'release_version': fields.String,
     }
 
     @marshal_with(profile_fields)

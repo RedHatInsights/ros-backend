@@ -54,6 +54,7 @@ def test_systems(auth_token, db_setup, db_create_account, db_create_system, db_c
         response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
         assert response.status_code == 200
         assert response.json["meta"]["count"] == 1
+        assert response.json["data"][0]["release_version"] == "Red Hat Enterprise Linux release 8.4 (Ootpa)"
 
 
 def test_system_detail(auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile):
@@ -65,6 +66,7 @@ def test_system_detail(auth_token, db_setup, db_create_account, db_create_system
         print(response.json)
         assert response.status_code == 200
         assert response.json["inventory_id"] == 'ee0b9978-fe1b-4191-8408-cbadbd47f7a3'
+        assert response.json["release_version"] == "Red Hat Enterprise Linux release 8.4 (Ootpa)"  # from db fixture
 
 
 def test_system_history(auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile):
