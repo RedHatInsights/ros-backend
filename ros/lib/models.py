@@ -27,12 +27,6 @@ class PerformanceProfile(db.Model):
                               / int(self.performance_record['total_cpus']))
             return "%0.2f" % idling_percent
 
-    @property
-    def io_wait(self):
-        if 'kernel.all.cpu.wait.total' in self.performance_record:
-            io_wait = self.performance_record['kernel.all.cpu.wait.total'] * 100
-            return "%0.2f" % io_wait
-
 
 class System(db.Model):
     __tablename__ = 'systems'
