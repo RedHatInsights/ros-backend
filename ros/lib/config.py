@@ -69,3 +69,11 @@ GARBAGE_COLLECTION_INTERVAL = os.getenv("GARBAGE_COLLECTION_INTERVAL", 86400)
 # Number of days after which data is considered to be outdated.
 DAYS_UNTIL_STALE = os.getenv("DAYS_UNTIL_STALE", 14)
 INSTANCE_PRICE_UNIT = 'USD/hour'
+
+# CloudWatch/Kibana Logging
+CW_ENABLED = os.getenv("CW_ENABLED", False)
+# Available only in k8s namespace, through an app-interface automation
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", None)
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", None)
+AWS_REGION_NAME = os.getenv("AWS_REGION_NAME", None)
+AWS_LOG_GROUP = os.getenv("AWS_LOG_GROUP", None)

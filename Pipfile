@@ -28,6 +28,9 @@ app-common-python = "~=0.1.6"
 prometheus-client = "~=0.11.0"
 prometheus-flask-exporter = "~=0.18.2"
 pyyaml = "*"
+watchtower = ">=1.0.0"
+boto3 = ">=1.16.13"
+botocore = ">=1.19.13"
 
 [requires]
 python_version = "3.8"

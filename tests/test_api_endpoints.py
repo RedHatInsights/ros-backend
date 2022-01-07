@@ -62,7 +62,6 @@ def test_system_detail(auth_token, db_setup, db_create_account, db_create_system
             '/api/ros/v1/systems/ee0b9978-fe1b-4191-8408-cbadbd47f7a3',  # inventory_id from db_create_system
             headers={"x-rh-identity": auth_token}
         )
-        print(response.json)
         assert response.status_code == 200
         assert response.json["inventory_id"] == 'ee0b9978-fe1b-4191-8408-cbadbd47f7a3'
 
