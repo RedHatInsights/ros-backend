@@ -1,5 +1,5 @@
 from sqlalchemy import func, asc, desc
-from sqlalchemy.types import Integer
+from sqlalchemy.types import Float
 from flask import request
 from flask_restful import Resource, abort, fields, marshal_with
 
@@ -61,7 +61,7 @@ class HostsApi(Resource):
     performance_utilization_fields = {
         'cpu': fields.Integer,
         'memory': fields.Integer,
-        'max_io': fields.Integer,
+        'max_io': fields.Float,
         'io_all': fields.Raw
     }
     hosts_fields = {
@@ -198,7 +198,7 @@ class HostsApi(Resource):
         if order_method in score_methods:
             return (
                 sort_order(PerformanceProfile.performance_utilization[
-                    order_method].astext.cast(Integer)),
+                    order_method].astext.cast(Float)),
                 asc(PerformanceProfile.system_id),)
 
         if order_method == 'number_of_suggestions':
@@ -217,7 +217,7 @@ class HostDetailsApi(Resource):
     performance_utilization_fields = {
         'cpu': fields.Integer,
         'memory': fields.Integer,
-        'max_io': fields.Integer,
+        'max_io': fields.Float,
         'io_all': fields.Raw
     }
     profile_fields = {
@@ -276,7 +276,7 @@ class HostHistoryApi(Resource):
         'cpu': fields.Integer,
         'memory': fields.Integer,
         'io_all': fields.Raw,
-        'max_io': fields.Integer,
+        'max_io': fields.Float,
         'report_date': fields.String
     }
     meta_fields = {
