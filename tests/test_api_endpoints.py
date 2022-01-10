@@ -41,10 +41,12 @@ def test_status():
 def test_is_configured(auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile):
     with app.test_client() as client:
         response = client.get('/api/ros/v1/is_configured', headers={"x-rh-identity": auth_token})
+        sys_response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
         assert response.status_code == 200
         assert response.json["count"] == 1
         assert response.json["systems_stats"]["with_suggestions"] == 1
         assert response.json["systems_stats"]["waiting_for_data"] == 0
+        assert response.json["count"] == sys_response.json["meta"]["count"]
 
 
 def test_systems(auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile):
