@@ -309,10 +309,10 @@
                         "type": "object",
                         "properties": {
                             "waiting_for_data": {
-                                "type": "number"
+                                "type": "integer"
                             },
                             "with_suggestions": {
-                                "type": "number"
+                                "type": "integer"
                             }
                         }
                     }
