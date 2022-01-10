@@ -565,7 +565,7 @@
                         "display_name",
                         "cpu",
                         "memory",
-                        "io",
+                        "max_io",
                         "number_of_suggestions",
                         "state"
                     ]
