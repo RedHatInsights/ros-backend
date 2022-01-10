@@ -350,7 +350,7 @@
                                 "type": "integer"
                             },
                             "max_io": {
-                                "type": "integer"
+                                "type": "number"
                             },
                             "io_all": {
                                 "type": "object"
@@ -403,7 +403,7 @@
                                 "type": "integer"
                             },
                             "max_io": {
-                                "type": "integer"
+                                "type": "number"
                             },
                             "io_all": {
                                 "type": "object"
@@ -464,7 +464,7 @@
                         "type": "integer"
                     },
                     "max_io": {
-                        "type": "integer"
+                        "type": "number"
                     },
                     "io_all": {
                         "type": "object"

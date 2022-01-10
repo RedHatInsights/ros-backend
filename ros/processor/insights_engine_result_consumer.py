@@ -4,7 +4,7 @@ from ros.lib.app import app, db
 from ros.lib.config import (INSIGHTS_KAFKA_ADDRESS, GROUP_ID,
                             ENGINE_RESULT_TOPIC, get_logger)
 from ros.lib.models import RhAccount, System, PerformanceProfile
-from ros.lib.utils import get_or_create, convert_to_iops_actuals
+from ros.lib.utils import get_or_create, cast_iops_as_float
 from confluent_kafka import Consumer, KafkaException
 from ros.processor.metrics import (processor_requests_success,
                                    processor_requests_failures,
@@ -145,7 +145,7 @@ class InsightsEngineResultConsumer:
                     performance_utilization = {
                         'memory': int(utilization_info['mem_utilization']),
                         'cpu': int(utilization_info['cpu_utilization']),
-                        'io': convert_to_iops_actuals(utilization_info['io_utilization'])
+                        'io': cast_iops_as_float(utilization_info['io_utilization'])
                     }
                     # max_io will be used to sort systems endpoint response instead of io
                     performance_utilization.update(
