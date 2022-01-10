@@ -73,7 +73,7 @@ def get_performance_profile(report_url, account_number, custom_prefix=prefix):
             return result
         except Exception as e:
             processor_requests_failures.labels(
-                reporter='INVENTORY EVENTS', account_number=account_number
+                reporter='INSIGHTS ENGINE', account_number=account_number
             ).inc()
             LOG.error("%s - Failed to extract performance_profile from the report present at %s. ERROR - %s\n",
                       custom_prefix, report_url, e)

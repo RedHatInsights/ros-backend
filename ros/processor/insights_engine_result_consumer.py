@@ -52,16 +52,14 @@ class InsightsEngineResultConsumer:
         LOG.info(f"{self.prefix} - Processor is running. Awaiting msgs.")
         for msg in iter(self):
             if msg.error():
-                print(msg.error())
+                LOG.error("%s - Consumer error: %s", self.prefix, msg.error())
+                kafka_failures.labels(reporter=self.reporter).inc()
                 raise KafkaException(msg.error())
             try:
                 msg = json.loads(msg.value().decode("utf-8"))
                 self.handle_msg(msg)
             except json.decoder.JSONDecodeError:
-                kafka_failures.labels(
-                    reporter=self.reporter,
-                    account_number=msg['input']['host']['account']
-                ).inc()
+                kafka_failures.labels(reporter=self.reporter).inc()
                 LOG.error(
                     'Unable to decode kafka message: %s - %s',
                     msg.value(), self.prefix

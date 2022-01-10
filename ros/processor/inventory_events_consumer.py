@@ -47,7 +47,8 @@ class InventoryEventsConsumer:
         """Initialize Consumer."""
         for msg in iter(self):
             if msg.error():
-                print(msg.error())
+                LOG.error("%s - Consumer error: %s", self.prefix, msg.error())
+                kafka_failures.labels(reporter=self.reporter).inc()
                 raise KafkaException(msg.error())
 
             account = None
@@ -72,9 +73,7 @@ class InventoryEventsConsumer:
                         event_type
                     )
             except json.decoder.JSONDecodeError:
-                kafka_failures.labels(
-                    reporter=self.reporter, account_number=account
-                ).inc()
+                kafka_failures.labels(reporter=self.reporter).inc()
                 LOG.error(
                     '%s - Unable to decode kafka message: %s',
                     self.prefix,
