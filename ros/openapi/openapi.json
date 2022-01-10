@@ -365,9 +365,6 @@
                     },
                     "idling_time": {
                         "type": "number"
-                    },
-                    "io_wait": {
-                        "type": "number"
                     }
                 }
             },
@@ -430,9 +427,6 @@
                         "type": "string"
                     },
                     "idling_time": {
-                        "type": "number"
-                    },
-                    "io_wait": {
                         "type": "number"
                     }
                 }

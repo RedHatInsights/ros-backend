@@ -71,8 +71,7 @@ class HostsApi(Resource):
         'performance_utilization': fields.Nested(performance_utilization_fields),
         'cloud_provider': fields.String,
         'instance_type': fields.String,
-        'idling_time': fields.String,
-        'io_wait': fields.String,
+        'idling_time': fields.String
     }
     meta_fields = {
         'count': fields.Integer,
@@ -141,7 +140,6 @@ class HostsApi(Resource):
                     row.PerformanceProfile.performance_utilization
                 )
                 host['idling_time'] = row.PerformanceProfile.idling_time
-                host['io_wait'] = row.PerformanceProfile.io_wait
                 hosts.append(host)
             except Exception as err:
                 LOG.error(
@@ -232,8 +230,7 @@ class HostDetailsApi(Resource):
         'report_date': fields.String,
         'instance_type': fields.String,
         'cloud_provider': fields.String,
-        'idling_time': fields.String,
-        'io_wait': fields.String
+        'idling_time': fields.String
     }
 
     @marshal_with(profile_fields)
@@ -267,7 +264,6 @@ class HostDetailsApi(Resource):
             record['rating'] = rating_record.rating if rating_record else None
             record['report_date'] = profile.report_date
             record['idling_time'] = profile.idling_time
-            record['io_wait'] = profile.io_wait
         else:
             abort(404, message="System {} doesn't exist"
                   .format(host_id))

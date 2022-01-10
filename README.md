@@ -94,8 +94,7 @@ pytest --cov=ros tests
       },
       "cloud_provider": "string",
       "instance_type": "string",
-      "idling_time": 0,
-      "io_wait": 0
+      "idling_time": 0
     }]
 
 
