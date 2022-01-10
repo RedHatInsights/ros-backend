@@ -9,7 +9,7 @@ from ros.lib.models import (
 from ros.lib.utils import (
     is_valid_uuid, identity,
     user_data_from_identity,
-    sort_io_dict, default_queries)
+    sort_io_dict, system_ids_by_account)
 from ros.api.common.pagination import (
     build_paginated_system_list_response,
     limit_value,
@@ -31,10 +31,11 @@ SYSTEM_COLUMNS = [
 class IsROSConfiguredApi(Resource):
     def get(self):
         account_number = identity(request)['identity']['account_number']
-        system_query = default_queries(account_number)
         query = (
             db.session.query(System.id)
-            .filter(PerformanceProfile.system_id.in_(system_query.subquery()))
+            .join(PerformanceProfile, PerformanceProfile.system_id == System.id)
+            .join(RhAccount, RhAccount.id == System.account_id)
+            .filter(RhAccount.account == account_number)
             .distinct()
         )
         system_count = query.count()
@@ -108,7 +109,7 @@ class HostsApi(Resource):
         # Otherwise you will get an unpredictable subset of the query's rows.
         # Refer - https://www.postgresql.org/docs/13/queries-limit.html
 
-        system_query = default_queries(account_number).filter(*self.build_system_filters())
+        system_query = system_ids_by_account(account_number).filter(*self.build_system_filters())
 
         last_reported = (
             db.session.query(PerformanceProfile.system_id, func.max(PerformanceProfile.report_date).label('max_date')
@@ -246,7 +247,7 @@ class HostDetailsApi(Resource):
         username = user['username'] if 'username' in user else None
         account_number = identity(request)['identity']['account_number']
 
-        system_query = default_queries(account_number).filter(System.inventory_id == host_id).subquery()
+        system_query = system_ids_by_account(account_number).filter(System.inventory_id == host_id).subquery()
 
         profile = PerformanceProfile.query.filter(
             PerformanceProfile.system_id.in_(system_query)
@@ -309,7 +310,7 @@ class HostHistoryApi(Resource):
 
         account_number = identity(request)['identity']['account_number']
 
-        system_query = default_queries(account_number).filter(System.inventory_id == host_id).subquery()
+        system_query = system_ids_by_account(account_number).filter(System.inventory_id == host_id).subquery()
 
         query = PerformanceProfile.query.filter(
             PerformanceProfile.system_id.in_(system_query)

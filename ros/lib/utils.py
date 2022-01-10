@@ -108,6 +108,6 @@ def sort_io_dict(performance_utilization: dict):
     return performance_utilization
 
 
-def default_queries(account_number):
+def system_ids_by_account(account_number):
     account_query = db.session.query(RhAccount.id).filter(RhAccount.account == account_number).subquery()
     return db.session.query(System.id).filter(System.account_id.in_(account_query))
