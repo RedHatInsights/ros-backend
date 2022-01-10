@@ -1,0 +1,184 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: ros-backend-deployment-config
+objects:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: ros-backend
+    name: ros-backend
+  spec:
+    ports:
+    - name: 8080-tcp
+      port: 8080
+      protocol: TCP
+      targetPort: 8000
+    selector:
+      app: ros-backend
+    type: ClusterIP
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    labels:
+      app: ros-backend
+    name: ros-backend
+  spec:
+    minReadySeconds: 15
+    progressDeadlineSeconds: 600
+    replicas: ${{MINIMUM_REPLICAS}}
+    revisionHistoryLimit: 9
+    selector:
+      matchLabels:
+        app: ros-backend
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        annotations:
+          prometheus.io/path: /metrics
+          prometheus.io/port: '8000'
+          prometheus.io/scrape: 'true'
+        labels:
+          app: ros-backend
+        name: ros-backend
+      spec:
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                    - ros-backend
+                topologyKey: failure-domain.beta.kubernetes.io/zone
+              weight: 100
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                    - ros-backend
+                topologyKey: kubernetes.io/hostname
+              weight: 99
+        containers:
+        - args:
+          - -c
+          - python -m manage db upgrade && python -m manage seed && python -m ros.api.main
+          command:
+          - bash
+          env:
+          - name: INVENTORY_HOST
+            value: ${HOST_INVENTORY_HOST}
+          - name: INVENTORY_PORT
+            value: '8080'
+          - name: ROS_DB_USER
+            valueFrom:
+              secretKeyRef:
+                key: db.user
+                name: ros-db
+                optional: false
+          - name: ROS_DB_PASS
+            valueFrom:
+              secretKeyRef:
+                key: db.password
+                name: ros-db
+                optional: false
+          - name: ROS_DB_HOST
+            valueFrom:
+              secretKeyRef:
+                key: db.host
+                name: ros-db
+                optional: false
+          - name: ROS_DB_PORT
+            valueFrom:
+              secretKeyRef:
+                key: db.port
+                name: ros-db
+                optional: false
+          - name: ROS_DB_NAME
+            valueFrom:
+              secretKeyRef:
+                key: db.name
+                name: ros-db
+                optional: false
+          - name: RBAC_SVC_URL
+            value: http://${RBAC_HOST}:8080
+          - name: ENABLE_RBAC
+            value: ${ENABLE_RBAC}
+          image: quay.io/cloudservices/ros-backend:${IMAGE_TAG}
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /api/ros/v1/status
+              port: 8000
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 3
+          name: ros-backend
+          ports:
+          - containerPort: 8000
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /api/ros/v1/status
+              port: 8000
+              scheme: HTTP
+            initialDelaySeconds: 3
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 3
+          resources:
+            limits:
+              cpu: ${CPU_LIMIT}
+              memory: ${MEMORY_LIMIT}
+            requests:
+              cpu: ${CPU_REQUEST}
+              memory: ${MEMORY_REQUEST}
+        imagePullSecrets:
+        - name: quay-cloudservices-pull
+        - name: rh-registry-pull
+parameters:
+- name: HOST_INVENTORY_HOST
+  required: true
+  value: insights-inventory.platform-ci.svc
+- description: rbac service host for accessing API within cluster
+  name: RBAC_HOST
+- description: enable rbac. needs to be "True" or "False".
+  name: ENABLE_RBAC
+  value: 'True'
+- description: Minimum Replicas for Autoscaling
+  displayName: Minimum Replicas
+  name: MINIMUM_REPLICAS
+  required: true
+  value: '1'
+- description: Initial cpu request.
+  displayName: CPU Request
+  name: CPU_REQUEST
+  required: true
+  value: 500m
+- description: Initial amount of memory the container will request.
+  displayName: Memory Request
+  name: MEMORY_REQUEST
+  required: true
+  value: 1Gi
+- description: Maximum amount of memory the Django container can use.
+  displayName: Memory Limit
+  name: MEMORY_LIMIT
+  required: true
+  value: 1Gi
+- description: Maximum amount of CPU the build container can use.
+  displayName: CPU Limit
+  name: CPU_LIMIT
+  required: true
+  value: '1'
+- description: Image tag
+  name: IMAGE_TAG
+  required: true

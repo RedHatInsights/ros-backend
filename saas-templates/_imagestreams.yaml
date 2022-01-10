@@ -1,0 +1,35 @@
+apiVersion: v1
+items:
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    name: ros-backend
+  spec:
+    lookupPolicy:
+      local: false
+    tags:
+    - from:
+        kind: DockerImage
+        name: quay.io/cloudservices/ros-backend:latest
+      importPolicy:
+        scheduled: true
+      name: latest
+      referencePolicy:
+        type: Source
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    name: ros-backend
+  spec:
+    lookupPolicy:
+      local: false
+    tags:
+    - from:
+        kind: DockerImage
+        name: quay.io/cloudservices/ros-backend:qa
+      importPolicy:
+        scheduled: true
+      name: qa
+      referencePolicy:
+        type: Source
+kind: List
