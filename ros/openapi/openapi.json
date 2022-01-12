@@ -343,10 +343,10 @@
                     "performance_utilization": {
                         "type": "object",
                         "properties": {
-                            "memory": {
+                            "cpu": {
                                 "type": "integer"
                             },
-                            "cpu": {
+                            "memory": {
                                 "type": "integer"
                             },
                             "max_io": {
@@ -393,10 +393,10 @@
                     "performance_utilization": {
                         "type": "object",
                         "properties": {
-                            "memory": {
+                            "cpu": {
                                 "type": "integer"
                             },
-                            "cpu": {
+                            "memory": {
                                 "type": "integer"
                             },
                             "max_io": {
@@ -440,6 +440,9 @@
                     "links": {
                         "$ref": "#/components/schemas/Links"
                     },
+                    "inventory_id": {
+                        "type": "string"
+                    },
                     "data": {
                         "type": "array",
                         "items": {
@@ -471,7 +474,7 @@
             "SuggestionsList": {
                 "type": "object",
                 "properties": {
-                    "host_id": {
+                    "inventory_id": {
                         "type": "string"
                     },
                     "meta": {
@@ -537,7 +540,7 @@
                 "name": "limit",
                 "in": "query",
                 "required": false,
-                "description": "Number of items to return, set -1 to return all",
+                "description": "Number of items to return",
                 "schema": {
                     "type": "integer",
                     "default": 10
@@ -605,11 +608,9 @@
                         "type": "string",
                         "enum": [
                             "Idling",
-                            "Oversized",
                             "Undersized",
                             "Optimized",
                             "Under pressure",
-                            "Storage rightsizing",
                             "Waiting for data"
                         ]
                     }
