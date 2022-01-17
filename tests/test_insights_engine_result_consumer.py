@@ -66,14 +66,14 @@ def test_process_report_idle(engine_result_message, engine_consumer, db_setup, p
     system_metadata = engine_result_message["results"]["system"]["metadata"]
     _performance_record = copy.copy(performance_record)
     engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
-    data = db_get_host(host['id'])
-    assert str(data.inventory_id) == host['id']
+    system_record = db_get_host(host['id'])
+    assert str(system_record.inventory_id) == host['id']
     with app.app_context():
-        assert data.instance_type == _performance_record['instance_type']
-        assert data.region == _performance_record['region']
-        assert data.state == SYSTEM_STATES['INSTANCE_IDLE']
-        assert db.session.query(PerformanceProfile).filter_by(system_id=data.id).first().performance_record ==\
-               performance_record
+        assert system_record.instance_type == _performance_record['instance_type']
+        assert system_record.region == _performance_record['region']
+        assert system_record.state == SYSTEM_STATES['INSTANCE_IDLE']
+        assert db.session.query(PerformanceProfile).filter_by(system_id=system_record.id).\
+               first().performance_record == performance_record
 
 
 def test_process_report_under_pressure(engine_result_message, engine_consumer, db_setup, performance_record):
@@ -83,14 +83,14 @@ def test_process_report_under_pressure(engine_result_message, engine_consumer, d
     system_metadata = engine_result_message["results"]["system"]["metadata"]
     _performance_record = copy.copy(performance_record)
     engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
-    data = db_get_host(host['id'])
-    assert str(data.inventory_id) == host['id']
+    system_record = db_get_host(host['id'])
+    assert str(system_record.inventory_id) == host['id']
     with app.app_context():
-        assert data.instance_type == _performance_record['instance_type']
-        assert data.region == _performance_record['region']
-        assert data.state == SYSTEM_STATES['INSTANCE_OPTIMIZED_UNDER_PRESSURE']
-        assert db.session.query(PerformanceProfile).filter_by(system_id=data.id).first().performance_record ==\
-               performance_record
+        assert system_record.instance_type == _performance_record['instance_type']
+        assert system_record.region == _performance_record['region']
+        assert system_record.state == SYSTEM_STATES['INSTANCE_OPTIMIZED_UNDER_PRESSURE']
+        assert db.session.query(PerformanceProfile).filter_by(system_id=system_record.id).\
+               first().performance_record == performance_record
 
 
 def test_process_report_no_pcp(engine_result_message, engine_consumer, db_setup, performance_record):
@@ -100,14 +100,16 @@ def test_process_report_no_pcp(engine_result_message, engine_consumer, db_setup,
     system_metadata = engine_result_message["results"]["system"]["metadata"]
     _performance_record = copy.copy(performance_record)
     engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
-    data = db_get_host(host['id'])
-    assert str(data.inventory_id) == host['id']
+    system_record = db_get_host(host['id'])
+    performance_utilization = db.session.query(PerformanceProfile).\
+        filter_by(system_id=system_record.id).first().performance_utilization
+    sample_performance_util_no_pcp = {'cpu': -1, 'memory': -1, 'max_io': -1.0, 'io': {}}
+    assert str(system_record.inventory_id) == host['id']
     with app.app_context():
-        assert data.instance_type == _performance_record['instance_type']
-        assert data.region == _performance_record['region']
-        assert data.state == SYSTEM_STATES['NO_PCP_DATA']
-        assert db.session.query(PerformanceProfile).filter_by(system_id=data.id).first().performance_record ==\
-               performance_record
+        assert system_record.instance_type == _performance_record['instance_type']
+        assert system_record.region == _performance_record['region']
+        assert system_record.state == SYSTEM_STATES['NO_PCP_DATA']
+        assert performance_utilization == sample_performance_util_no_pcp
 
 
 def test_process_report_undersized(engine_result_message, engine_consumer, db_setup, performance_record):
@@ -117,14 +119,14 @@ def test_process_report_undersized(engine_result_message, engine_consumer, db_se
     system_metadata = engine_result_message["results"]["system"]["metadata"]
     _performance_record = copy.copy(performance_record)
     engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
-    data = db_get_host(host['id'])
-    assert str(data.inventory_id) == host['id']
+    system_record = db_get_host(host['id'])
+    assert str(system_record.inventory_id) == host['id']
     with app.app_context():
-        assert data.instance_type == _performance_record['instance_type']
-        assert data.region == _performance_record['region']
-        assert data.state == SYSTEM_STATES['INSTANCE_UNDERSIZED']
-        assert db.session.query(PerformanceProfile).filter_by(system_id=data.id).first().performance_record ==\
-               performance_record
+        assert system_record.instance_type == _performance_record['instance_type']
+        assert system_record.region == _performance_record['region']
+        assert system_record.state == SYSTEM_STATES['INSTANCE_UNDERSIZED']
+        assert db.session.query(PerformanceProfile).filter_by(system_id=system_record.id).\
+               first().performance_record == performance_record
 
 
 def test_process_report_optimized(engine_result_message, engine_consumer, db_setup, performance_record):
@@ -134,12 +136,12 @@ def test_process_report_optimized(engine_result_message, engine_consumer, db_set
     system_metadata = engine_result_message["results"]["system"]["metadata"]
     _performance_record = copy.copy(performance_record)
     engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
-    data = db_get_host(host['id'])
-    assert str(data.inventory_id) == host['id']
+    system_record = db_get_host(host['id'])
+    assert str(system_record.inventory_id) == host['id']
     with app.app_context():
-        assert data.rule_hit_details == ros_reports
-        assert data.instance_type == _performance_record['instance_type']
-        assert data.region == _performance_record['region']
-        assert data.state == SYSTEM_STATES['OPTIMIZED']
-        assert db.session.query(PerformanceProfile).filter_by(system_id=data.id).first().performance_record ==\
-               performance_record
+        assert system_record.rule_hit_details == ros_reports
+        assert system_record.instance_type == _performance_record['instance_type']
+        assert system_record.region == _performance_record['region']
+        assert system_record.state == SYSTEM_STATES['OPTIMIZED']
+        assert db.session.query(PerformanceProfile).filter_by(system_id=system_record.id).\
+               first().performance_record == performance_record

@@ -125,7 +125,7 @@ class InsightsEngineResultConsumer:
                     display_name=host['display_name'],
                     fqdn=host['fqdn'],
                     rule_hit_details=reports,
-                    number_of_recommendations=rec_count,
+                    number_of_recommendations=-1 if state_key == 'NO_PCP_DATA' else rec_count,
                     state=SYSTEM_STATES[state_key],
                     instance_type=performance_record.get('instance_type'),
                     region=performance_record.get('region')
@@ -152,9 +152,9 @@ class InsightsEngineResultConsumer:
                 else:
                     LOG.debug(f"{self.prefix} - Setting default utilization for performance profile")
                     performance_utilization = {
-                        'memory': 0,
-                        'cpu': 0,
-                        'max_io': 0,
+                        'memory': -1,
+                        'cpu': -1,
+                        'max_io': -1.0,
                         'io': {}
                     }
                 # Following are saved on respective system record
