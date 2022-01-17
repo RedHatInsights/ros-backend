@@ -16,7 +16,7 @@ objects:
     - puptoo
     - ingress
     deployments:
-    - name: backend
+    - name: backend-service
       webServices:
         public:
           enabled: true
@@ -59,7 +59,7 @@ objects:
             value: ${CLOWDER_ENABLED}
           - name: ENABLE_RBAC
             value: "${ENABLE_RBAC}"
-    - name: processor
+    - name: processor-service
       podSpec:
         image: ${IMAGE}:${IMAGE_TAG}
         minReplicas: ${{MIN_REPLICAS}}
