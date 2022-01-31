@@ -91,4 +91,4 @@
       debug:
         msg: >
           Red Hat Insights Resource Optimization Service configured successfully. Please wait for 24 hours.
-          View details about this system at https://console.redhat.com/beta/insights/ros/{{ inventory['json']['results'][0]['id'] }}"
+          View details about this system at https://console.redhat.com/insights/ros/{{ inventory['json']['results'][0]['id'] }}"
