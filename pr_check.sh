@@ -20,7 +20,7 @@ curl -s $CICD_URL/bootstrap.sh > .cicd_bootstrap.sh && source .cicd_bootstrap.sh
 
 source $CICD_ROOT/build.sh
 
-# Deploy patchman to an ephemeral namespace for testing
+# Deploy ros to an ephemeral namespace for testing
 source $CICD_ROOT/deploy_ephemeral_env.sh
 
 # Run iqe-ros somke tests with ClowdJobInvocation
