@@ -23,5 +23,5 @@ source $CICD_ROOT/build.sh
 # Deploy patchman to an ephemeral namespace for testing
 source $CICD_ROOT/deploy_ephemeral_env.sh
 
-# Run iqe-patchman somke tests with ClowdJobInvocation
+# Run iqe-ros somke tests with ClowdJobInvocation
 source $CICD_ROOT/cji_smoke_test.sh
