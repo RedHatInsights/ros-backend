@@ -2,12 +2,12 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: ros
+  name: ros-backend
 objects:
 - apiVersion: cloud.redhat.com/v1alpha1
   kind: ClowdApp
   metadata:
-    name: ros
+    name: ros-backend
   spec:
     envName: ${ENV_NAME}
     dependencies:
