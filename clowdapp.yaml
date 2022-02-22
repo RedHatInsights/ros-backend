@@ -12,9 +12,7 @@ objects:
     envName: ${ENV_NAME}
     dependencies:
     - rbac
-    optionalDependencies:
-    - puptoo
-    - ingress
+    - engine
     deployments:
     - name: service
       webServices:
@@ -83,6 +81,8 @@ objects:
         partitions: 1
       - topicName: platform.engine.results
         partitions: 1
+    testing:
+      iqePlugin: ros
 
 parameters:
 - description: Enable rbac needs to be "True" or "False"
