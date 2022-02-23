@@ -14,7 +14,7 @@ objects:
     - rbac
     - engine
     deployments:
-    - name: service
+    - name: api
       webServices:
         public:
           enabled: true
