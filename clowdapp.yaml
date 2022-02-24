@@ -2,21 +2,19 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: ros
+  name: ros-backend
 objects:
 - apiVersion: cloud.redhat.com/v1alpha1
   kind: ClowdApp
   metadata:
-    name: ros
+    name: ros-backend
   spec:
     envName: ${ENV_NAME}
     dependencies:
     - rbac
-    optionalDependencies:
-    - puptoo
-    - ingress
+    - engine
     deployments:
-    - name: backend-service
+    - name: api
       webServices:
         public:
           enabled: true
@@ -24,7 +22,7 @@ objects:
         image: ${IMAGE}:${IMAGE_TAG}
         minReplicas: 1
         command: ["sh"]
-        args: ["-c", "python -m manage db upgrade && python -m ros.api.main"]
+        args: ["-c", "python -m manage db upgrade && python -m manage seed && python -m ros.api.main"]
         resources:
           requests:
             cpu: ${CPU_REQUEST}
@@ -59,7 +57,7 @@ objects:
             value: ${CLOWDER_ENABLED}
           - name: ENABLE_RBAC
             value: "${ENABLE_RBAC}"
-    - name: processor-service
+    - name: processor
       podSpec:
         image: ${IMAGE}:${IMAGE_TAG}
         minReplicas: ${{MIN_REPLICAS}}
@@ -83,6 +81,8 @@ objects:
         partitions: 1
       - topicName: platform.engine.results
         partitions: 1
+    testing:
+      iqePlugin: ros
 
 parameters:
 - description: Enable rbac needs to be "True" or "False"

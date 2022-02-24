@@ -37,6 +37,10 @@ if CLOWDER_ENABLED:
     INSIGHTS_KAFKA_ADDRESS = LoadedConfig.kafka.brokers[0].hostname + ":" + str(LoadedConfig.kafka.brokers[0].port)
     INVENTORY_EVENTS_TOPIC = KafkaTopics["platform.inventory.events"].name
     ENGINE_RESULT_TOPIC = KafkaTopics["platform.engine.results"].name
+    for endpoint in LoadedConfig.endpoints:
+        if endpoint.app == "rbac":
+            RBAC_SVC_URL = f"http://{endpoint.hostname}:{endpoint.port}"
+            break
 else:
     DB_NAME = os.getenv("ROS_DB_NAME", "postgres")
     DB_USER = os.getenv("ROS_DB_USER", "postgres")
@@ -49,6 +53,9 @@ else:
     INVENTORY_EVENTS_TOPIC = os.getenv("INVENTORY_EVENTS_TOPIC", "platform.inventory.events")
     ENGINE_RESULT_TOPIC = os.getenv("ENGINE_RESULT_TOPIC", "platform.engine.results")
     METRICS_PORT = os.getenv("METRICS_PORT", 5005)
+    RBAC_HOST = os.getenv("RBAC_HOST", "localhost")
+    RBAC_PORT = os.getenv("RBAC_PORT", "8114")
+    RBAC_SVC_URL = os.getenv("RBAC_SVC_URL", f"http://{RBAC_HOST}:{RBAC_PORT}/")
 
 DB_URI = f"postgresql://{DB_USER}:{DB_PASSWORD}"\
                 f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
@@ -56,9 +63,6 @@ GROUP_ID = os.getenv('GROUP_ID', 'resource-optimization')
 PATH_PREFIX = os.getenv("PATH_PREFIX", "/api/")
 APP_NAME = os.getenv("APP_NAME", "ros")
 INSIGHTS_EXTRACT_LOGLEVEL = os.getenv("INSIGHTS_EXTRACT_LOGLEVEL", "ERROR")
-RBAC_HOST = os.getenv("RBAC_HOST", "localhost")
-RBAC_PORT = os.getenv("RBAC_PORT", "8114")
-RBAC_SVC_URL = os.getenv("RBAC_SVC_URL", f"http://{RBAC_HOST}:{RBAC_PORT}/")
 ENABLE_RBAC = str_to_bool(os.getenv("ENABLE_RBAC", "False"))
 # Time interval after which garbage collector is involved to check for outdated data.
 GARBAGE_COLLECTION_INTERVAL = os.getenv("GARBAGE_COLLECTION_INTERVAL", 86400)
