@@ -22,7 +22,7 @@ objects:
         image: ${IMAGE}:${IMAGE_TAG}
         minReplicas: 1
         command: ["sh"]
-        args: ["-c", "python -m manage db upgrade && python -m ros.api.main"]
+        args: ["-c", "python -m manage db upgrade && python -m manage seed && python -m ros.api.main"]
         resources:
           requests:
             cpu: ${CPU_REQUEST}
