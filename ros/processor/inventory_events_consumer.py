@@ -140,15 +140,21 @@ class InventoryEventsConsumer:
                     db.session, RhAccount, 'account',
                     account=host['account']
                 )
-                update_fields = {
+
+                os_name = host['system_profile']['operating_system']['name']
+                major_version = str(host['system_profile']['operating_system']['major'])
+                minor_version = str(host['system_profile']['operating_system']['minor'])
+
+                system_fields = {
                     "account_id": account.id,
                     "inventory_id": host['id'],
                     "display_name": host['display_name'],
                     "fqdn": host['fqdn'],
                     "cloud_provider": host['system_profile']['cloud_provider'],
-                    "stale_timestamp": host['stale_timestamp']
+                    "stale_timestamp": host['stale_timestamp'],
+                    "operating_system": f"{os_name} {major_version}.{minor_version}",
                 }
-                system = get_or_create(db.session, System, 'inventory_id', **update_fields)
+                system = get_or_create(db.session, System, 'inventory_id', **system_fields)
 
                 # Commit changes
                 db.session.commit()

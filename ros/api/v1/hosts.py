@@ -30,7 +30,7 @@ SYSTEM_COLUMNS = [
     'state',
     'number_of_recommendations',
     'fqdn',
-    'release_version',
+    'operating_system',
 ]
 
 
@@ -81,7 +81,7 @@ class HostsApi(Resource):
         'cloud_provider': fields.String,
         'instance_type': fields.String,
         'idling_time': fields.String,
-        'release_version': fields.String,
+        'operating_system': fields.String,
     }
     meta_fields = {
         'count': fields.Integer,
@@ -239,7 +239,7 @@ class HostDetailsApi(Resource):
         'instance_type': fields.String,
         'cloud_provider': fields.String,
         'idling_time': fields.String,
-        'release_version': fields.String,
+        'operating_system': fields.String,
     }
 
     @marshal_with(profile_fields)

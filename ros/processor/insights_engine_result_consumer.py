@@ -129,7 +129,6 @@ class InsightsEngineResultConsumer:
                     state=SYSTEM_STATES[state_key],
                     instance_type=performance_record.get('instance_type'),
                     region=performance_record.get('region'),
-                    release_version=utilization_info.get('release', 'NA'),
                 )
                 LOG.info(
                     f"{self.prefix} - System created/updated successfully: {host['id']}"

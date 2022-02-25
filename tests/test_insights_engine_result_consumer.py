@@ -155,4 +155,3 @@ def test_system_properties(engine_result_message, engine_consumer, db_setup, per
     engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
     data = db_get_host(host['id'])
     assert str(data.inventory_id) == host['id']
-    assert data.release_version == system_metadata['release']
