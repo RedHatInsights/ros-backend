@@ -168,3 +168,6 @@ parameters:
 - description: Image tag
   name: IMAGE_TAG
   required: true
+- name: CW_ENABLED
+  description: Cloudwatch logging flag
+  value: true
