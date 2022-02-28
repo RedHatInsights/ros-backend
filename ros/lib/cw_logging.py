@@ -11,11 +11,16 @@ from botocore.exceptions import ClientError
 from ros.lib.config import (
     get_logger,
     CW_ENABLED,
-    AWS_ACCESS_KEY_ID,
-    AWS_SECRET_ACCESS_KEY,
-    AWS_REGION_NAME,
-    AWS_LOG_GROUP,
 )
+
+if CW_ENABLED is True:
+    from ros.lib.config import (
+        AWS_ACCESS_KEY_ID,
+        AWS_SECRET_ACCESS_KEY,
+        AWS_REGION_NAME,
+        AWS_LOG_GROUP
+    )
+
 
 module_prefix = 'CLOUDWATCH LOGGING'
 
