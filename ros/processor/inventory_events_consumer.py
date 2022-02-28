@@ -141,10 +141,6 @@ class InventoryEventsConsumer:
                     account=host['account']
                 )
 
-                os_name = host['system_profile']['operating_system']['name']
-                major_version = str(host['system_profile']['operating_system']['major'])
-                minor_version = str(host['system_profile']['operating_system']['minor'])
-
                 system_fields = {
                     "account_id": account.id,
                     "inventory_id": host['id'],
@@ -152,7 +148,7 @@ class InventoryEventsConsumer:
                     "fqdn": host['fqdn'],
                     "cloud_provider": host['system_profile']['cloud_provider'],
                     "stale_timestamp": host['stale_timestamp'],
-                    "operating_system": f"{os_name} {major_version}.{minor_version}",
+                    "operating_system": host['system_profile']['operating_system'],
                 }
                 system = get_or_create(db.session, System, 'inventory_id', **system_fields)
 

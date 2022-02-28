@@ -148,6 +148,9 @@ class HostsApi(Resource):
                     row.PerformanceProfile.performance_utilization
                 )
                 host['idling_time'] = row.PerformanceProfile.idling_time
+                host['operating_system'] = f"{row.System.operating_system['name']} " \
+                                           f"{row.System.operating_system['major']}." \
+                                           f"{row.System.operating_system['minor']}"
                 hosts.append(host)
             except Exception as err:
                 LOG.error(
@@ -272,6 +275,9 @@ class HostDetailsApi(Resource):
             record['rating'] = rating_record.rating if rating_record else None
             record['report_date'] = profile.report_date
             record['idling_time'] = profile.idling_time
+            record['operating_system'] = f"{system.operating_system['name']} " \
+                                         f"{system.operating_system['major']}." \
+                                         f"{system.operating_system['minor']}"
         else:
             abort(404, message="System {} doesn't exist"
                   .format(host_id))
