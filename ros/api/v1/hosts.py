@@ -81,7 +81,7 @@ class HostsApi(Resource):
         'cloud_provider': fields.String,
         'instance_type': fields.String,
         'idling_time': fields.String,
-        'operating_system': fields.String,
+        'os': fields.String,
     }
     meta_fields = {
         'count': fields.Integer,
@@ -148,9 +148,9 @@ class HostsApi(Resource):
                     row.PerformanceProfile.performance_utilization
                 )
                 host['idling_time'] = row.PerformanceProfile.idling_time
-                host['operating_system'] = f"{row.System.operating_system['name']} " \
-                                           f"{row.System.operating_system['major']}." \
-                                           f"{row.System.operating_system['minor']}"
+                host['os'] = f"{row.System.operating_system['name']} " \
+                             f"{row.System.operating_system['major']}." \
+                             f"{row.System.operating_system['minor']}"
                 hosts.append(host)
             except Exception as err:
                 LOG.error(
@@ -242,7 +242,7 @@ class HostDetailsApi(Resource):
         'instance_type': fields.String,
         'cloud_provider': fields.String,
         'idling_time': fields.String,
-        'operating_system': fields.String,
+        'os': fields.String,
     }
 
     @marshal_with(profile_fields)
@@ -275,9 +275,9 @@ class HostDetailsApi(Resource):
             record['rating'] = rating_record.rating if rating_record else None
             record['report_date'] = profile.report_date
             record['idling_time'] = profile.idling_time
-            record['operating_system'] = f"{system.operating_system['name']} " \
-                                         f"{system.operating_system['major']}." \
-                                         f"{system.operating_system['minor']}"
+            record['os'] = f"{system.operating_system['name']} " \
+                           f"{system.operating_system['major']}." \
+                           f"{system.operating_system['minor']}"
         else:
             abort(404, message="System {} doesn't exist"
                   .format(host_id))
