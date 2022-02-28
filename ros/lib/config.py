@@ -41,14 +41,6 @@ if CLOWDER_ENABLED:
         if endpoint.app == "rbac":
             RBAC_SVC_URL = f"http://{endpoint.hostname}:{endpoint.port}"
             break
-    CW_ENABLED = True if LoadedConfig.logging.cloudwatch else False  # CloudWatch/Kibana Logging
-    if CW_ENABLED is True:
-        # Available only in k8s namespace, through an app-interface automation
-        AWS_ACCESS_KEY_ID = LoadedConfig.logging.cloudwatch.accessKeyId
-        AWS_SECRET_ACCESS_KEY = LoadedConfig.logging.cloudwatch.secretAccessKey
-        AWS_REGION_NAME = LoadedConfig.logging.cloudwatch.region
-        AWS_LOG_GROUP = LoadedConfig.logging.cloudwatch.logGroup
-
 else:
     DB_NAME = os.getenv("ROS_DB_NAME", "postgres")
     DB_USER = os.getenv("ROS_DB_USER", "postgres")
@@ -64,12 +56,6 @@ else:
     RBAC_HOST = os.getenv("RBAC_HOST", "localhost")
     RBAC_PORT = os.getenv("RBAC_PORT", "8114")
     RBAC_SVC_URL = os.getenv("RBAC_SVC_URL", f"http://{RBAC_HOST}:{RBAC_PORT}/")
-    CW_ENABLED = os.getenv("CW_ENABLED", False)
-    if CW_ENABLED is True:
-        AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", None)
-        AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", None)
-        AWS_REGION_NAME = os.getenv("AWS_REGION_NAME", None)
-        AWS_LOG_GROUP = os.getenv("AWS_LOG_GROUP", None)
 
 DB_URI = f"postgresql://{DB_USER}:{DB_PASSWORD}"\
                 f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
