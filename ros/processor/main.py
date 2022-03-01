@@ -1,3 +1,4 @@
+from ros.lib.cw_logging import commence_cw_log_streaming
 from ros.processor.inventory_events_consumer import InventoryEventsConsumer
 from ros.processor.insights_engine_result_consumer import InsightsEngineResultConsumer
 from ros.processor.garbage_collector import GarbageCollector
@@ -22,6 +23,7 @@ def garbage_collector():
 
 
 if __name__ == "__main__":
+    commence_cw_log_streaming('ros-processor')
     # Start processing in 2 different threads
     engine_results = threading.Thread(name='process-engine-results', target=process_engine_results)
     events = threading.Thread(name='events-processor', target=events_processor)
