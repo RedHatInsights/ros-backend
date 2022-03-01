@@ -1,6 +1,6 @@
 import pytest
 import json
-
+from pathlib import Path
 from ros.lib.app import app
 from ros.processor.inventory_events_consumer import InventoryEventsConsumer
 from tests.helpers.db_helper import db_get_host
@@ -14,7 +14,7 @@ PERFORMANCE_RECORD = {'total_cpus': 1, 'instance_type': 't2.micro', 'mem.physmem
 
 @pytest.fixture(scope="session")
 def inventory_event_message():
-    f = open("sample-files/events-message.json")
+    f = open(f"{Path(__file__).parent}/data_files/events-message.json")
     msg = json.loads(f.read())
     yield msg
     f.close()

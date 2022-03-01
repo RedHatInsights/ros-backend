@@ -1,6 +1,7 @@
 import pytest
 import json
 import copy
+from pathlib import Path
 from ros.lib.app import app
 from ros.lib.models import db, PerformanceProfile
 from ros.processor.insights_engine_result_consumer import InsightsEngineResultConsumer, SYSTEM_STATES
@@ -35,7 +36,7 @@ def performance_record():
 @pytest.fixture(scope="session")
 def engine_result_message():
     def _return_engine_msg_json(filename):
-        f = open(f"sample-files/{filename}")
+        f = open(f"{Path(__file__).parent}/data_files/{filename}")
         msg_data = json.loads(f.read())
         f.close()
         return msg_data
