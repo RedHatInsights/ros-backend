@@ -55,6 +55,7 @@ def db_create_system(db_create_account):
         state='Idling',
         number_of_recommendations=1,
         region='ap-south-1',
+        operating_system={"name": "RHEL", "major": 8, "minor": 4},
         rule_hit_details=[{
           "key": "INSTANCE_IDLE",
           "tags": [],

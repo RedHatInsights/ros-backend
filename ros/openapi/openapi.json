@@ -365,6 +365,9 @@
                     },
                     "idling_time": {
                         "type": "number"
+                    },
+                    "os": {
+                        "type": "string"
                     }
                 }
             },
@@ -428,6 +431,9 @@
                     },
                     "idling_time": {
                         "type": "number"
+                    },
+                    "os": {
+                        "type": "string"
                     }
                 }
             },

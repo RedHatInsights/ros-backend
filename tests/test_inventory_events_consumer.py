@@ -39,6 +39,7 @@ def test_host_create_events(inventory_event_consumer, inventory_event_message, d
         side_effect=inventory_event_consumer.process_system_details,
         autospec=True
     )
+
     inventory_event_message['type'] = 'created'  # Setup to meet test case conditions
     inventory_event_consumer.host_create_update_events(inventory_event_message)
     inventory_event_consumer.process_system_details.assert_called_once()
@@ -47,6 +48,8 @@ def test_host_create_events(inventory_event_consumer, inventory_event_message, d
         assert db_get_host(inventory_event_message['host']['id']).display_name == \
                inventory_event_message['host']['display_name']
         assert type(db_get_host(inventory_event_message['host']['id'])).__name__ == 'System'
+        assert db_get_host(inventory_event_message['host']['id']).operating_system == \
+               inventory_event_message['host']['system_profile']['operating_system']
 
 
 def test_host_update_events(inventory_event_consumer, inventory_event_message, db_setup, mocker):
