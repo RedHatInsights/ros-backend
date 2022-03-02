@@ -4,8 +4,8 @@ The logs are then sent to Kibana through an in-place AWS Lambda function.
 Reference: https://consoledot.pages.redhat.com/docs/dev/platform-documentation/tools/logging.html
 """
 
-import boto3
 import watchtower
+from boto3 import Session
 from botocore.exceptions import ClientError
 
 from ros.lib.config import (
@@ -37,15 +37,14 @@ def commence_cw_log_streaming(stream_name):
         return
 
     try:
-        boto3_client = boto3.client(
-            'cloudwatch',
+        boto3_session = Session(
             aws_access_key_id=AWS_ACCESS_KEY_ID,
             aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
             region_name=AWS_REGION_NAME
         )
 
         watchtower_handler = watchtower.CloudWatchLogHandler(
-            boto3_client=boto3_client,
+            boto3_client=boto3_session,
             log_group=AWS_LOG_GROUP,
             stream_name=stream_name
         )
