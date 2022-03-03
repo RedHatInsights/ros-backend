@@ -85,3 +85,4 @@ GARBAGE_COLLECTION_INTERVAL = os.getenv("GARBAGE_COLLECTION_INTERVAL", 86400)
 # Number of days after which data is considered to be outdated.
 DAYS_UNTIL_STALE = os.getenv("DAYS_UNTIL_STALE", 14)
 INSTANCE_PRICE_UNIT = 'USD/hour'
+CW_LOGGING_FORMAT = '%(asctime)s - %(levelname)s  - %(funcName)s - %(message)s'
