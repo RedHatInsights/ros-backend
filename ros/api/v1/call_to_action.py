@@ -25,7 +25,7 @@ class CallToActionApi(Resource):
                     "description": "This new service helps manage your public cloud systems.",
                     "link": {
                         "title": "Get started",
-                        "href": "/insights/ros",
+                        "href": "/insights/ros?with_suggestions=true",
                     },
                 },
             }]
@@ -50,7 +50,7 @@ class CallToActionApi(Resource):
                             "action": {
                                 "title": f"View {total_system_count} {suffix}"
                                 + " with suggestions",
-                                "href": "/insights/ros"
+                                "href": "/insights/ros?with_suggestions=true"
                             }
                         }
                     ]
