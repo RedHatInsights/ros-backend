@@ -148,9 +148,15 @@ class HostsApi(Resource):
                     row.PerformanceProfile.performance_utilization
                 )
                 host['idling_time'] = row.PerformanceProfile.idling_time
-                host['os'] = f"{row.System.operating_system['name']} " \
-                             f"{row.System.operating_system['major']}." \
-                             f"{row.System.operating_system['minor']}"
+                if (
+                        row.System.operating_system
+                        and all(key in row.System.operating_system.keys() for key in ['name', 'major', 'minor'])
+                ):
+                    host['os'] = f"{row.System.operating_system['name']} " \
+                                 f"{row.System.operating_system['major']}." \
+                                 f"{row.System.operating_system['minor']}"
+                else:
+                    host['os'] = "N/A"
                 hosts.append(host)
             except Exception as err:
                 LOG.error(
@@ -275,9 +281,15 @@ class HostDetailsApi(Resource):
             record['rating'] = rating_record.rating if rating_record else None
             record['report_date'] = profile.report_date
             record['idling_time'] = profile.idling_time
-            record['os'] = f"{system.operating_system['name']} " \
-                           f"{system.operating_system['major']}." \
-                           f"{system.operating_system['minor']}"
+            if(
+                    system.operating_system
+                    and all(key in system.operating_system.keys() for key in ['name', 'major', 'minor'])
+            ):
+                record['os'] = f"{system.operating_system['name']} " \
+                               f"{system.operating_system['major']}." \
+                               f"{system.operating_system['minor']}"
+            else:
+                record['os'] = "N/A"
         else:
             abort(404, message="System {} doesn't exist"
                   .format(host_id))

@@ -4,6 +4,8 @@ from base64 import b64encode
 import pytest
 
 from ros.api.main import app
+from ros.lib.models import db
+from tests.helpers.db_helper import db_get_host
 
 
 @pytest.fixture(scope="session")
@@ -78,6 +80,22 @@ def test_system_history(auth_token, db_setup, db_create_account, db_create_syste
         assert response.json["meta"]["count"] == 1
         assert response.json["data"][0]["report_date"] == str(datetime.datetime.utcnow().date())
         assert response.json["inventory_id"] == 'ee0b9978-fe1b-4191-8408-cbadbd47f7a3'
+
+
+def test_system_no_os(auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile):
+
+    # Setting db_record.operating_system to None/null
+    system_record = db_get_host('ee0b9978-fe1b-4191-8408-cbadbd47f7a3')
+    system_record.operating_system = None
+    db.session.commit()
+
+    with app.test_client() as client:
+        response = client.get(
+            '/api/ros/v1/systems/ee0b9978-fe1b-4191-8408-cbadbd47f7a3',
+            headers={"x-rh-identity": auth_token}
+        )
+        assert response.status_code == 200
+        assert response.json["os"] == "N/A"
 
 
 def test_system_suggestions(
