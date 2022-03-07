@@ -9,11 +9,10 @@ from ros.lib.models import (
 class CallToActionApi(Resource):
     def get(self):
         account_number = identity(request)['identity']['account_number']
-        system_query = system_ids_by_account(account_number)
+        system_query = system_ids_by_account(account_number).filter(System.number_of_recommendations > 0)
         query = (
             db.session.query(PerformanceProfile.system_id)
             .filter(PerformanceProfile.system_id.in_(system_query.subquery()))
-            .filter(System.number_of_recommendations > 0)
             .distinct()
         )
         total_system_count = query.count()
