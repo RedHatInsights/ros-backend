@@ -152,11 +152,10 @@ class HostsApi(Resource):
                         row.System.operating_system
                         and all(key in row.System.operating_system.keys() for key in ['name', 'major', 'minor'])
                 ):
-                    host['os'] = f"{row.System.operating_system['name']} " \
-                                 f"{row.System.operating_system['major']}." \
-                                 f"{row.System.operating_system['minor']}"
-                else:
-                    host['os'] = "N/A"
+                    host['os'] = f"{row.System.operating_system.get('name')} " \
+                                 f"{row.System.operating_system.get('major')}." \
+                                 f"{row.System.operating_system.get('minor')}"
+
                 hosts.append(host)
             except Exception as err:
                 LOG.error(
@@ -285,11 +284,9 @@ class HostDetailsApi(Resource):
                     system.operating_system
                     and all(key in system.operating_system.keys() for key in ['name', 'major', 'minor'])
             ):
-                record['os'] = f"{system.operating_system['name']} " \
-                               f"{system.operating_system['major']}." \
-                               f"{system.operating_system['minor']}"
-            else:
-                record['os'] = "N/A"
+                record['os'] = f"{system.operating_system.get('name')} " \
+                               f"{system.operating_system.get('major')}." \
+                               f"{system.operating_system.get('minor')}"
         else:
             abort(404, message="System {} doesn't exist"
                   .format(host_id))

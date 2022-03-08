@@ -90,12 +90,21 @@ def test_system_no_os(auth_token, db_setup, db_create_account, db_create_system,
     db.session.commit()
 
     with app.test_client() as client:
-        response = client.get(
+        response_individual_system = client.get(
             '/api/ros/v1/systems/ee0b9978-fe1b-4191-8408-cbadbd47f7a3',
             headers={"x-rh-identity": auth_token}
         )
-        assert response.status_code == 200
-        assert response.json["os"] == "N/A"
+
+        assert response_individual_system.status_code == 200
+        assert response_individual_system.json["os"] is None
+
+        response_all_systems = client.get(
+            '/api/ros/v1/systems',
+            headers={"x-rh-identity": auth_token}
+        )
+
+        assert response_all_systems.status_code == 200
+        assert response_all_systems.json["data"][0]["os"] is None
 
 
 def test_system_suggestions(
