@@ -21,7 +21,7 @@ class CallToActionApi(Resource):
             "try": [{
                 "shape": {
                     "title": "Install and begin using Resource optimization service.",
-                    "description": "This new service helps manage your public cloud systems.",
+                    "description": "Optimize your spending in public cloud.",
                     "link": {
                         "title": "Get started",
                         "href": "/insights/ros?with_suggestions=true",
