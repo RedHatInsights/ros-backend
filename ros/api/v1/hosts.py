@@ -136,6 +136,9 @@ class HostsApi(Resource):
             .order_by(*sort_expression)
         )
         count = query.count()
+        # a fix to get all the systems
+        if limit == -1:
+            limit = count
         query = query.limit(limit).offset(offset)
         query_results = query.all()
         hosts = []

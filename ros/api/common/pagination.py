@@ -9,7 +9,7 @@ DEFAULT_OFFSET = 0
 def _cast_to_positive_int(integer_string):
     """Cast a string to a positive integer."""
     ret = int(integer_string)
-    if ret < 0:
+    if ret < -1:
         raise ValueError()
     return ret
 
