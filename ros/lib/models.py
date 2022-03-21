@@ -48,6 +48,22 @@ class System(db.Model):
         db.ForeignKeyConstraint(['account_id'], ['rh_accounts.id'], name='systems_account_id_fkey'),
     )
 
+    @property
+    def deserialize_host_os_data(self):
+        """
+        Returns os data per host in a consumable format
+        """
+        os_data = None
+        if (
+                self.operating_system
+                and all(key in self.operating_system.keys() for key in ['name', 'major', 'minor'])
+        ):
+            os_data = f"{self.operating_system.get('name')} " \
+                         f"{self.operating_system.get('major')}." \
+                         f"{self.operating_system.get('minor')}"
+
+        return os_data
+
 
 class RatingChoicesEnum(enum.IntEnum):
     Dislike = -1
