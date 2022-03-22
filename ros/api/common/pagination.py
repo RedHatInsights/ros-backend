@@ -6,10 +6,10 @@ DEFAULT_RECORDS_PER_REP = 10
 DEFAULT_OFFSET = 0
 
 
-def _cast_to_positive_int(integer_string):
-    """Cast a string to a positive integer."""
+def _cast_to_int(integer_string):
+    """Cast a string to a integer."""
     ret = int(integer_string)
-    if ret < 0:
+    if ret < -1:
         raise ValueError()
     return ret
 
@@ -19,7 +19,7 @@ def limit_value():
     limit_param = request.args.get('limit')
     if limit_param:
         try:
-            return _cast_to_positive_int(limit_param)
+            return _cast_to_int(limit_param)
         except ValueError:
             pass
     return DEFAULT_RECORDS_PER_REP
@@ -30,7 +30,7 @@ def offset_value():
     offset_param = request.args.get('offset')
     if offset_param:
         try:
-            return _cast_to_positive_int(offset_param)
+            return _cast_to_int(offset_param)
         except ValueError:
             pass
     return DEFAULT_OFFSET
