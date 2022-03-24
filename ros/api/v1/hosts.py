@@ -82,7 +82,7 @@ class HostsApi(Resource):
         'instance_type': fields.String,
         'idling_time': fields.String,
         'os': fields.String,
-        'report_date': fields.DateTime(dt_format='iso8601')
+        'report_date': fields.String
     }
     meta_fields = {
         'count': fields.Integer,
