@@ -341,3 +341,62 @@ class HostHistoryApi(Resource):
         )
         paginated_response['inventory_id'] = host_id
         return paginated_response
+
+
+class ExecutiveReportAPI(Resource):
+
+    def get(self):
+        response = {
+            "systems_per_state": {
+                "under_pressure": {
+                    "count": 0,
+                    "percentage": 5.57
+                },
+                "undersized": {
+                    "count": 1,
+                    "percentage": 7.68
+                },
+                "oversized": {
+                    "count": 7,
+                    "percentage": 8.91
+                },
+                "waiting_for_data": {
+                    "count": 8,
+                    "percentage": 5.57
+                },
+                "idling": {
+                    "count": 8,
+                    "percentage": 5.57
+                }
+            },
+            "conditions": {
+                "cpu": {
+                    "count": 23,
+                    "percentage": 20.88,
+                    "undersized": None,
+                    "oversized": None,
+                    "under_pressure": 10
+                },
+                "io": {
+                    "count": 23,
+                    "percentage": 20.88,
+                    "undersized": 10,
+                    "oversized": 3,
+                    "under_pressure": 10
+                },
+                "ram": {
+                    "count": 23,
+                    "percentage": 20.88,
+                    "undersized": 10,
+                    "oversized": None,
+                    "under_pressure": 10
+                }
+            },
+            "meta": {
+                "total_count": 55,
+                "non_optimized_count": 23,
+                "conditions_count": 69
+            }
+        }
+
+        return response
