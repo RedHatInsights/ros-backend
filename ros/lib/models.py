@@ -1,4 +1,3 @@
-from datetime import date
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 import datetime
@@ -10,10 +9,14 @@ db = SQLAlchemy()
 class PerformanceProfile(db.Model):
     performance_record = db.Column(JSONB)
     performance_utilization = db.Column(JSONB)
-    report_date = db.Column(db.Date, default=date.today())
+    report_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     system_id = db.Column(db.Integer)
+    state = db.Column(db.String(25))
+    operating_system = db.Column(JSONB)
+    rule_hit_details = db.Column(JSONB)
+    number_of_recommendations = db.Column(db.Integer)
     __table_args__ = (
-        db.PrimaryKeyConstraint('system_id', 'report_date', name='performance_profile_pkey'),
+        db.PrimaryKeyConstraint('system_id', name='performance_profile_pkey'),
         db.ForeignKeyConstraint(
             ['system_id'], ['systems.id'],
             name='performance_profile_system_id_fkey',
@@ -37,9 +40,7 @@ class System(db.Model):
     fqdn = db.Column(db.String(100))
     cloud_provider = db.Column(db.String(25))
     instance_type = db.Column(db.String(25))
-    rule_hit_details = db.Column(JSONB)
     state = db.Column(db.String(25))
-    number_of_recommendations = db.Column(db.Integer)
     stale_timestamp = db.Column(db.DateTime(timezone=True))
     region = db.Column(db.String(25))
     operating_system = db.Column(JSONB)
