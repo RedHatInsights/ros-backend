@@ -124,8 +124,6 @@ class InsightsEngineResultConsumer:
                     inventory_id=host['id'],
                     display_name=host['display_name'],
                     fqdn=host['fqdn'],
-                    rule_hit_details=reports,
-                    number_of_recommendations=-1 if state_key == 'NO_PCP_DATA' else rec_count,
                     state=SYSTEM_STATES[state_key],
                     instance_type=performance_record.get('instance_type'),
                     region=performance_record.get('region'),
@@ -162,11 +160,14 @@ class InsightsEngineResultConsumer:
                 del performance_record['region']
 
                 get_or_create(
-                    db.session, PerformanceProfile, ['system_id', 'report_date'],
+                    db.session, PerformanceProfile, 'system_id',
                     system_id=system.id,
                     performance_record=performance_record,
                     performance_utilization=performance_utilization,
-                    report_date=datetime.datetime.utcnow().date()
+                    report_date=datetime.datetime.utcnow().date(),
+                    rule_hit_details=reports,
+                    number_of_recommendations=-1 if state_key == 'NO_PCP_DATA' else rec_count,
+                    state=SYSTEM_STATES[state_key]
                 )
                 LOG.info(
                     f"{self.prefix} - Performance profile created/updated successfully for the system: {host['id']}"
