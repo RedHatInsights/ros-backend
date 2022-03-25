@@ -1,4 +1,4 @@
-from ros.lib.models import Rule, RhAccount, System, db
+from ros.lib.models import Rule, RhAccount, System, db, PerformanceProfile
 from ros.lib.utils import is_valid_uuid, identity
 from ros.lib.config import INSTANCE_PRICE_UNIT
 from flask_restful import Resource, abort, fields, marshal_with
@@ -44,7 +44,14 @@ class RecommendationsApi(Resource):
         if not system:
             abort(404, message="host with id {} doesn't exist"
                   .format(host_id))
-        rule_hits = system.rule_hit_details
+
+        profile = PerformanceProfile.query.filter_by(system_id=system.id).first()
+        if not profile:
+            abort(
+                404,
+                message="No records for host with id {} doesn't exist".format(host_id))
+
+        rule_hits = profile.rule_hit_details
         recommendations_list = []
         rules_columns = ['rule_id', 'description', 'reason', 'resolution', 'condition']
         if rule_hits:

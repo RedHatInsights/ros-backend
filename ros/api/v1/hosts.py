@@ -1,11 +1,11 @@
-from sqlalchemy import func, asc, desc, nullslast, nullsfirst
+from sqlalchemy import asc, desc, nullslast, nullsfirst
 from sqlalchemy.types import Float
 from flask import request
 from flask_restful import Resource, abort, fields, marshal_with
 
 from ros.lib.models import (
     PerformanceProfile, RhAccount, System,
-    db, RecommendationRating)
+    db, RecommendationRating, PerformanceProfileHistory)
 from ros.lib.utils import (
     is_valid_uuid, identity,
     user_data_from_identity,
@@ -40,7 +40,6 @@ class IsROSConfiguredApi(Resource):
             .join(PerformanceProfile, PerformanceProfile.system_id == System.id)
             .join(RhAccount, RhAccount.id == System.account_id)
             .filter(RhAccount.account == account_number)
-            .distinct()
         )
         system_count = query.count()
         systems_with_suggestions = query.filter(PerformanceProfile.number_of_recommendations > 0).count()
@@ -115,23 +114,13 @@ class HostsApi(Resource):
         # Refer - https://www.postgresql.org/docs/13/queries-limit.html
 
         system_query = system_ids_by_account(account_number).filter(*self.build_system_filters())
-
-        last_reported = (
-            db.session.query(PerformanceProfile.system_id, func.max(PerformanceProfile.report_date).label('max_date')
-                             )
-            .filter(PerformanceProfile.system_id.in_(system_query.subquery()))
-            .group_by(PerformanceProfile.system_id)
-            .subquery()
-        )
-
         sort_expression = self.build_sort_expression(order_how, order_by)
 
         query = (
             db.session.query(PerformanceProfile, System, RhAccount)
-            .join(last_reported, (last_reported.c.max_date == PerformanceProfile.report_date) &
-                  (PerformanceProfile.system_id == last_reported.c.system_id))
-            .join(System, System.id == last_reported.c.system_id)
+            .join(System, System.id == PerformanceProfile.system_id)
             .join(RhAccount, RhAccount.id == System.account_id)
+            .filter(PerformanceProfile.system_id.in_(system_query.subquery()))
             .order_by(*sort_expression)
         )
         count = query.count()
@@ -214,7 +203,7 @@ class HostsApi(Resource):
                 asc(PerformanceProfile.system_id),)
 
         if order_method == 'number_of_suggestions':
-            return (sort_order(System.number_of_recommendations),
+            return (sort_order(PerformanceProfile.number_of_recommendations),
                     asc(PerformanceProfile.system_id),)
 
         if order_method == 'state':
@@ -271,8 +260,7 @@ class HostDetailsApi(Resource):
         system_query = system_ids_by_account(account_number).filter(System.inventory_id == host_id).subquery()
 
         profile = PerformanceProfile.query.filter(
-            PerformanceProfile.system_id.in_(system_query)
-        ).order_by(PerformanceProfile.report_date.desc()).first()
+            PerformanceProfile.system_id.in_(system_query)).first()
 
         rating_record = RecommendationRating.query.filter(
             RecommendationRating.system_id.in_(system_query),
@@ -334,9 +322,9 @@ class HostHistoryApi(Resource):
 
         system_query = system_ids_by_account(account_number).filter(System.inventory_id == host_id).subquery()
 
-        query = PerformanceProfile.query.filter(
-            PerformanceProfile.system_id.in_(system_query)
-        ).order_by(PerformanceProfile.report_date.desc())
+        query = PerformanceProfileHistory.query.filter(
+            PerformanceProfileHistory.system_id.in_(system_query)
+        ).order_by(PerformanceProfileHistory.report_date.desc())
 
         count = query.count()
         query = query.limit(limit).offset(offset)

@@ -7,17 +7,15 @@ db = SQLAlchemy()
 
 
 class PerformanceProfile(db.Model):
-    state = db.Column(db.String(25))
-    operating_system = db.Column(JSONB)
-    rule_hit_details = db.Column(JSONB)
     performance_record = db.Column(JSONB)
     performance_utilization = db.Column(JSONB)
-    report_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    system_id = db.Column(db.Integer)
+    report_date = db.Column(
+        db.DateTime(timezone=True), default=datetime.datetime.utcnow)
     state = db.Column(db.String(25))
     operating_system = db.Column(JSONB)
     rule_hit_details = db.Column(JSONB)
     number_of_recommendations = db.Column(db.Integer)
+    system_id = db.Column(db.Integer)
     __table_args__ = (
         db.PrimaryKeyConstraint('system_id', name='performance_profile_pkey'),
         db.ForeignKeyConstraint(
@@ -32,6 +30,25 @@ class PerformanceProfile(db.Model):
             idling_percent = ((float(self.performance_record['kernel.all.cpu.idle']) * 100)
                               / int(self.performance_record['total_cpus']))
             return "%0.2f" % idling_percent
+
+
+class PerformanceProfileHistory(db.Model):
+    performance_record = db.Column(JSONB)
+    performance_utilization = db.Column(JSONB)
+    report_date = db.Column(
+        db.DateTime(timezone=True), default=datetime.datetime.utcnow)
+    state = db.Column(db.String(25))
+    operating_system = db.Column(JSONB)
+    rule_hit_details = db.Column(JSONB)
+    number_of_recommendations = db.Column(db.Integer)
+    system_id = db.Column(db.Integer)
+    __table_args__ = (
+        db.PrimaryKeyConstraint('system_id', 'report_date', name='pk_performance_profile_history'),
+        db.ForeignKeyConstraint(
+            ['system_id'], ['systems.id'],
+            name='fk_performance_profile_history_systems',
+            ondelete='CASCADE'),
+    )
 
 
 class System(db.Model):

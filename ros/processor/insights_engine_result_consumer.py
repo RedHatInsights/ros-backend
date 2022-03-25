@@ -1,10 +1,10 @@
-import datetime
+from datetime import datetime, timezone
 import json
 from ros.lib.app import app, db
 from ros.lib.config import (INSIGHTS_KAFKA_ADDRESS, GROUP_ID,
                             ENGINE_RESULT_TOPIC, get_logger)
-from ros.lib.models import RhAccount, System, PerformanceProfile
-from ros.lib.utils import get_or_create, cast_iops_as_float
+from ros.lib.models import RhAccount, System, PerformanceProfile, PerformanceProfileHistory
+from ros.lib.utils import get_or_create, cast_iops_as_float, delete_record
 from confluent_kafka import Consumer, KafkaException
 from ros.processor.metrics import (processor_requests_success,
                                    processor_requests_failures,
@@ -159,20 +159,25 @@ class InsightsEngineResultConsumer:
                 del performance_record['instance_type']
                 del performance_record['region']
 
+                pprofile_fields = {
+                    "system_id": system.id,
+                    "performance_record": performance_record,
+                    "performance_utilization": performance_utilization,
+                    "report_date": datetime.now(timezone.utc),
+                    "rule_hit_details": reports,
+                    "number_of_recommendations": -1 if state_key == 'NO_PCP_DATA' else rec_count,
+                    "state": SYSTEM_STATES[state_key],
+                    "operating_system": system.operating_system
+                }
+                delete_record(db.session, PerformanceProfile, system_id=system.id)
+                get_or_create(db.session, PerformanceProfile, 'system_id', **pprofile_fields)
                 get_or_create(
-                    db.session, PerformanceProfile, 'system_id',
-                    system_id=system.id,
-                    performance_record=performance_record,
-                    performance_utilization=performance_utilization,
-                    report_date=datetime.datetime.utcnow().date(),
-                    rule_hit_details=reports,
-                    number_of_recommendations=-1 if state_key == 'NO_PCP_DATA' else rec_count,
-                    state=SYSTEM_STATES[state_key]
-                )
+                    db.session, PerformanceProfileHistory,
+                    ['system_id', 'report_date'], **pprofile_fields)
+
                 LOG.info(
                     f"{self.prefix} - Performance profile created/updated successfully for the system: {host['id']}"
                 )
-
                 db.session.commit()
                 processor_requests_success.labels(
                     reporter=self.reporter, account_number=host['account']

@@ -1,4 +1,5 @@
 import datetime
+from dateutil import parser
 import json
 from base64 import b64encode
 import pytest
@@ -31,6 +32,13 @@ def auth_token():
     }
     auth_token = b64encode(json.dumps(identity).encode('utf-8'))
     return auth_token
+
+
+def assert_report_date_with_current_date(report_date):
+    date_format = "%m/%d/%Y"
+    report_date = parser.parse(report_date).strftime(date_format)
+    utcnow_date = str(datetime.datetime.utcnow().strftime(date_format))
+    assert report_date == utcnow_date
 
 
 def test_status():
@@ -68,10 +76,11 @@ def test_system_detail(auth_token, db_setup, db_create_account, db_create_system
         assert response.status_code == 200
         assert response.json["inventory_id"] == 'ee0b9978-fe1b-4191-8408-cbadbd47f7a3'
         assert response.json["os"] == "RHEL 8.4"  # from db fixture
-        assert response.json["report_date"] == str(datetime.datetime.utcnow().date())
+        assert_report_date_with_current_date(response.json["report_date"])
 
 
-def test_system_history(auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile):
+def test_system_history(auth_token, db_setup, db_create_account,
+                        db_create_system, db_create_performance_profile_history):
     with app.test_client() as client:
         response = client.get(
             '/api/ros/v1/systems/ee0b9978-fe1b-4191-8408-cbadbd47f7a3/history',
@@ -79,7 +88,9 @@ def test_system_history(auth_token, db_setup, db_create_account, db_create_syste
         )
         assert response.status_code == 200
         assert response.json["meta"]["count"] == 1
-        assert response.json["data"][0]["report_date"] == str(datetime.datetime.utcnow().date())
+        assert_report_date_with_current_date(
+            response.json["data"][0]["report_date"]
+        )
         assert response.json["inventory_id"] == 'ee0b9978-fe1b-4191-8408-cbadbd47f7a3'
 
 
