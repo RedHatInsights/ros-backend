@@ -21,6 +21,10 @@ LOG = logging.getLogger(__name__)
 SYSTEM_STATES_EXCEPT_EMPTY = [
     "Oversized", "Undersized", "Idling", "Under pressure", "Storage rightsizing", "Optimized", "Waiting for data"
 ]
+RHEL_VERSIONS = [
+    'RHEL 7.0', 'RHEL 7.1', 'RHEL 7.2', 'RHEL 7.3', 'RHEL 7.4', 'RHEL 7.5', 'RHEL 7.6', 'RHEL 7.7', 'RHEL 7.8',
+    'RHEL 7.9', 'RHEL 8.0', 'RHEL 8.1', 'RHEL 8.2', 'RHEL 8.3', 'RHEL 8.4', 'RHEL 8.5'
+]
 SYSTEM_COLUMNS = [
     'inventory_id',
     'display_name',
@@ -170,6 +174,17 @@ class HostsApi(Resource):
             filters.append(System.state.in_(modified_states))
         else:
             filters.append(System.state.in_(SYSTEM_STATES_EXCEPT_EMPTY))
+        if operating_systems := request.args.getlist('os'):
+            modified_operating_systems = []
+            for os in operating_systems:
+                os = os.upper()
+                modified_operating_systems.append(os)
+                if os not in RHEL_VERSIONS:
+                    abort(400, message='Not a valid RHEL version')
+            filters.append(System.os.in_(modified_operating_systems))
+        else:
+            filters.append(System.os.in_(RHEL_VERSIONS))
+
         return filters
 
     @staticmethod
