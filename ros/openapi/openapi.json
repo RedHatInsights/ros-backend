@@ -576,7 +576,8 @@
                         "memory",
                         "max_io",
                         "number_of_suggestions",
-                        "state"
+                        "state",
+                        "os"
                     ]
                 }
             },

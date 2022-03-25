@@ -1,4 +1,4 @@
-from sqlalchemy import func, asc, desc
+from sqlalchemy import func, asc, desc, nullslast, nullsfirst
 from sqlalchemy.types import Float
 from flask import request
 from flask_restful import Resource, abort, fields, marshal_with
@@ -136,6 +136,9 @@ class HostsApi(Resource):
             .order_by(*sort_expression)
         )
         count = query.count()
+        # NOTE: Override limit value to get all the systems when it is -1
+        if limit == -1:
+            limit = count
         query = query.limit(limit).offset(offset)
         query_results = query.all()
         hosts = []
@@ -216,6 +219,14 @@ class HostsApi(Resource):
         if order_method == 'state':
             return (sort_order(System.state),
                     asc(PerformanceProfile.system_id),)
+
+        if order_method == 'os':
+            nulls_method = nullsfirst if order_how == 'asc' else nullslast
+            return (
+                nulls_method(sort_order(System.operating_system['name'])),
+                sort_order(System.operating_system['major']),
+                sort_order(System.operating_system['minor'])
+            )
 
         abort(403, message="Unexpected sort method {}".format(order_method))
         return None
