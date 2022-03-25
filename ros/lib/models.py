@@ -7,6 +7,9 @@ db = SQLAlchemy()
 
 
 class PerformanceProfile(db.Model):
+    state = db.Column(db.String(25))
+    operating_system = db.Column(JSONB)
+    rule_hit_details = db.Column(JSONB)
     performance_record = db.Column(JSONB)
     performance_utilization = db.Column(JSONB)
     report_date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
