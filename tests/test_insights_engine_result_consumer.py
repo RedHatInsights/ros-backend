@@ -5,7 +5,7 @@ from pathlib import Path
 from ros.lib.app import app
 from ros.lib.models import db, PerformanceProfile
 from ros.processor.insights_engine_result_consumer import InsightsEngineResultConsumer, SYSTEM_STATES
-from tests.helpers.db_helper import db_get_host
+from tests.helpers.db_helper import db_get_host, db_get_perf_profile
 
 
 @pytest.fixture(scope="function")
@@ -138,9 +138,10 @@ def test_process_report_optimized(engine_result_message, engine_consumer, db_set
     _performance_record = copy.copy(performance_record)
     engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
     system_record = db_get_host(host['id'])
+    profile_record = db_get_perf_profile(system_record.id)
     assert str(system_record.inventory_id) == host['id']
     with app.app_context():
-        assert system_record.rule_hit_details == ros_reports
+        assert profile_record.rule_hit_details == ros_reports
         assert system_record.instance_type == _performance_record['instance_type']
         assert system_record.region == _performance_record['region']
         assert system_record.state == SYSTEM_STATES['OPTIMIZED']

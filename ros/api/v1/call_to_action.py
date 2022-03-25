@@ -13,7 +13,6 @@ class CallToActionApi(Resource):
         query = (
             db.session.query(PerformanceProfile.system_id)
             .filter(PerformanceProfile.system_id.in_(system_query.subquery()))
-            .distinct()
         )
         total_system_count = query.count()
 
