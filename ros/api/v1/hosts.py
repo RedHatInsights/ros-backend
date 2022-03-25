@@ -26,9 +26,7 @@ SYSTEM_COLUMNS = [
     'display_name',
     'instance_type',
     'cloud_provider',
-    'rule_hit_details',
     'state',
-    'number_of_recommendations',
     'fqdn',
     'operating_system',
 ]
@@ -45,7 +43,7 @@ class IsROSConfiguredApi(Resource):
             .distinct()
         )
         system_count = query.count()
-        systems_with_suggestions = query.filter(System.number_of_recommendations > 0).count()
+        systems_with_suggestions = query.filter(PerformanceProfile.number_of_recommendations > 0).count()
         systems_waiting_for_data = query.filter(System.state == 'Waiting for data').count()
 
         if system_count <= 0:
@@ -152,6 +150,7 @@ class HostsApi(Resource):
                 )
                 host['idling_time'] = row.PerformanceProfile.idling_time
                 host['os'] = row.System.deserialize_host_os_data
+                host['number_of_recommendations'] = row.PerformanceProfile.number_of_recommendations
                 hosts.append(host)
             except Exception as err:
                 LOG.error(
@@ -285,6 +284,7 @@ class HostDetailsApi(Resource):
             record['report_date'] = profile.report_date
             record['idling_time'] = profile.idling_time
             record['os'] = system.deserialize_host_os_data
+            record['number_of_recommendations'] = profile.number_of_recommendations
         else:
             abort(404, message="System {} doesn't exist"
                   .format(host_id))

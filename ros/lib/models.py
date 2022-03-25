@@ -8,11 +8,16 @@ db = SQLAlchemy()
 
 
 class PerformanceProfile(db.Model):
+    state = db.Column(db.String(25))
+    operating_system = db.Column(JSONB)
+    rule_hit_details = db.Column(JSONB)
     performance_record = db.Column(JSONB)
     performance_utilization = db.Column(JSONB)
+    number_of_recommendations = db.Column(db.Integer)
     report_date = db.Column(db.Date, default=date.today())
     system_id = db.Column(db.Integer)
     __table_args__ = (
+        # update P.K. - TO DO
         db.PrimaryKeyConstraint('system_id', 'report_date', name='performance_profile_pkey'),
         db.ForeignKeyConstraint(
             ['system_id'], ['systems.id'],
@@ -28,6 +33,24 @@ class PerformanceProfile(db.Model):
             return "%0.2f" % idling_percent
 
 
+class PerformanceProfileHistory(db.Model):
+    rule_hit_details = db.Column(JSONB)
+    state = db.Column(db.String(25))
+    operating_system = db.Column(JSONB)
+    performance_record = db.Column(JSONB)
+    performance_utilization = db.Column(JSONB)
+    number_of_recommendations = db.Column(db.Integer)
+    report_date = db.Column(db.Date, default=date.today())
+    system_id = db.Column(db.Integer)
+    __table_args__ = (
+        db.PrimaryKeyConstraint('system_id', 'report_date', name='performance_profile_history_pkey'),
+        db.ForeignKeyConstraint(
+            ['system_id'], ['systems.id'],
+            name='performance_profile_history_system_id_fkey',
+            ondelete='CASCADE'),
+    )
+
+
 class System(db.Model):
     __tablename__ = 'systems'
     id = db.Column(db.Integer, primary_key=True)
@@ -39,6 +62,7 @@ class System(db.Model):
     instance_type = db.Column(db.String(25))
     rule_hit_details = db.Column(JSONB)
     state = db.Column(db.String(25))
+    # remove records - TO DO
     number_of_recommendations = db.Column(db.Integer)
     stale_timestamp = db.Column(db.DateTime(timezone=True))
     region = db.Column(db.String(25))
