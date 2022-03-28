@@ -1,15 +1,19 @@
-from sqlalchemy import asc, desc, nullslast, nullsfirst
+from sqlalchemy import asc, desc, nullslast, nullsfirst, _or
 from sqlalchemy.types import Float
 from flask import request
 from flask_restful import Resource, abort, fields, marshal_with
 
+from ros.lib.constants import SubStates
 from ros.lib.models import (
     PerformanceProfile, RhAccount, System,
     db, RecommendationRating, PerformanceProfileHistory)
 from ros.lib.utils import (
     is_valid_uuid, identity,
     user_data_from_identity,
-    sort_io_dict, system_ids_by_account)
+    sort_io_dict, system_ids_by_account,
+    count_per_state,
+    calculate_percentage
+)
 from ros.api.common.pagination import (
     build_paginated_system_list_response,
     limit_value,
@@ -376,57 +380,117 @@ class HostHistoryApi(Resource):
 
 class ExecutiveReportAPI(Resource):
 
+    systems_per_state = {
+        "under_pressure": fields.Raw,
+        "undersized": fields.Raw,
+        "oversized": fields.Raw,
+        "waiting_for_data": fields.Raw,
+        "idling": fields.Raw
+    }
+    condtions = {
+        "cpu": fields.Raw,
+        "io": fields.Raw,
+        "memory": fields.Raw
+    }
+    meta = {
+        "total_count": fields.Integer,
+        "non_optimized_count": fields.Integer,
+        "conditions_count": fields.Integer,
+    }
+    report_fields = {
+        "systems_per_state": fields.Nested(systems_per_state),
+        "condtions": fields.Nested(condtions),
+        "meta": fields.Nested(meta)
+    }
+
+    @marshal_with(report_fields)
     def get(self):
+        account_number = identity(request)['identity']['account_number']
+        system_queryset = system_ids_by_account(account_number)
+
+        # System counts
+        all_systems_count = system_queryset.count()
+        under_pressure_systems = count_per_state(system_queryset, {'state': "Under pressure"})
+        undersized_systems = count_per_state(system_queryset, {'state': "Undersized"})
+        oversized_systems = count_per_state(system_queryset, {'state': "Oversized"})
+        awaiting_data_systems = count_per_state(system_queryset, {'state': "Waiting for data"})
+        idling_systems = count_per_state(system_queryset, {'state': "Idling"})
+
+        non_optimized = system_queryset.filter(
+            or_(
+                System.cpu_state is not None,
+                System.io_state is not None,
+                System.memory_state is not None,
+            )
+        )
+
+        # Condition counts
+        non_optimized_count = non_optimized.count()
+        systems_cpu_issues = system_queryset.filter(System.cpu_state is not None).count()
+        cpu_undersized = count_per_state(non_optimized, {'cpu_state': SubStates.UNDERSIZED.value})
+        cpu_under_pressure = count_per_state(non_optimized, {'cpu_state': SubStates.PRESSURE.value})
+        cpu_oversized = count_per_state(non_optimized, {'cpu_state': SubStates.OVERSIZED.value})
+
+        systems_memory_issues = system_queryset.filter(System.memory_state is not None).count()
+        memory_undersized = count_per_state(non_optimized, {'memory_state': SubStates.UNDERSIZED.value})
+        memory_pressure = count_per_state(non_optimized, {'memory_state': SubStates.PRESSURE.value})
+        memory_oversized = count_per_state(non_optimized, {'memory_state': SubStates.OVERSIZED.value})
+
+        systems_io_issues = system_queryset.filter(System.io_state is not None).count()
+        io_undersized = count_per_state(non_optimized, {'io_state': SubStates.UNDERSIZED.value})
+        io_pressure = count_per_state(non_optimized, {'io_state': SubStates.PRESSURE.value})
+        io_oversized = count_per_state(non_optimized, {'io_state': SubStates.OVERSIZED.value})
+
         response = {
             "systems_per_state": {
                 "under_pressure": {
-                    "count": 0,
-                    "percentage": 5.57
+                    "count": under_pressure_systems,
+                    "percentage": calculate_percentage(under_pressure_systems / all_systems_count)
                 },
                 "undersized": {
-                    "count": 1,
-                    "percentage": 7.68
+                    "count": undersized_systems,
+                    "percentage": calculate_percentage(undersized_systems / all_systems_count)
                 },
                 "oversized": {
-                    "count": 7,
-                    "percentage": 8.91
+                    "count": oversized_systems,
+                    "percentage": calculate_percentage(oversized_systems / all_systems_count)
                 },
                 "waiting_for_data": {
-                    "count": 8,
-                    "percentage": 5.57
+                    "count": awaiting_data_systems,
+                    "percentage": calculate_percentage(awaiting_data_systems / all_systems_count)
                 },
                 "idling": {
-                    "count": 8,
-                    "percentage": 5.57
+                    "count": idling_systems,
+                    "percentage": calculate_percentage(idling_systems / all_systems_count)
                 }
             },
             "conditions": {
                 "cpu": {
-                    "count": 23,
-                    "percentage": 20.88,
-                    "undersized": None,
-                    "oversized": None,
-                    "under_pressure": 10
+                    "count": systems_cpu_issues,
+                    "percentage": calculate_percentage(systems_cpu_issues/non_optimized_count),
+                    "undersized": cpu_undersized,
+                    "oversized": cpu_oversized,
+                    "under_pressure": cpu_under_pressure
                 },
                 "io": {
-                    "count": 23,
-                    "percentage": 20.88,
-                    "undersized": 10,
-                    "oversized": 3,
-                    "under_pressure": 10
+                    "count": systems_io_issues,
+                    "percentage": calculate_percentage(systems_io_issues/non_optimized_count),
+                    "undersized": io_undersized,
+                    "oversized": io_oversized,
+                    "under_pressure": io_pressure
                 },
-                "ram": {
-                    "count": 23,
-                    "percentage": 20.88,
-                    "undersized": 10,
-                    "oversized": None,
-                    "under_pressure": 10
+                "memory": {
+                    "count": systems_memory_issues,
+                    "percentage": calculate_percentage(systems_memory_issues/non_optimized_count),
+                    "undersized": memory_undersized,
+                    "oversized": memory_oversized,
+                    "under_pressure": memory_pressure
                 }
             },
             "meta": {
-                "total_count": 55,
-                "non_optimized_count": 23,
-                "conditions_count": 69
+                "total_count": all_systems_count,
+                "non_optimized_count": non_optimized_count,
+                "conditions_count": systems_cpu_issues + systems_memory_issues + systems_io_issues
             }
         }
 
