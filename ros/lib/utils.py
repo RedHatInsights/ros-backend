@@ -9,7 +9,8 @@ from ros.lib.models import (
     System,
     PerformanceProfile,
     PerformanceProfileHistory,
-    db,)
+    db,
+)
 
 
 def is_valid_uuid(val):
@@ -132,3 +133,11 @@ def insert_performance_profiles(session, system_id, fields):
         new_entry = model_class(**fields)
         session.add(new_entry)
         session.flush()
+
+
+def count_per_state(queryset, custom_filters: dict):
+    return queryset.filter_by(**custom_filters).count() if queryset else None
+
+
+def calculate_percentage(quotient):
+    return round(quotient * 100, 2) if quotient else None
