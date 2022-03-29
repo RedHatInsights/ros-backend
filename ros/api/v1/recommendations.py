@@ -62,8 +62,8 @@ class RecommendationsApi(Resource):
                     summaries = rule_hit_details.get('summary')
                     if rule_hit.get("key") == 'INSTANCE_IDLE':
                         summaries = None
-                    current_instance = f'{rule_hit_details.get("instance_type")} ({rule_hit_details.get("price")} \
-                        {INSTANCE_PRICE_UNIT})'
+                    current_instance = f'{rule_hit_details.get("instance_type")} ' + \
+                        f'({rule_hit_details.get("price")} {INSTANCE_PRICE_UNIT})'
                     newline = '\n'
                     for skey in rules_columns:
                         formatted_candidates = []
