@@ -68,6 +68,7 @@ def test_system_detail(auth_token, db_setup, db_create_account, db_create_system
         assert response.status_code == 200
         assert response.json["inventory_id"] == 'ee0b9978-fe1b-4191-8408-cbadbd47f7a3'
         assert response.json["os"] == "RHEL 8.4"  # from db fixture
+        assert response.json["report_date"] == str(datetime.datetime.utcnow().date())
 
 
 def test_system_history(auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile):

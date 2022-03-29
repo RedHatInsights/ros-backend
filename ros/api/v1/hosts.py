@@ -82,6 +82,7 @@ class HostsApi(Resource):
         'instance_type': fields.String,
         'idling_time': fields.String,
         'os': fields.String,
+        'report_date': fields.String
     }
     meta_fields = {
         'count': fields.Integer,
@@ -152,6 +153,7 @@ class HostsApi(Resource):
                 )
                 host['idling_time'] = row.PerformanceProfile.idling_time
                 host['os'] = row.System.deserialize_host_os_data
+                host['report_date'] = row.PerformanceProfile.report_date
                 hosts.append(host)
             except Exception as err:
                 LOG.error(
