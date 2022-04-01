@@ -577,7 +577,8 @@
                         "max_io",
                         "number_of_suggestions",
                         "state",
-                        "os"
+                        "os",
+                        "report_date"
                     ]
                 }
             },

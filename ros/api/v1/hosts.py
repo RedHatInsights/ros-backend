@@ -229,6 +229,9 @@ class HostsApi(Resource):
                 sort_order(System.operating_system['major']),
                 sort_order(System.operating_system['minor'])
             )
+        if order_method == 'report_date':
+            return (sort_order(PerformanceProfile.report_date),
+                    asc(PerformanceProfile.system_id))
 
         abort(403, message="Unexpected sort method {}".format(order_method))
         return None
