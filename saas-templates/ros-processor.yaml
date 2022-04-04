@@ -112,6 +112,8 @@ objects:
                 key: db.name
                 name: ros-db
                 optional: false
+          - name: CW_ENABLED
+            value: ${CW_ENABLED}
           image: quay.io/cloudservices/ros-backend:${IMAGE_TAG}
           name: ros-processor
           ports:

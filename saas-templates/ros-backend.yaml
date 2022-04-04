@@ -110,6 +110,8 @@ objects:
             value: http://${RBAC_HOST}:8080
           - name: ENABLE_RBAC
             value: ${ENABLE_RBAC}
+          - name: CW_ENABLED
+            value: ${CW_ENABLED}
           image: quay.io/cloudservices/ros-backend:${IMAGE_TAG}
           livenessProbe:
             failureThreshold: 3
