@@ -18,4 +18,3 @@ def initialize_routes(api):
     api.add_resource(OpenAPISpec, '/api/ros/v1/openapi.json')
     api.add_resource(CallToActionApi, '/api/ros/v1/call_to_action')
     api.add_resource(ExecutiveReportAPI, '/api/ros/v1/systems/executive_report')
-
