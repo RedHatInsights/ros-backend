@@ -181,9 +181,9 @@ class HostsApi(Resource):
                 modified_operating_systems.append(os)
                 if os not in RHEL_VERSIONS:
                     abort(400, message='Not a valid RHEL version')
-            filters.append(System.os.in_(modified_operating_systems))
+            filters.append(System.deserialize_host_os_data.in_(modified_operating_systems))
         else:
-            filters.append(System.os.in_(RHEL_VERSIONS))
+            filters.append(System.deserialize_host_os_data.in_(RHEL_VERSIONS))
 
         return filters
 
