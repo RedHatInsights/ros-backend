@@ -66,7 +66,7 @@ else:
     RBAC_PORT = os.getenv("RBAC_PORT", "8114")
     RBAC_SVC_URL = os.getenv("RBAC_SVC_URL", f"http://{RBAC_HOST}:{RBAC_PORT}/")
 
-    CW_ENABLED = os.getenv("CW_ENABLED", False)  # CloudWatch/Kibana Logging
+    CW_ENABLED = str_to_bool(os.getenv('CW_ENABLED', 'False'))  # CloudWatch/Kibana Logging
     if CW_ENABLED is True:
         AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", None)
         AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", None)
