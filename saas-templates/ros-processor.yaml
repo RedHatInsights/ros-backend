@@ -112,6 +112,30 @@ objects:
                 key: db.name
                 name: ros-db
                 optional: false
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                key: ros-prod-cloudwatch.aws_access_key_id
+                name: aws-access-key-id
+                optional: false
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                key: ros-prod-cloudwatch.aws_secret_access_key
+                name: aws-secret-access-key
+                optional: false
+          - name: AWS_REGION_NAME
+            valueFrom:
+              secretKeyRef:
+                key: ros-prod-cloudwatch.aws_region
+                name: aws-region-name
+                optional: false
+          - name: AWS_LOG_GROUP
+            valueFrom:
+              secretKeyRef:
+                key: ros-prod-cloudwatch.log_group_name
+                name: aws-log-group
+                optional: false
           - name: CW_ENABLED
             value: ${CW_ENABLED}
           image: quay.io/cloudservices/ros-backend:${IMAGE_TAG}
