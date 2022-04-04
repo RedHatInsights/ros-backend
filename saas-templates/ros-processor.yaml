@@ -170,4 +170,4 @@ parameters:
   required: true
 - name: CW_ENABLED
   description: Cloudwatch logging flag
-  value: true
+  value: 'True'
