@@ -122,12 +122,11 @@ def test_system_no_os(auth_token, db_setup, db_create_account, db_create_system,
 def test_system_os_filter(auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile):
     with app.test_client() as client:
         response = client.get(
-            '/api/ros/v1/systems/ee0b9978-fe1b-4191-8408-cbadbd47f7a3?os=RHEL 8.4',
+            '/api/ros/v1/systems?os=8.4',
             headers={"x-rh-identity": auth_token}
         )
         assert response.status_code == 200
         assert response.json["meta"]["count"] == 1
-        assert response.json["inventory_id"] == 'ee0b9978-fe1b-4191-8408-cbadbd47f7a3'
         assert response.json["data"][0]["os"] == "RHEL 8.4"
 
 

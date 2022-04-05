@@ -21,10 +21,25 @@ LOG = logging.getLogger(__name__)
 SYSTEM_STATES_EXCEPT_EMPTY = [
     "Oversized", "Undersized", "Idling", "Under pressure", "Storage rightsizing", "Optimized", "Waiting for data"
 ]
-RHEL_VERSIONS = [
-    'RHEL 7.0', 'RHEL 7.1', 'RHEL 7.2', 'RHEL 7.3', 'RHEL 7.4', 'RHEL 7.5', 'RHEL 7.6', 'RHEL 7.7', 'RHEL 7.8',
-    'RHEL 7.9', 'RHEL 8.0', 'RHEL 8.1', 'RHEL 8.2', 'RHEL 8.3', 'RHEL 8.4', 'RHEL 8.5'
-]
+OS_VERSIONS = {
+    '7.0': {"name": "RHEL", "major": 7, "minor": 0},
+    '7.1': {"name": "RHEL", "major": 7, "minor": 1},
+    '7.2': {"name": "RHEL", "major": 7, "minor": 2},
+    '7.3': {"name": "RHEL", "major": 7, "minor": 3},
+    '7.4': {"name": "RHEL", "major": 7, "minor": 4},
+    '7.5': {"name": "RHEL", "major": 7, "minor": 5},
+    '7.6': {"name": "RHEL", "major": 7, "minor": 6},
+    '7.7': {"name": "RHEL", "major": 7, "minor": 7},
+    '7.8': {"name": "RHEL", "major": 7, "minor": 8},
+    '7.9': {"name": "RHEL", "major": 7, "minor": 9},
+    '8.0': {"name": "RHEL", "major": 8, "minor": 0},
+    '8.1': {"name": "RHEL", "major": 8, "minor": 1},
+    '8.2': {"name": "RHEL", "major": 8, "minor": 2},
+    '8.3': {"name": "RHEL", "major": 8, "minor": 3},
+    '8.4': {"name": "RHEL", "major": 8, "minor": 4},
+    '8.5': {"name": "RHEL", "major": 8, "minor": 5}
+}
+
 SYSTEM_COLUMNS = [
     'inventory_id',
     'display_name',
@@ -178,13 +193,10 @@ class HostsApi(Resource):
             modified_operating_systems = []
             for os in operating_systems:
                 os = os.upper()
-                modified_operating_systems.append(os)
-                if os not in RHEL_VERSIONS:
+                if os not in OS_VERSIONS.keys():
                     abort(400, message='Not a valid RHEL version')
-            filters.append(System.deserialize_host_os_data.in_(modified_operating_systems))
-        else:
-            filters.append(System.deserialize_host_os_data.in_(RHEL_VERSIONS))
-
+                modified_operating_systems.append(OS_VERSIONS[os])
+            filters.append(System.operating_system.in_(modified_operating_systems))
         return filters
 
     @staticmethod
