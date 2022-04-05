@@ -109,27 +109,23 @@ objects:
           - name: AWS_ACCESS_KEY_ID
             valueFrom:
               secretKeyRef:
-                key: ros-prod-cloudwatch.aws_access_key_id
-                name: aws-access-key-id
-                optional: false
+                key: aws_access_key_id
+                name: cloudwatch
           - name: AWS_SECRET_ACCESS_KEY
             valueFrom:
               secretKeyRef:
-                key: ros-prod-cloudwatch.aws_secret_access_key
-                name: aws-secret-access-key
-                optional: false
+                key: aws_secret_access_key
+                name: cloudwatch
           - name: AWS_REGION_NAME
             valueFrom:
               secretKeyRef:
-                key: ros-prod-cloudwatch.aws_region
-                name: aws-region-name
-                optional: false
+                key: aws_region
+                name: cloudwatch
           - name: AWS_LOG_GROUP
             valueFrom:
               secretKeyRef:
-                key: ros-prod-cloudwatch.log_group_name
-                name: aws-log-group
-                optional: false
+                key: log_group_name
+                name: cloudwatch
           - name: RBAC_SVC_URL
             value: http://${RBAC_HOST}:8080
           - name: ENABLE_RBAC
