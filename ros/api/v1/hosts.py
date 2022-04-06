@@ -106,9 +106,9 @@ class HostsApi(Resource):
         limit = limit_value()
         offset = offset_value()
         order_by = (
-            request.args.get('order_by') or 'display_name'
+            request.args.get('order_by') or 'report_date'
         ).strip().lower()
-        order_how = (request.args.get('order_how') or 'asc').strip().lower()
+        order_how = (request.args.get('order_how') or 'desc').strip().lower()
 
         account_number = identity(request)['identity']['account_number']
         # Note that When using LIMIT, it is important to use an ORDER BY clause
