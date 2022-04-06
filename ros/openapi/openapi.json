@@ -566,10 +566,10 @@
                 "name": "order_by",
                 "in": "query",
                 "required": false,
-                "description": "Ordering field name, defaults to display_name",
+                "description": "Ordering field name, defaults to report_date",
                 "schema": {
                     "type": "string",
-                    "default": "display_name",
+                    "default": "report_date",
                     "enum": [
                         "display_name",
                         "cpu",
@@ -586,10 +586,10 @@
                 "name": "order_how",
                 "in": "query",
                 "required": false,
-                "description": "Direction of the ordering, defaults to ASC",
+                "description": "Direction of the ordering, defaults to DESC",
                 "schema": {
                     "type": "string",
-                    "default": "ASC",
+                    "default": "DESC",
                     "enum": [
                         "ASC",
                         "DESC"
