@@ -516,6 +516,15 @@
                     },
                     "condition": {
                         "type": "string"
+                    },
+                    "detected_issues": {
+                        "type": "string"
+                    },
+                    "suggested_instances": {
+                        "type": "string"
+                    },
+                    "current_instance": {
+                        "type": "string"
                     }
                 }
             },

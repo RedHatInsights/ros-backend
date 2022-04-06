@@ -12,7 +12,10 @@ class RecommendationsApi(Resource):
         'description': fields.String,
         'reason': fields.String,
         'resolution': fields.String,
-        'condition': fields.String
+        'condition': fields.String,
+        'detected_issues': fields.String,
+        'suggested_instances': fields.String,
+        'current_instance': fields.String
     }
 
     meta_fields = {
@@ -54,25 +57,22 @@ class RecommendationsApi(Resource):
                 if rule_data:
                     rule_dict = rule_data.__dict__
                     recommendation = {}
-                    instance_price = ''
-                    summary = ''
-                    candidate_string = ''
                     rule_hit_details = rule_hit.get('details')
                     candidates = rule_hit_details.get('candidates')
                     summaries = rule_hit_details.get('summary')
-                    instance_price += f'{rule_hit_details.get("price")} {INSTANCE_PRICE_UNIT}'
+                    if rule_hit.get("key") == 'INSTANCE_IDLE':
+                        summaries = None
+                    current_instance = f'{rule_hit_details.get("instance_type")} ' + \
+                        f'({rule_hit_details.get("price")} {INSTANCE_PRICE_UNIT})'
                     newline = '\n'
                     for skey in rules_columns:
-                        if skey == 'reason':
-                            formatted_summary = []
-                            for msg in summaries:
-                                formatted_summary.append(f'\t\u2022 {msg}')
-                            summary += newline.join(formatted_summary)
-                        elif skey == 'resolution':
-                            formatted_candidates = []
-                            for candidate in candidates[0:3]:
-                                formatted_candidates.append(f'{candidate[0]} ({candidate[1]} {INSTANCE_PRICE_UNIT})')
-                            candidate_string += ', '.join(formatted_candidates)
+                        formatted_candidates = []
+                        if summaries is not None:
+                            recommendation['detected_issues'] = newline.join(summaries)
+                        for candidate in candidates[0:3]:
+                            formatted_candidates.append(f'{candidate[0]} ({candidate[1]} {INSTANCE_PRICE_UNIT})')
+                        recommendation['suggested_instances'] = newline.join(formatted_candidates)
+                        recommendation['current_instance'] = current_instance
                         recommendation[skey] = eval("f'{}'".format(rule_dict[skey]))
                     recommendations_list.append(recommendation)
         return {
