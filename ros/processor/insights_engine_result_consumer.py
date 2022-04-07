@@ -1,16 +1,24 @@
 from datetime import datetime, timezone
 import json
 from ros.lib.app import app, db
-from ros.lib.config import (INSIGHTS_KAFKA_ADDRESS, GROUP_ID,
-                            ENGINE_RESULT_TOPIC, get_logger)
-from ros.lib.models import RhAccount, System, PerformanceProfile, PerformanceProfileHistory
-from ros.lib.utils import get_or_create, cast_iops_as_float, delete_record
+from ros.lib.config import (
+    INSIGHTS_KAFKA_ADDRESS,
+    GROUP_ID,
+    ENGINE_RESULT_TOPIC,
+    get_logger
+)
+from ros.lib.models import RhAccount, System
+from ros.lib.utils import (
+    get_or_create,
+    cast_iops_as_float,
+    create_performance_profile,
+    validate_type
+)
 from confluent_kafka import Consumer, KafkaException
 from ros.processor.metrics import (processor_requests_success,
                                    processor_requests_failures,
                                    kafka_failures)
 from ros.processor.process_archive import get_performance_profile
-from ros.lib.utils import validate_type
 
 SYSTEM_STATES = {
     "INSTANCE_OVERSIZED": "Oversized",
@@ -169,12 +177,8 @@ class InsightsEngineResultConsumer:
                     "state": SYSTEM_STATES[state_key],
                     "operating_system": system.operating_system
                 }
-                delete_record(db.session, PerformanceProfile, system_id=system.id)
-                get_or_create(db.session, PerformanceProfile, 'system_id', **pprofile_fields)
-                get_or_create(
-                    db.session, PerformanceProfileHistory,
-                    ['system_id', 'report_date'], **pprofile_fields)
-
+                create_performance_profile(
+                    db.session, system.id, pprofile_fields)
                 LOG.info(
                     f"{self.prefix} - Performance profile created/updated successfully for the system: {host['id']}"
                 )
