@@ -4,7 +4,8 @@ import json
 from flask import jsonify, make_response
 from flask_restful import abort
 import ast as type_evaluation
-from ros.lib.models import RhAccount, System, db
+from ros.lib.models import (RhAccount, System, PerformanceProfile,
+                            PerformanceProfileHistory, db)
 
 
 def is_valid_uuid(val):
@@ -109,3 +110,19 @@ def sort_io_dict(performance_utilization: dict):
 def system_ids_by_account(account_number):
     account_query = db.session.query(RhAccount.id).filter(RhAccount.account == account_number).subquery()
     return db.session.query(System.id).filter(System.account_id.in_(account_query))
+
+
+def create_performance_profile(session, system_id, fields):
+    """This method deletes an old entry from performance_profile &
+       inserts latest data inside performance_profile as well as
+       performance_profile_history table.
+    """
+    fields = {} if fields is None else fields
+    delete_record(session, PerformanceProfile, system_id=system_id)
+    get_or_create(
+        session, PerformanceProfile, 'system_id', **fields
+    )
+    get_or_create(
+        session, PerformanceProfileHistory,
+        ['system_id', 'report_date'], **fields
+    )
