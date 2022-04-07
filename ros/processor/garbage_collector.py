@@ -1,5 +1,5 @@
 from ros.lib.app import app, db
-from ros.lib.models import PerformanceProfile
+from ros.lib.models import PerformanceProfile, PerformanceProfileHistory
 from datetime import datetime, timedelta, timezone
 from ros.lib.config import GARBAGE_COLLECTION_INTERVAL, DAYS_UNTIL_STALE, get_logger
 import time
@@ -14,17 +14,39 @@ class GarbageCollector():
     def run(self):
         while True:
             self.remove_outdated_data()
+            time.sleep(GARBAGE_COLLECTION_INTERVAL)
 
     def remove_outdated_data(self):
-        with app.app_context():
-            results = db.session.query(PerformanceProfile).filter(
-                PerformanceProfile.report_date < (
-                    datetime.now(timezone.utc) - timedelta(
+        try:
+            time_value = datetime.now(timezone.utc) - timedelta(
                         days=DAYS_UNTIL_STALE)
-                )).delete()
-            db.session.commit()
-            if results:
-                LOG.info("%s - Deleted %s performance profiles older than %d days",
-                         self.prefix, results, DAYS_UNTIL_STALE)
+            with app.app_context():
+                deleted_history = db.session.query(
+                    PerformanceProfileHistory).filter(
+                        PerformanceProfileHistory.report_date < time_value
+                    ).delete()
 
-            time.sleep(GARBAGE_COLLECTION_INTERVAL)
+                if deleted_history:
+                    LOG.info(
+                        "%s - Deleted %s outdated history record(s) "
+                        "older than %d days",
+                        self.prefix, deleted_history, DAYS_UNTIL_STALE
+                    )
+
+                deleted_profiles = db.session.query(
+                    PerformanceProfile
+                ).filter(PerformanceProfile.report_date < time_value).delete()
+
+                if deleted_profiles:
+                    LOG.info(
+                        "%s - Deleted %s outdated performance profile(s) "
+                        "older than %d days",
+                        self.prefix, deleted_profiles, DAYS_UNTIL_STALE
+                    )
+                db.session.commit()
+        except Exception as error:  # pylint: disable=broad-except
+            LOG.error(
+                "%s - Could not remove outdated records "
+                "due to the following error %s.",
+                self.prefix, str(error)
+            )
