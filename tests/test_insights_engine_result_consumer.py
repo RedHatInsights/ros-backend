@@ -3,9 +3,9 @@ import json
 import copy
 from pathlib import Path
 from ros.lib.app import app
-from ros.lib.models import db, PerformanceProfile
+from ros.lib.models import db, PerformanceProfile, PerformanceProfileHistory
 from ros.processor.insights_engine_result_consumer import InsightsEngineResultConsumer, SYSTEM_STATES
-from tests.helpers.db_helper import db_get_host, db_get_perf_profile
+from tests.helpers.db_helper import db_get_host, db_get_record
 
 
 @pytest.fixture(scope="function")
@@ -138,7 +138,7 @@ def test_process_report_optimized(engine_result_message, engine_consumer, db_set
     _performance_record = copy.copy(performance_record)
     engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
     system_record = db_get_host(host['id'])
-    profile_record = db_get_perf_profile(system_record.id)
+    profile_record = db_get_record(PerformanceProfile, system_id=system_record.id)
     assert str(system_record.inventory_id) == host['id']
     with app.app_context():
         assert profile_record.rule_hit_details == ros_reports
@@ -157,3 +157,18 @@ def test_system_properties(engine_result_message, engine_consumer, db_setup, per
     engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
     data = db_get_host(host['id'])
     assert str(data.inventory_id) == host['id']
+
+
+def test_history_record_creation(engine_result_message, engine_consumer, db_setup, performance_record):
+    engine_result_message = engine_result_message("insights-engine-result-idle.json")
+    host = engine_result_message["input"]["host"]
+    ros_reports = [engine_result_message["results"]["reports"][7]]
+    system_metadata = engine_result_message["results"]["system"]["metadata"]
+    engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
+    system_record = db_get_host(host['id'])
+    assert str(system_record.inventory_id) == host['id']
+    with app.app_context():
+        history_rec_count = PerformanceProfileHistory.query.filter_by(
+            system_id=system_record.id
+        ).count()
+        assert history_rec_count == 1
