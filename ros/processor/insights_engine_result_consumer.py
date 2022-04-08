@@ -11,7 +11,7 @@ from ros.lib.models import RhAccount, System
 from ros.lib.utils import (
     get_or_create,
     cast_iops_as_float,
-    create_performance_profile,
+    insert_performance_profiles,
     validate_type
 )
 from confluent_kafka import Consumer, KafkaException
@@ -177,7 +177,7 @@ class InsightsEngineResultConsumer:
                     "state": SYSTEM_STATES[state_key],
                     "operating_system": system.operating_system
                 }
-                create_performance_profile(
+                insert_performance_profiles(
                     db.session, system.id, pprofile_fields)
                 LOG.info(
                     f"{self.prefix} - Performance profile created/updated successfully for the system: {host['id']}"
