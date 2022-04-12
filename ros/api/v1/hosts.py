@@ -192,6 +192,7 @@ class HostsApi(Resource):
         if operating_systems := request.args.getlist('os'):
             modified_operating_systems = []
             for os in operating_systems:
+                os = os.split(" ")[1]
                 if os not in OS_VERSIONS.keys():
                     abort(400, message='Not a valid RHEL version')
                 modified_operating_systems.append(OS_VERSIONS[os])
