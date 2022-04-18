@@ -172,3 +172,26 @@ def test_history_record_creation(engine_result_message, engine_consumer, db_setu
             system_id=system_record.id
         ).count()
         assert history_rec_count == 1
+
+
+def test_substate_updates(engine_result_message, engine_consumer, db_setup, performance_record):
+    engine_result_message = engine_result_message("insights-engine-result-under-pressure.json")
+    host = engine_result_message["input"]["host"]
+    ros_reports = [engine_result_message["results"]["reports"][7]]
+    system_metadata = engine_result_message["results"]["system"]["metadata"]
+    performance_record.update({
+        "states":
+            {
+                'cpu': ['CPU_UNDERSIZED', 'CPU_UNDERSIZED_BY_PRESSURE'],
+                'io': ['IO_UNDERSIZED_BY_PRESSURE'],
+                'memory': ['MEMORY_UNDERSIZED', 'MEMORY_UNDERSIZED_BY_PRESSURE']
+            }
+
+    })
+    engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
+    system_record = db_get_host(host['id'])
+    assert str(system_record.inventory_id) == host['id']
+    with app.app_context():
+        assert system_record.cpu_state == ['CPU_UNDERSIZED', 'CPU_UNDERSIZED_BY_PRESSURE']
+        assert system_record.io_state == ['IO_UNDERSIZED_BY_PRESSURE']
+        assert system_record.memory_state == ['MEMORY_UNDERSIZED', 'MEMORY_UNDERSIZED_BY_PRESSURE']
