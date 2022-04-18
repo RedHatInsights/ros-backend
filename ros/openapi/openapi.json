@@ -195,6 +195,25 @@
                 }
             }
         },
+        "/executive_report": {
+            "get": {
+              "summary": "Executive report for systems",
+              "description": "Executive report for systems",
+              "operationId": "getExecutiveReportForSystems",
+              "responses": {
+                "200": {
+                  "description": "OK",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/ExecutiveReportItem"
+                      }
+                    }
+                  }
+                }
+              }
+           }
+        },
         "/rating": {
             "post": {
                 "summary": "submit suggestion rating",
@@ -460,6 +479,150 @@
                     }
                 }
             },
+            "ExecutiveReportItem": {
+                "type": "object",
+                "properties": {
+                  "systems_per_state": {
+                    "type": "object",
+                    "properties": {
+                      "under_pressure": {
+                        "type": "object",
+                        "properties": {
+                          "count": {
+                            "type": "integer"
+                          },
+                          "percentage": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      "undersized": {
+                        "type": "object",
+                        "properties": {
+                          "count": {
+                            "type": "integer"
+                          },
+                          "percentage": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      "oversized": {
+                        "type": "object",
+                        "properties": {
+                          "count": {
+                            "type": "integer"
+                          },
+                          "percentage": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      "waiting_for_data": {
+                        "type": "object",
+                        "properties": {
+                          "count": {
+                            "type": "integer"
+                          },
+                          "percentage": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      "idling": {
+                        "type": "object",
+                        "properties": {
+                          "count": {
+                            "type": "integer"
+                          },
+                          "percentage": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "conditions": {
+                    "type": "object",
+                    "properties": {
+                      "cpu": {
+                        "type": "object",
+                        "properties": {
+                          "count": {
+                            "type": "integer"
+                          },
+                          "percentage": {
+                            "type": "number"
+                          },
+                          "undersized": {
+                            "type": "integer"
+                          },
+                          "oversized": {
+                            "type": "integer"
+                          },
+                          "under_pressure": {
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      "io": {
+                        "type": "object",
+                        "properties": {
+                          "count": {
+                            "type": "integer"
+                          },
+                          "percentage": {
+                            "type": "number"
+                          },
+                          "undersized": {
+                            "type": "integer"
+                          },
+                          "oversized": {
+                            "type": "integer"
+                          },
+                          "under_pressure": {
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      "memory": {
+                        "type": "object",
+                        "properties": {
+                          "count": {
+                            "type": "integer"
+                          },
+                          "percentage": {
+                            "type": "number"
+                          },
+                          "undersized": {
+                            "type": "integer"
+                          },
+                          "oversized": {
+                            "type": "integer"
+                          },
+                          "under_pressure": {
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      "meta": {
+                        "type": "object",
+                        "properties": {
+                          "total_count": {
+                            "type": "integer"
+                          },
+                          "non_optimized_count": {
+                            "type": "integer"
+                          },
+                          "conditions_count": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
             "PerformanceItem": {
                 "type": "object",
                 "properties": {
