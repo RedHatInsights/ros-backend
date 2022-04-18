@@ -112,8 +112,10 @@ def sort_io_dict(performance_utilization: dict):
     return performance_utilization
 
 
-def system_ids_by_account(account_number):
+def system_ids_by_account(account_number, fetch_records=False):
     account_query = db.session.query(RhAccount.id).filter(RhAccount.account == account_number).subquery()
+    if fetch_records is True:
+        return db.session.query(System).filter(System.account_id.in_(account_query))
     return db.session.query(System.id).filter(System.account_id.in_(account_query))
 
 
@@ -139,5 +141,8 @@ def count_per_state(queryset, custom_filters: dict):
     return queryset.filter_by(**custom_filters).count() if queryset else None
 
 
-def calculate_percentage(quotient):
-    return round(quotient * 100, 2) if quotient else None
+def calculate_percentage(numerator, denominator):
+    if numerator and denominator:
+        return round((numerator / denominator) * 100, 2)
+    else:
+        return None
