@@ -179,7 +179,7 @@ def test_substate_updates(engine_result_message, engine_consumer, db_setup, perf
     host = engine_result_message["input"]["host"]
     ros_reports = [engine_result_message["results"]["reports"][7]]
     system_metadata = engine_result_message["results"]["system"]["metadata"]
-    performance_record.update({
+    ros_reports[0]['details'].update({
         "states":
             {
                 'cpu': ['CPU_UNDERSIZED', 'CPU_UNDERSIZED_BY_PRESSURE'],

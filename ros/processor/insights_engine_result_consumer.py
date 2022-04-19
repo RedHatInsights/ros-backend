@@ -126,7 +126,11 @@ class InsightsEngineResultConsumer:
                         "%s - Marking the state of system with inventory id: %s as %s.",
                         self.prefix, host['id'], SYSTEM_STATES[state_key])
 
-                substates = performance_record.get('states') if 'states' in performance_record.keys() else {}
+                if reports and 'states' in reports[0]['details'].keys():
+                    substates = reports[0]['details']['states']
+                    reports[0]['details'].pop('states')  # Unnecessary space consumption
+                else:
+                    substates = {}
 
                 system = get_or_create(
                     db.session, System, 'inventory_id',
