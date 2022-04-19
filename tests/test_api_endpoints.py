@@ -2,6 +2,8 @@ import datetime
 from dateutil import parser
 import json
 from base64 import b64encode
+from pprint import pprint
+
 import pytest
 
 from ros.api.main import app
@@ -176,6 +178,28 @@ def test_system_rating(
             headers={"x-rh-identity": auth_token}
         )
         assert test_host_detail.json["rating"] == data_dict['rating']
+
+
+def test_executive_report(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        db_create_performance_profile
+):
+    with app.test_client() as client:
+        response = client.get(
+            '/api/ros/v1/executive_report',
+            headers={"x-rh-identity": auth_token}
+        )
+        with app.app_context():
+            g = db_get_host('ee0b9978-fe1b-4191-8408-cbadbd47f7a3')
+            pprint(g.__dict__)
+        assert response.json['systems_per_state']['idling']['count'] == 1
+        assert response.json['systems_per_state']['idling']['percentage'] == 100
+        assert response.json['conditions']['cpu']['count'] == 2
+        assert response.json['conditions']['io']['count'] == 1
+        assert response.json['conditions']['memory']['count'] == 2
 
 
 def test_openapi_endpoint():
