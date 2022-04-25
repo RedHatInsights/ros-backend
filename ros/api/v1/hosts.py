@@ -381,8 +381,8 @@ class HostHistoryApi(Resource):
 class ExecutiveReportAPI(Resource):
 
     count_and_percentage = {
-          "count": fields.Integer,
-           "percentage": fields.Float
+        "count": fields.Integer,
+        "percentage": fields.Float
     }
     systems_per_state = {
         "under_pressure": fields.Nested(count_and_percentage),
