@@ -380,12 +380,16 @@ class HostHistoryApi(Resource):
 
 class ExecutiveReportAPI(Resource):
 
+    count_and_percentage = {
+          "count": fields.Integer,
+           "percentage": fields.Float
+    }
     systems_per_state = {
-        "under_pressure": fields.Raw,
-        "undersized": fields.Raw,
-        "oversized": fields.Raw,
-        "waiting_for_data": fields.Raw,
-        "idling": fields.Raw
+        "under_pressure": fields.Nested(count_and_percentage),
+        "undersized": fields.Nested(count_and_percentage),
+        "oversized": fields.Nested(count_and_percentage),
+        "waiting_for_data": fields.Nested(count_and_percentage),
+        "idling": fields.Nested(count_and_percentage)
     }
     condtions = {
         "cpu": fields.Raw,
