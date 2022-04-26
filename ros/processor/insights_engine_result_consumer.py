@@ -128,7 +128,6 @@ class InsightsEngineResultConsumer:
 
                 if reports and 'states' in reports[0]['details'].keys():
                     substates = reports[0]['details']['states']
-                    reports[0]['details'].pop('states')  # Unnecessary space consumption
                 else:
                     substates = {}
 

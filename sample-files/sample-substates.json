@@ -1,0 +1,105 @@
+{
+    "reports": [
+        {
+            "rule_id": "ros_instance_evaluation|INSTANCE_UNDERSIZED",
+            "component": "telemetry.rules.plugins.ros.ros_instance_evaluation.report",
+            "type": "rule",
+            "key": "INSTANCE_UNDERSIZED",
+            "details": {
+                "rhel": "8.4",
+                "cloud_provider": "John Doe Web Services",
+                "instance_type": "f2.mediumzzz",
+                "region": "north-east-24",
+                "price": 0.0608,
+                "candidates": [
+                    [
+                        "t2.xlarge",
+                        0.2432
+                    ],
+                    [
+                        "m1.xlarge",
+                        0.486
+                    ],
+                    [
+                        "t2.2xlarge",
+                        0.4864
+                    ],
+                    [
+                        "m2.2xlarge",
+                        0.575
+                    ],
+                    [
+                        "c1.xlarge",
+                        0.632
+                    ],
+                    [
+                        "g4dn.xlarge",
+                        0.71
+                    ],
+                    [
+                        "g4dn.2xlarge",
+                        1.015
+                    ],
+                    [
+                        "m2.4xlarge",
+                        1.15
+                    ],
+                    [
+                        "g4dn.4xlarge",
+                        1.625
+                    ],
+                    [
+                        "g4dn.8xlarge",
+                        2.938
+                    ],
+                    [
+                        "g4dn.12xlarge",
+                        5.281
+                    ],
+                    [
+                        "g4dn.16xlarge",
+                        5.875
+                    ]
+                ],
+                "states": {
+                    "cpu": [
+                        "CPU_UNDERSIZED",
+                        "CPU_UNDERSIZED_BY_PRESSURE"
+                    ],
+                    "memory": [
+                        "MEMORY_UNDERSIZED",
+                        "MEMORY_UNDERSIZED_BY_PRESSURE"
+                    ],
+                    "io": [
+                        "IO_UNDERSIZED_BY_PRESSURE"
+                    ]
+                },
+                "type": "rule",
+                "error_key": "INSTANCE_UNDERSIZED"
+            },
+            "tags": [],
+            "links": {
+                "jira": [
+                    "https://issues.xxxx.com/browse/xxxxx-xxxx"
+                ],
+                "kcs": []
+            }
+        }
+    ],
+    "fingerprints": [],
+    "analysis_metadata": {
+        "start": "2022-04-19T07:52:13.590489+00:00",
+        "finish": "2022-04-19T07:52:13.732614+00:00",
+        "execution_context": "insights.core.context.SerializedArchiveContext",
+        "plugin_sets": {
+            "insights-core": {
+                "version": "insights-core-3.0.8-dev",
+                "commit": "placeholder"
+            },
+            "insights-plugins": {
+                "version": "insights-plugins-2.0.214-1",
+                "commit": "placeholder"
+            }
+        }
+    }
+}
