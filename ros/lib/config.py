@@ -81,8 +81,10 @@ APP_NAME = os.getenv("APP_NAME", "ros")
 INSIGHTS_EXTRACT_LOGLEVEL = os.getenv("INSIGHTS_EXTRACT_LOGLEVEL", "ERROR")
 ENABLE_RBAC = str_to_bool(os.getenv("ENABLE_RBAC", "False"))
 # Time interval after which garbage collector is involved to check for outdated data.
-GARBAGE_COLLECTION_INTERVAL = os.getenv("GARBAGE_COLLECTION_INTERVAL", 86400)
+GARBAGE_COLLECTION_INTERVAL = int(
+    os.getenv("GARBAGE_COLLECTION_INTERVAL", '86400')
+)
 # Number of days after which data is considered to be outdated.
-DAYS_UNTIL_STALE = os.getenv("DAYS_UNTIL_STALE", 45)
+DAYS_UNTIL_STALE = int(os.getenv("DAYS_UNTIL_STALE", '45'))
 INSTANCE_PRICE_UNIT = 'USD/hour'
 CW_LOGGING_FORMAT = '%(asctime)s - %(levelname)s  - %(funcName)s - %(message)s'
