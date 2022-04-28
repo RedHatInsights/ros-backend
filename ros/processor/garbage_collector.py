@@ -14,12 +14,12 @@ class GarbageCollector():
     def run(self):
         while True:
             self.remove_outdated_data()
-            time.sleep(GARBAGE_COLLECTION_INTERVAL)
+            time.sleep(int(GARBAGE_COLLECTION_INTERVAL))
 
     def remove_outdated_data(self):
         try:
             time_value = datetime.now(timezone.utc) - timedelta(
-                        days=DAYS_UNTIL_STALE)
+                        days=int(DAYS_UNTIL_STALE))
             with app.app_context():
                 deleted_history = db.session.query(
                     PerformanceProfileHistory).filter(
