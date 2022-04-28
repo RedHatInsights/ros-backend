@@ -73,6 +73,10 @@ objects:
         env:
           - name: CLOWDER_ENABLED
             value: ${CLOWDER_ENABLED}
+          - name: GARBAGE_COLLECTION_INTERVAL
+            value: ${GARBAGE_COLLECTION_INTERVAL}
+          - name: DAYS_UNTIL_STALE
+            value: ${DAYS_UNTIL_STALE}
     database:
       name: ros
       version: 12
@@ -124,3 +128,9 @@ parameters:
 - description: Is clowder enabled
   name: CLOWDER_ENABLED
   value: "True"
+- description: The interval at which garbage collection should run (in seconds)
+  name: GARBAGE_COLLECTION_INTERVAL
+  value: "86400"
+- description: Number of days after which data is considered to be outdated
+  name: DAYS_UNTIL_STALE
+  value: "45"
