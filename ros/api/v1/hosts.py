@@ -1,4 +1,4 @@
-from sqlalchemy import asc, desc, nullslast, nullsfirst, or_, and_
+from sqlalchemy import asc, desc, nullslast, nullsfirst, and_
 from sqlalchemy.types import Float
 from flask import request
 from flask_restful import Resource, abort, fields, marshal_with
@@ -385,6 +385,7 @@ class ExecutiveReportAPI(Resource):
         "percentage": fields.Float
     }
     systems_per_state = {
+        "optimized": fields.Nested(count_and_percentage),
         "under_pressure": fields.Nested(count_and_percentage),
         "undersized": fields.Nested(count_and_percentage),
         "oversized": fields.Nested(count_and_percentage),
@@ -414,18 +415,14 @@ class ExecutiveReportAPI(Resource):
 
         # System counts
         all_systems_count = system_queryset.count()
+        optimized_systems = count_per_state(system_queryset, {'state': "Optimized"})
         under_pressure_systems = count_per_state(system_queryset, {'state': "Under pressure"})
         undersized_systems = count_per_state(system_queryset, {'state': "Undersized"})
         oversized_systems = count_per_state(system_queryset, {'state': "Oversized"})
-        awaiting_data_systems = count_per_state(system_queryset, {'state': "Waiting for data"})
+        waiting_for_data_systems = count_per_state(system_queryset, {'state': "Waiting for data"})
         idling_systems = count_per_state(system_queryset, {'state': "Idling"})
 
         non_optimized = system_queryset.filter(
-            or_(
-                System.cpu_state is not None,
-                System.io_state is not None,
-                System.memory_state is not None,
-            ),
             and_(
                 System.state != 'Optimized',
                 System.state != 'Waiting for data'
@@ -468,6 +465,10 @@ class ExecutiveReportAPI(Resource):
 
         response = {
             "systems_per_state": {
+                "optimized": {
+                    "count": optimized_systems,
+                    "percentage": calculate_percentage(optimized_systems, all_systems_count)
+                },
                 "under_pressure": {
                     "count": under_pressure_systems,
                     "percentage": calculate_percentage(under_pressure_systems, all_systems_count)
@@ -481,8 +482,8 @@ class ExecutiveReportAPI(Resource):
                     "percentage": calculate_percentage(oversized_systems, all_systems_count)
                 },
                 "waiting_for_data": {
-                    "count": awaiting_data_systems,
-                    "percentage": calculate_percentage(awaiting_data_systems, all_systems_count)
+                    "count": waiting_for_data_systems,
+                    "percentage": calculate_percentage(waiting_for_data_systems, all_systems_count)
                 },
                 "idling": {
                     "count": idling_systems,

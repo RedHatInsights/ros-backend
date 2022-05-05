@@ -2,7 +2,6 @@ import datetime
 from dateutil import parser
 import json
 from base64 import b64encode
-from pprint import pprint
 
 import pytest
 
@@ -192,9 +191,6 @@ def test_executive_report(
             '/api/ros/v1/executive_report',
             headers={"x-rh-identity": auth_token}
         )
-        with app.app_context():
-            g = db_get_host('ee0b9978-fe1b-4191-8408-cbadbd47f7a3')
-            pprint(g.__dict__)
         assert response.json['systems_per_state']['idling']['count'] == 1
         assert response.json['systems_per_state']['idling']['percentage'] == 100
         assert response.json['conditions']['cpu']['count'] == 2
