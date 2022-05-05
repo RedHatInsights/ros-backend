@@ -138,11 +138,11 @@ def insert_performance_profiles(session, system_id, fields):
 
 
 def count_per_state(queryset, custom_filters: dict):
-    return queryset.filter_by(**custom_filters).count() if queryset else None
+    return queryset.filter_by(**custom_filters).count() if queryset else 0
 
 
 def calculate_percentage(numerator, denominator):
     if numerator and denominator:
         return round((numerator / denominator) * 100, 2)
     else:
-        return None
+        return 0
