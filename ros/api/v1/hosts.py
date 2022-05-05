@@ -432,34 +432,34 @@ class ExecutiveReportAPI(Resource):
 
         # cpu counts
         total_cpu_issues = sum([
-            len(system.cpu_state) if system.cpu_state else 0
-            for system in non_optimized.filter(System.cpu_state is not None)
+            len(system.cpu_states) if system.cpu_states else 0
+            for system in non_optimized.filter(System.cpu_states is not None)
         ])
-        cpu_undersized = non_optimized.filter(System.cpu_state.any(SubStates.CPU_UNDERSIZED.value)).count()
-        cpu_under_pressure = non_optimized.filter(System.cpu_state.any(
+        cpu_undersized = non_optimized.filter(System.cpu_states.any(SubStates.CPU_UNDERSIZED.value)).count()
+        cpu_under_pressure = non_optimized.filter(System.cpu_states.any(
             SubStates.CPU_UNDER_PRESSURE.value)
         ).count()
-        cpu_oversized = non_optimized.filter(System.cpu_state.any(SubStates.CPU_OVERSIZED.value)).count()
+        cpu_oversized = non_optimized.filter(System.cpu_states.any(SubStates.CPU_OVERSIZED.value)).count()
 
         # memory counts
         total_memory_issues = sum([
-            len(system.memory_state) if system.memory_state else 0
-            for system in non_optimized.filter(System.memory_state is not None)
+            len(system.memory_states) if system.memory_states else 0
+            for system in non_optimized.filter(System.memory_states is not None)
         ])
-        memory_undersized = non_optimized.filter(System.memory_state.any(SubStates.MEMORY_UNDERSIZED.value)).count()
-        memory_pressure = non_optimized.filter(System.memory_state.any(
+        memory_undersized = non_optimized.filter(System.memory_states.any(SubStates.MEMORY_UNDERSIZED.value)).count()
+        memory_pressure = non_optimized.filter(System.memory_states.any(
             SubStates.MEMORY_UNDER_PRESSURE.value)
         ).count()
-        memory_oversized = non_optimized.filter(System.memory_state.any(SubStates.MEMORY_OVERSIZED.value)).count()
+        memory_oversized = non_optimized.filter(System.memory_states.any(SubStates.MEMORY_OVERSIZED.value)).count()
 
         # io counts
         total_io_issues = sum([
-            len(system.io_state) if system.io_state else 0
-            for system in non_optimized.filter(System.io_state is not None)
+            len(system.io_states) if system.io_states else 0
+            for system in non_optimized.filter(System.io_states is not None)
         ])
-        io_undersized = non_optimized.filter(System.io_state.any(SubStates.IO_UNDERSIZED.value)).count()
-        io_pressure = non_optimized.filter(System.io_state.any(SubStates.IO_UNDER_PRESSURE.value)).count()
-        io_oversized = non_optimized.filter(System.io_state.any(SubStates.IO_OVERSIZED.value)).count()
+        io_undersized = non_optimized.filter(System.io_states.any(SubStates.IO_UNDERSIZED.value)).count()
+        io_pressure = non_optimized.filter(System.io_states.any(SubStates.IO_UNDER_PRESSURE.value)).count()
+        io_oversized = non_optimized.filter(System.io_states.any(SubStates.IO_OVERSIZED.value)).count()
 
         all_conditions_count = total_cpu_issues + total_memory_issues + total_io_issues
 
