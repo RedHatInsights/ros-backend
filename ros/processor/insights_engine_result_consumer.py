@@ -140,9 +140,9 @@ class InsightsEngineResultConsumer:
                     state=SYSTEM_STATES[state_key],
                     instance_type=performance_record.get('instance_type'),
                     region=performance_record.get('region'),
-                    cpu_state=substates.get('cpu'),
-                    io_state=substates.get('io'),
-                    memory_state=substates.get('memory'),
+                    cpu_states=substates.get('cpu'),
+                    io_states=substates.get('io'),
+                    memory_states=substates.get('memory'),
                 )
                 LOG.info(
                     f"{self.prefix} - System created/updated successfully: {host['id']}"

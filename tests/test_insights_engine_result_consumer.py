@@ -192,6 +192,6 @@ def test_substate_updates(engine_result_message, engine_consumer, db_setup, perf
     system_record = db_get_host(host['id'])
     assert str(system_record.inventory_id) == host['id']
     with app.app_context():
-        assert system_record.cpu_state == ['CPU_UNDERSIZED', 'CPU_UNDERSIZED_BY_PRESSURE']
-        assert system_record.io_state == ['IO_UNDERSIZED_BY_PRESSURE']
-        assert system_record.memory_state == ['MEMORY_UNDERSIZED', 'MEMORY_UNDERSIZED_BY_PRESSURE']
+        assert system_record.cpu_states == ['CPU_UNDERSIZED', 'CPU_UNDERSIZED_BY_PRESSURE']
+        assert system_record.io_states == ['IO_UNDERSIZED_BY_PRESSURE']
+        assert system_record.memory_states == ['MEMORY_UNDERSIZED', 'MEMORY_UNDERSIZED_BY_PRESSURE']
