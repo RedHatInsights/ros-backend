@@ -1,4 +1,4 @@
-from sqlalchemy import asc, desc, nullslast, nullsfirst, and_
+from sqlalchemy import asc, desc, nullslast, nullsfirst, or_
 from sqlalchemy.types import Float
 from flask import request
 from flask_restful import Resource, abort, fields, marshal_with
@@ -423,9 +423,11 @@ class ExecutiveReportAPI(Resource):
         idling_systems = count_per_state(system_queryset, {'state': "Idling"})
 
         non_optimized = system_queryset.filter(
-            and_(
-                System.state != 'Optimized',
-                System.state != 'Waiting for data'
+            or_(
+                System.state == 'Oversized',
+                System.state == 'Undersized',
+                System.state == 'Idling',
+                System.state == 'Under pressure'
             )
         )
         non_optimized_count = non_optimized.count()
