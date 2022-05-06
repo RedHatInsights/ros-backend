@@ -1,4 +1,6 @@
 import ast as type_evaluation
+from http.server import BaseHTTPRequestHandler
+import threading
 import uuid
 import base64
 import json
@@ -9,8 +11,12 @@ from ros.lib.models import (
     System,
     PerformanceProfile,
     PerformanceProfileHistory,
-    db,
-)
+    db,)
+from ros.lib.config import get_logger
+
+
+LOG = get_logger(__name__)
+PROCESSOR_INSTANCES = []
 
 
 def is_valid_uuid(val):
@@ -137,6 +143,7 @@ def insert_performance_profiles(session, system_id, fields):
         session.flush()
 
 
+
 def count_per_state(queryset, custom_filters: dict):
     return queryset.filter_by(**custom_filters).count() if queryset else 0
 
@@ -146,3 +153,20 @@ def calculate_percentage(numerator, denominator):
         return round((numerator / denominator) * 100, 2)
     else:
         return 0
+
+class MonitoringHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        total_processors_names = list(map(lambda i: i.processor_name, PROCESSOR_INSTANCES))
+        active_threads_names = list(map(lambda i: i.name, threading.enumerate()))
+        if not all(item in active_threads_names for item in total_processors_names):
+            dead_processors = set(total_processors_names).difference(active_threads_names)
+            LOG.error('SERVICE STATUS - Dead processors - %s' % dead_processors)
+            self.send_response(500)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
+            self.wfile.write(bytes("ERROR: Processor thread exited", encoding='utf8'))
+        else:
+            self.send_response(200)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
+            self.wfile.write(bytes("All Processor and Threads are running", encoding='utf8'))
