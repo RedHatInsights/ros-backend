@@ -101,8 +101,8 @@ class InventoryEventsConsumer:
         host_id = msg['id']
         insights_id = msg['insights_id']
         with app.app_context():
-            LOG.info(
-                '%s - Deleting performance profile records with insights_id %s',
+            LOG.debug(
+                '%s - Received a message for system with insights_id %s',
                 self.prefix,
                 insights_id
             )
@@ -113,7 +113,7 @@ class InventoryEventsConsumer:
                     reporter=self.reporter, account_number=msg['account']
                 ).inc()
                 LOG.info(
-                    '%s - Deleted host with inventory id: %s',
+                    '%s - Deleted system with inventory id: %s',
                     self.prefix,
                     host_id
                 )
@@ -126,7 +126,7 @@ class InventoryEventsConsumer:
                 and msg['type'] == 'updated'
         ) or 'is_ros' in msg['platform_metadata']:
             LOG.info(
-                '%s - Processing a message for host(%s) belonging to account %s',
+                '%s - Processing a message for system(%s) belonging to account %s',
                 self.prefix, msg['host']['id'], msg['host']['account']
             )
             self.process_system_details(msg)
@@ -165,5 +165,5 @@ class InventoryEventsConsumer:
                 processor_requests_failures.labels(
                     reporter=self.reporter, account_number=host['account']
                 ).inc()
-                LOG.error("%s - Unable to add host %s to DB belonging to account: %s - %s",
+                LOG.error("%s - Unable to add system %s to DB belonging to account: %s - %s",
                           self.prefix, host['fqdn'], host['account'], err)
