@@ -4,6 +4,20 @@ from ros.lib.config import INSTANCE_PRICE_UNIT
 from flask_restful import Resource, abort, fields, marshal_with
 from flask import request
 
+ROSSUMMARY = dict(
+    OPTIMIZED='System is OPTIMIZED',
+    MEMORY_OVERSIZED='Memory utilization is very low',
+    MEMORY_UNDERSIZED='Memory utilization is too high',
+    MEMORY_UNDERSIZED_BY_PRESSURE='System is suffering from memory pressure',
+    CPU_OVERSIZED='CPU utilization is very low',
+    CPU_UNDERSIZED='CPU utilization is too high',
+    CPU_UNDERSIZED_BY_PRESSURE='System is suffering from CPU pressure',
+    IO_OVERSIZED='I/O utilization is very low',
+    IO_UNDERSIZED='I/O utilization is too high',
+    IO_UNDERSIZED_BY_PRESSURE='System is suffering from IO pressure',
+    IDLE='System is IDLE',
+)
+
 
 class RecommendationsApi(Resource):
 
@@ -66,7 +80,12 @@ class RecommendationsApi(Resource):
                     recommendation = {}
                     rule_hit_details = rule_hit.get('details')
                     candidates = rule_hit_details.get('candidates')
-                    summaries = rule_hit_details.get('summary')
+                    states = rule_hit_details.get('states')
+                    summaries = [
+                        ROSSUMMARY[state] for substates in states.values()
+                        for state in substates
+                        if ROSSUMMARY.get(state) is not None
+                    ]
                     if rule_hit.get("key") == 'INSTANCE_IDLE':
                         summaries = None
                     current_instance = f'{rule_hit_details.get("instance_type")} ' + \
