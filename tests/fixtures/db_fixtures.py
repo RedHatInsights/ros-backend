@@ -133,9 +133,7 @@ def db_create_performance_profile():
             "type": "rule",
             "price": 0.0116,
             "region": "us-east-1",
-            "summary": [
-              "System is IDLE"
-            ],
+            "states": {'idle': ['IDLE']},
             "error_key": "INSTANCE_IDLE",
             "candidates": [
               [
@@ -226,9 +224,7 @@ def db_create_performance_profile_history():
             "type": "rule",
             "price": 0.0116,
             "region": "us-east-1",
-            "summary": [
-              "System is IDLE"
-            ],
+            "states": {'idle': ['IDLE']},
             "error_key": "INSTANCE_IDLE",
             "candidates": [
               [
