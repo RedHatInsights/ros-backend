@@ -200,5 +200,5 @@ class InsightsEngineResultConsumer:
                 processor_requests_failures.labels(
                     reporter=self.reporter, account_number=host['account']
                 ).inc()
-                LOG.error("%s - Unable to add host %s to DB belonging to account: %s - %s",
+                LOG.error("%s - Unable to add system %s to DB belonging to account: %s - %s",
                           self.prefix, host['id'], host['account'], err)
