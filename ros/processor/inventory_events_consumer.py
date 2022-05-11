@@ -108,7 +108,7 @@ class InventoryEventsConsumer:
             )
             rows_deleted = db.session.query(System.id).filter(System.inventory_id == host_id).delete()
             db.session.commit()
-            if rows_deleted > 0:
+            if rows_deleted == 1:
                 processor_requests_success.labels(
                     reporter=self.reporter, account_number=msg['account']
                 ).inc()
