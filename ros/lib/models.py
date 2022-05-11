@@ -68,6 +68,9 @@ class System(db.Model):
         db.UniqueConstraint('inventory_id'),
         db.ForeignKeyConstraint(['account_id'], ['rh_accounts.id'], name='systems_account_id_fkey'),
     )
+    cpu_states = db.Column(db.ARRAY(db.String))
+    io_states = db.Column(db.ARRAY(db.String))
+    memory_states = db.Column(db.ARRAY(db.String))
 
     @property
     def deserialize_host_os_data(self):
