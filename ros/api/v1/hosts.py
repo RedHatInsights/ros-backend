@@ -389,13 +389,13 @@ class ExecutiveReportAPI(Resource):
         "under_pressure": fields.Nested(count_and_percentage),
         "undersized": fields.Nested(count_and_percentage),
         "oversized": fields.Nested(count_and_percentage),
-        "waiting_for_data": fields.Nested(count_and_percentage),
-        "idling": fields.Nested(count_and_percentage)
+        "idling": fields.Nested(count_and_percentage),
+        "waiting_for_data": fields.Nested(count_and_percentage)
     }
     condtions = {
-        "cpu": fields.Raw,
         "io": fields.Raw,
-        "memory": fields.Raw
+        "memory": fields.Raw,
+        "cpu": fields.Raw
     }
     meta = {
         "total_count": fields.Integer,
@@ -483,23 +483,16 @@ class ExecutiveReportAPI(Resource):
                     "count": oversized_systems,
                     "percentage": calculate_percentage(oversized_systems, all_systems_count)
                 },
-                "waiting_for_data": {
-                    "count": waiting_for_data_systems,
-                    "percentage": calculate_percentage(waiting_for_data_systems, all_systems_count)
-                },
                 "idling": {
                     "count": idling_systems,
                     "percentage": calculate_percentage(idling_systems, all_systems_count)
+                },
+                "waiting_for_data": {
+                    "count": waiting_for_data_systems,
+                    "percentage": calculate_percentage(waiting_for_data_systems, all_systems_count)
                 }
             },
             "conditions": {
-                "cpu": {
-                    "count": total_cpu_issues,
-                    "percentage": calculate_percentage(total_cpu_issues, all_conditions_count),
-                    "undersized": cpu_undersized,
-                    "oversized": cpu_oversized,
-                    "under_pressure": cpu_under_pressure
-                },
                 "io": {
                     "count": total_io_issues,
                     "percentage": calculate_percentage(total_io_issues, all_conditions_count),
@@ -513,6 +506,13 @@ class ExecutiveReportAPI(Resource):
                     "undersized": memory_undersized,
                     "oversized": memory_oversized,
                     "under_pressure": memory_pressure
+                },
+                "cpu": {
+                    "count": total_cpu_issues,
+                    "percentage": calculate_percentage(total_cpu_issues, all_conditions_count),
+                    "undersized": cpu_undersized,
+                    "oversized": cpu_oversized,
+                    "under_pressure": cpu_under_pressure
                 }
             },
             "meta": {
