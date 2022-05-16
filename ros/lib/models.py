@@ -55,7 +55,6 @@ class System(db.Model):
     __tablename__ = 'systems'
     id = db.Column(db.Integer, primary_key=True)
     account_id = db.Column(db.Integer)
-    rh_org_id = db.Column(db.Text)
     inventory_id = db.Column(UUID(as_uuid=True), nullable=False)
     display_name = db.Column(db.String(100))
     fqdn = db.Column(db.String(100))
@@ -118,7 +117,7 @@ class RhAccount(db.Model):
     __tablename__ = 'rh_accounts'
     id = db.Column(db.Integer, primary_key=True)
     account = db.Column(db.Text, nullable=False)
-    org_id = db.Column(db.Text)
+    org_id = db.Column(db.Text, unique=True)
     __table_args__ = (
         db.UniqueConstraint('account'),
         db.CheckConstraint('NOT(account IS NULL)'),
