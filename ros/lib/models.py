@@ -117,6 +117,7 @@ class RhAccount(db.Model):
     __tablename__ = 'rh_accounts'
     id = db.Column(db.Integer, primary_key=True)
     account = db.Column(db.Text, nullable=False)
+    org_id = db.Column(db.Text, unique=True)
     __table_args__ = (
         db.UniqueConstraint('account'),
         db.CheckConstraint('NOT(account IS NULL)'),
