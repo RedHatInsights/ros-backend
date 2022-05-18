@@ -413,13 +413,10 @@ class ExecutiveReportAPI(Resource):
         account_number = identity(request)['identity']['account_number']
         system_queryset = system_ids_by_account(account_number, fetch_records=True)
         systems_with_performance_record_query = (
-            db.session.query(PerformanceProfile, System, RhAccount)
-            .join(System, System.id == PerformanceProfile.system_id)
-            .join(RhAccount, RhAccount.id == System.account_id)
-            .filter(
-                PerformanceProfile.system_id.in_(
-                    system_ids_by_account(account_number).subquery())
-            )
+            db.session.query(PerformanceProfile.system_id)
+            .filter(PerformanceProfile.system_id.in_(
+                system_ids_by_account(account_number).subquery()
+            ))
         )
 
         # System counts
