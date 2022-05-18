@@ -139,7 +139,7 @@ class InventoryEventsConsumer:
                 account = get_or_create(
                     db.session, RhAccount, 'account',
                     account=host['account'],
-                    org_id=msg['platform_metadata']['org_id']
+                    org_id=msg['platform_metadata'].get('org_id')
                 )
 
                 system_fields = {
