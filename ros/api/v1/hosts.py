@@ -412,9 +412,15 @@ class ExecutiveReportAPI(Resource):
     def get(self):
         account_number = identity(request)['identity']['account_number']
         system_queryset = system_ids_by_account(account_number, fetch_records=True)
+        systems_with_performance_record_query = (
+            db.session.query(PerformanceProfile.system_id)
+            .filter(PerformanceProfile.system_id.in_(
+                system_ids_by_account(account_number).subquery()
+            ))
+        )
 
         # System counts
-        all_systems_count = system_queryset.count()
+        all_systems_count = systems_with_performance_record_query.count()
         optimized_systems = count_per_state(system_queryset, {'state': "Optimized"})
         under_pressure_systems = count_per_state(system_queryset, {'state': "Under pressure"})
         undersized_systems = count_per_state(system_queryset, {'state': "Undersized"})
@@ -459,9 +465,15 @@ class ExecutiveReportAPI(Resource):
             len(system.io_states) if system.io_states else 0
             for system in non_optimized.filter(System.io_states is not None)
         ])
-        io_undersized = non_optimized.filter(System.io_states.any(SubStates.IO_UNDERSIZED.value)).count()
         io_pressure = non_optimized.filter(System.io_states.any(SubStates.IO_UNDER_PRESSURE.value)).count()
-        io_oversized = non_optimized.filter(System.io_states.any(SubStates.IO_OVERSIZED.value)).count()
+
+        # FIXME - enable this logic after getting IO states from advisor engine
+        # io_undersized = non_optimized.filter(
+        #    System.io_states.any(SubStates.IO_UNDERSIZED.value)).count()
+        # io_oversized = non_optimized.filter(
+        #    System.io_states.any(SubStates.IO_OVERSIZED.value)).count()
+        io_undersized = -1
+        io_oversized = -1
 
         all_conditions_count = total_cpu_issues + total_memory_issues + total_io_issues
 
