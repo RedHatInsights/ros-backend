@@ -118,11 +118,11 @@ def sort_io_dict(performance_utilization: dict):
     return performance_utilization
 
 
-def system_ids_by_account(account_number, fetch_records=False):
-    account_query = db.session.query(RhAccount.id).filter(RhAccount.account == account_number).subquery()
+def system_ids_by_org_id(org_id, fetch_records=False):
+    account_query = db.session.query(RhAccount.id).filter(RhAccount.org_id == org_id).subquery()
     if fetch_records is True:
-        return db.session.query(System).filter(System.account_id.in_(account_query))
-    return db.session.query(System.id).filter(System.account_id.in_(account_query))
+        return db.session.query(System).filter(System.tenant_id.in_(account_query))
+    return db.session.query(System.id).filter(System.tenant_id.in_(account_query))
 
 
 def insert_performance_profiles(session, system_id, fields):

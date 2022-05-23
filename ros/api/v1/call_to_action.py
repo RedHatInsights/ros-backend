@@ -1,7 +1,7 @@
 from flask_restful import Resource
 from flask import request
 from ros.lib.utils import (
-    identity, system_ids_by_account)
+    identity, system_ids_by_org_id)
 from ros.lib.models import (
     PerformanceProfile, db)
 
@@ -9,7 +9,7 @@ from ros.lib.models import (
 class CallToActionApi(Resource):
     def get(self):
         account_number = identity(request)['identity']['account_number']
-        system_query = system_ids_by_account(account_number).filter(PerformanceProfile.number_of_recommendations > 0)
+        system_query = system_ids_by_org_id(account_number).filter(PerformanceProfile.number_of_recommendations > 0)
         query = (
             db.session.query(PerformanceProfile.system_id)
             .filter(PerformanceProfile.system_id.in_(system_query.subquery()))

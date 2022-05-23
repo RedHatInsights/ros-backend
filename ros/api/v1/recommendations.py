@@ -51,9 +51,9 @@ class RecommendationsApi(Resource):
 
         filter_description = request.args.get('description')
 
-        account_query = db.session.query(RhAccount.id).filter(RhAccount.account == ident['account_number']).subquery()
+        tenant_query = db.session.query(RhAccount.id).filter(RhAccount.org_id == ident['internal']['org_id']).subquery()
         system = db.session.query(System) \
-            .filter(System.account_id.in_(account_query)).filter(System.inventory_id == host_id).first()
+            .filter(System.tenant_id.in_(tenant_query)).filter(System.inventory_id == host_id).first()
 
         if not system:
             abort(404, message="host with id {} doesn't exist"

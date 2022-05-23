@@ -143,7 +143,7 @@ class InventoryEventsConsumer:
                 )
 
                 system_fields = {
-                    "account_id": account.id,
+                    "tenant_id": account.id,
                     "inventory_id": host['id'],
                     "display_name": host['display_name'],
                     "fqdn": host['fqdn'],

@@ -54,7 +54,7 @@ class PerformanceProfileHistory(db.Model):
 class System(db.Model):
     __tablename__ = 'systems'
     id = db.Column(db.Integer, primary_key=True)
-    account_id = db.Column(db.Integer)
+    tenant_id = db.Column(db.Integer)
     inventory_id = db.Column(UUID(as_uuid=True), nullable=False)
     display_name = db.Column(db.String(100))
     fqdn = db.Column(db.String(100))
@@ -66,7 +66,7 @@ class System(db.Model):
     operating_system = db.Column(JSONB)
     __table_args__ = (
         db.UniqueConstraint('inventory_id'),
-        db.ForeignKeyConstraint(['account_id'], ['rh_accounts.id'], name='systems_account_id_fkey'),
+        db.ForeignKeyConstraint(['tenant_id'], ['rh_accounts.id'], name='systems_tenant_id_fkey'),
     )
     cpu_states = db.Column(db.ARRAY(db.String))
     io_states = db.Column(db.ARRAY(db.String))

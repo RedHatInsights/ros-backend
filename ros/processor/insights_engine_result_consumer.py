@@ -135,7 +135,7 @@ class InsightsEngineResultConsumer:
 
                 system = get_or_create(
                     db.session, System, 'inventory_id',
-                    account_id=account.id,
+                    tenant_id=account.id,
                     inventory_id=host['id'],
                     display_name=host['display_name'],
                     fqdn=host['fqdn'],
