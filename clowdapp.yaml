@@ -89,6 +89,40 @@ objects:
     testing:
       iqePlugin: ros
 
+    jobs:
+    - name: org-id-populator
+      podSpec:
+        image: quay.io/cloudservices/tenant-utils:latest
+        command:
+          - ./org-id-column-populator
+          - -C
+          - -a
+          - account
+          - -o
+          - org_id
+          - -t
+          - rh_accounts
+          - --ean-translator-addr
+          - http://${TENANT_TRANSLATOR_HOST}:${TENANT_TRANSLATOR_PORT}
+          - --prometheus-push-addr
+          - ${PROMETHEUS_PUSHGATEWAY}
+        env:
+          - name: TENANT_TRANSLATOR_HOST
+            value: ${TENANT_TRANSLATOR_HOST}
+          - name: TENANT_TRANSLATOR_PORT
+            value: ${TENANT_TRANSLATOR_PORT}
+          - name: LOG_FORMAT
+            value: ${LOG_FORMAT}
+          - name: LOG_BATCH_FREQUENCY
+            value: '1s'
+        resources:
+          limits:
+            cpu: 300m
+            memory: 1Gi
+          requests:
+            cpu: 50m
+            memory: 512Mi
+
 parameters:
 - description: Enable rbac needs to be "True" or "False"
   name: ENABLE_RBAC
@@ -135,3 +169,12 @@ parameters:
 - description: Number of days after which data is considered to be outdated
   name: DAYS_UNTIL_STALE
   value: "45"
+- description: Host for the EAN to OrgId translator.
+  name: TENANT_TRANSLATOR_HOST
+  required: true
+  value: 'apicast.3scale-dev.svc.cluster.local'
+- description: Port for the EAN to OrgId translator.
+  name: TENANT_TRANSLATOR_PORT
+  value: '8892'
+- name: PROMETHEUS_PUSHGATEWAY
+  value: "localhost"
