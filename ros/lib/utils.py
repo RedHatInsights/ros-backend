@@ -143,7 +143,6 @@ def insert_performance_profiles(session, system_id, fields):
         session.flush()
 
 
-
 def count_per_state(queryset, custom_filters: dict):
     return queryset.filter_by(**custom_filters).count() if queryset else 0
 
@@ -153,6 +152,7 @@ def calculate_percentage(numerator, denominator):
         return round((numerator / denominator) * 100, 2)
     else:
         return 0
+
 
 class MonitoringHandler(BaseHTTPRequestHandler):
     def do_GET(self):
