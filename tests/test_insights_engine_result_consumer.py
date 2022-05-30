@@ -65,8 +65,9 @@ def test_process_report_idle(engine_result_message, engine_consumer, db_setup, p
     host = engine_result_message["input"]["host"]
     ros_reports = [engine_result_message["results"]["reports"][7]]
     system_metadata = engine_result_message["results"]["system"]["metadata"]
+    platform_metadata = engine_result_message["input"]["platform_metadata"]
     _performance_record = copy.copy(performance_record)
-    engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
+    engine_consumer.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
     system_record = db_get_host(host['id'])
     assert str(system_record.inventory_id) == host['id']
     with app.app_context():
@@ -82,8 +83,9 @@ def test_process_report_under_pressure(engine_result_message, engine_consumer, d
     host = engine_result_message["input"]["host"]
     ros_reports = [engine_result_message["results"]["reports"][7]]
     system_metadata = engine_result_message["results"]["system"]["metadata"]
+    platform_metadata = engine_result_message["input"]["platform_metadata"]
     _performance_record = copy.copy(performance_record)
-    engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
+    engine_consumer.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
     system_record = db_get_host(host['id'])
     assert str(system_record.inventory_id) == host['id']
     with app.app_context():
@@ -99,8 +101,9 @@ def test_process_report_no_pcp(engine_result_message, engine_consumer, db_setup,
     host = engine_result_message["input"]["host"]
     ros_reports = [engine_result_message["results"]["reports"][7]]
     system_metadata = engine_result_message["results"]["system"]["metadata"]
+    platform_metadata = engine_result_message["input"]["platform_metadata"]
     _performance_record = copy.copy(performance_record)
-    engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
+    engine_consumer.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
     system_record = db_get_host(host['id'])
     performance_utilization = db.session.query(PerformanceProfile).\
         filter_by(system_id=system_record.id).first().performance_utilization
@@ -118,8 +121,9 @@ def test_process_report_undersized(engine_result_message, engine_consumer, db_se
     host = engine_result_message["input"]["host"]
     ros_reports = [engine_result_message["results"]["reports"][7]]
     system_metadata = engine_result_message["results"]["system"]["metadata"]
+    platform_metadata = engine_result_message["input"]["platform_metadata"]
     _performance_record = copy.copy(performance_record)
-    engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
+    engine_consumer.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
     system_record = db_get_host(host['id'])
     assert str(system_record.inventory_id) == host['id']
     with app.app_context():
@@ -135,8 +139,9 @@ def test_process_report_optimized(engine_result_message, engine_consumer, db_set
     host = engine_result_message["input"]["host"]
     ros_reports = []
     system_metadata = engine_result_message["results"]["system"]["metadata"]
+    platform_metadata = engine_result_message["input"]["platform_metadata"]
     _performance_record = copy.copy(performance_record)
-    engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
+    engine_consumer.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
     system_record = db_get_host(host['id'])
     profile_record = db_get_record(PerformanceProfile, system_id=system_record.id)
     assert str(system_record.inventory_id) == host['id']
@@ -154,7 +159,8 @@ def test_system_properties(engine_result_message, engine_consumer, db_setup, per
     host = engine_result_message["input"]["host"]
     ros_reports = [engine_result_message["results"]["reports"][7]]
     system_metadata = engine_result_message["results"]["system"]["metadata"]
-    engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
+    platform_metadata = engine_result_message["input"]["platform_metadata"]
+    engine_consumer.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
     data = db_get_host(host['id'])
     assert str(data.inventory_id) == host['id']
 
@@ -164,7 +170,8 @@ def test_history_record_creation(engine_result_message, engine_consumer, db_setu
     host = engine_result_message["input"]["host"]
     ros_reports = [engine_result_message["results"]["reports"][7]]
     system_metadata = engine_result_message["results"]["system"]["metadata"]
-    engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
+    platform_metadata = engine_result_message["input"]["platform_metadata"]
+    engine_consumer.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
     system_record = db_get_host(host['id'])
     assert str(system_record.inventory_id) == host['id']
     with app.app_context():
@@ -179,6 +186,7 @@ def test_substate_updates(engine_result_message, engine_consumer, db_setup, perf
     host = engine_result_message["input"]["host"]
     ros_reports = [engine_result_message["results"]["reports"][7]]
     system_metadata = engine_result_message["results"]["system"]["metadata"]
+    platform_metadata = engine_result_message["input"]["platform_metadata"]
     ros_reports[0]['details'].update({
         "states":
             {
@@ -188,7 +196,7 @@ def test_substate_updates(engine_result_message, engine_consumer, db_setup, perf
             }
 
     })
-    engine_consumer.process_report(host, ros_reports, system_metadata, performance_record)
+    engine_consumer.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
     system_record = db_get_host(host['id'])
     assert str(system_record.inventory_id) == host['id']
     with app.app_context():
