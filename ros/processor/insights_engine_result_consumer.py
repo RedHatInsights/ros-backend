@@ -92,8 +92,8 @@ class InsightsEngineResultConsumer:
             platform_metadata = msg["input"]["platform_metadata"]
             system_metadata = msg["results"]["system"]["metadata"]
             performance_record = get_performance_profile(
-                msg['input']['platform_metadata']['url'],
-                msg['input']['platform_metadata']['account'],
+                platform_metadata['url'],
+                platform_metadata['account'],
                 custom_prefix=self.prefix
             )
             reports = msg["results"]["reports"]  \
@@ -113,7 +113,7 @@ class InsightsEngineResultConsumer:
                 account = get_or_create(
                     db.session, RhAccount, 'account',
                     account=host['account'],
-                    org_id=platform_metadata['org_id']
+                    org_id=platform_metadata.get('org_id')
                 )
                 if len(reports) == 0:
                     rec_count = len(reports)
