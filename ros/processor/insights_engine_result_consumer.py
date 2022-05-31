@@ -89,10 +89,11 @@ class InsightsEngineResultConsumer:
         is_ros_flag = validate_type(msg["input"]["platform_metadata"]["is_ros"], bool)
         if is_ros_flag is True:
             host = msg["input"]["host"]
+            platform_metadata = msg["input"]["platform_metadata"]
             system_metadata = msg["results"]["system"]["metadata"]
             performance_record = get_performance_profile(
-                msg['input']['platform_metadata']['url'],
-                msg['input']['platform_metadata']['account'],
+                platform_metadata['url'],
+                platform_metadata['account'],
                 custom_prefix=self.prefix
             )
             reports = msg["results"]["reports"]  \
@@ -103,15 +104,16 @@ class InsightsEngineResultConsumer:
                 report for report in reports
                 if 'ros_instance_evaluation' in report["rule_id"]
             ]
-            self.process_report(host, ros_reports, system_metadata, performance_record)
+            self.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
 
-    def process_report(self, host, reports, utilization_info, performance_record):
+    def process_report(self, host, platform_metadata, reports, utilization_info, performance_record):
         """create/update system and performance_profile based on reports data."""
         with app.app_context():
             try:
                 account = get_or_create(
                     db.session, RhAccount, 'account',
-                    account=host['account']
+                    account=host['account'],
+                    org_id=platform_metadata.get('org_id')
                 )
                 if len(reports) == 0:
                     rec_count = len(reports)

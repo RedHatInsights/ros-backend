@@ -1134,6 +1134,7 @@
   "timestamp": "2021-03-26T05:39:45.122701+00:00",
   "platform_metadata": {
     "account": "0000001",
+    "org_id": "000001",
     "category": "collection",
     "metadata": {
       "reporter": "",

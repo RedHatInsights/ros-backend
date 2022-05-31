@@ -58,7 +58,7 @@ services:
       exit 0;
       "
   ingress:
-    image: quay.io/cloudservices/insights-ingress:ea99e26
+    image: quay.io/cloudservices/insights-ingress:latest
     ports:
       - 3000:3000
     environment:

@@ -64,7 +64,7 @@ def test_host_update_events(inventory_event_consumer, inventory_event_message, d
     inventory_event_message['type'] = 'created'
     inventory_event_consumer.host_create_update_events(inventory_event_message)  # creating system for test
     inventory_event_message['type'] = 'updated'
-    inventory_event_message['platform_metadata'] = None
+    inventory_event_message['platform_metadata'] = {'org_id': '000001'}
     updated_display_name = 'Test - Display Name Update'  # Test case change
     inventory_event_message['host']['display_name'] = updated_display_name
     inventory_event_consumer.host_create_update_events(inventory_event_message)

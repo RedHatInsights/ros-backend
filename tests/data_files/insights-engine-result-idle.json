@@ -2,6 +2,7 @@
     "input": {
       "platform_metadata": {
         "account": "0000001",
+        "org_id": "000001",
         "b64_identity": "eyJpZGVudGl0eSI6IHsiYWNjb3VudF9udW1iZXIiOiAiMDAwMDAwMSIsInR5cGUiOiAiVXNlciIsInVzZXIiOiB7InVzZXJuYW1lIjogInR1c2VyQHJlZGhhdC5jb20iLCJlbWFpbCI6ICJ0dXNlckByZWRoYXQuY29tIiwiZmlyc3RfbmFtZSI6ICJ0ZXN0IiwibGFzdF9uYW1lIjogInVzZXIiLCJpc19hY3RpdmUiOiB0cnVlLCJpc19vcmdfYWRtaW4iOiBmYWxzZSwgImlzX2ludGVybmFsIjogdHJ1ZSwgImxvY2FsZSI6ICJlbl9VUyJ9LCJpbnRlcm5hbCI6IHsgIm9yZ19pZCI6ICIwMDAwMDEifX19Cg==",
         "category": "collection",
         "elapsed_time": 1640868877.4340131,
