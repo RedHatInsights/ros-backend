@@ -1,6 +1,10 @@
 from ros.lib.app import app
 from ros.lib import utils
 from unittest import mock
+from http.server import HTTPServer
+import requests
+import threading
+import time
 
 
 def test_is_valid_uuid():
@@ -40,3 +44,46 @@ def test_user_data_from_identity():
                             "auth_type": "token", "type": "User"}
     result = utils.user_data_from_identity(invalid_identity_obj)
     assert not result
+
+
+def setup_threads():
+    engine_processor_thread = mock.Mock()
+    engine_processor_thread.name = 'process-engine-results'
+    engine_processor_thread.processor_name = 'process-engine-results'
+
+    events_processor_thread = mock.Mock()
+    events_processor_thread.name = 'events-processor'
+    events_processor_thread.processor_name = 'events-processor'
+
+    return engine_processor_thread, events_processor_thread
+
+
+def test_monitoring_handler():
+    engine_processor_thread, events_processor_thread = setup_threads()
+    PROCESSOR_INSTANCES = [engine_processor_thread, events_processor_thread]
+    with mock.patch('ros.lib.utils.PROCESSOR_INSTANCES', PROCESSOR_INSTANCES):
+        with mock.patch('ros.lib.utils.threading.enumerate',
+                        return_value=[engine_processor_thread, events_processor_thread]):
+            with HTTPServer(("127.0.0.1", 8005), utils.MonitoringHandler) as server:
+                server_thread = threading.Thread(target=server.handle_request)
+                server_thread.start()
+                # Allow thread and server to start
+                time.sleep(1)
+                response = requests.get('http://127.0.0.1:8005')
+                assert response.status_code == 200
+                assert response.text == "All Processor and Threads are running"
+
+
+def test_monitoring_handler_with_dead_thread():
+    engine_processor_thread, events_processor_thread = setup_threads()
+    PROCESSOR_INSTANCES = [engine_processor_thread, events_processor_thread]
+    with mock.patch('ros.lib.utils.PROCESSOR_INSTANCES', PROCESSOR_INSTANCES):
+        with mock.patch('ros.lib.utils.threading.enumerate', return_value=[events_processor_thread]):
+            with HTTPServer(("127.0.0.1", 8005), utils.MonitoringHandler) as server:
+                server_thread = threading.Thread(target=server.handle_request)
+                server_thread.start()
+                # Allow thread and server to start
+                time.sleep(1)
+                response = requests.get('http://127.0.0.1:8005')
+                assert response.status_code == 500
+                assert response.text == "ERROR: Processor thread exited"
