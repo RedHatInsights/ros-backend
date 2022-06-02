@@ -112,7 +112,7 @@ objects:
           - name: TENANT_TRANSLATOR_PORT
             value: ${TENANT_TRANSLATOR_PORT}
           - name: LOG_FORMAT
-            value: ${LOG_FORMAT}
+            value: ${POPULATOR_LOG_FORMAT}
           - name: LOG_BATCH_FREQUENCY
             value: '1s'
         resources:
@@ -178,3 +178,5 @@ parameters:
   value: '8892'
 - name: PROMETHEUS_PUSHGATEWAY
   value: "localhost"
+- name: POPULATOR_LOG_FORMAT
+  value: cloudwatch 
