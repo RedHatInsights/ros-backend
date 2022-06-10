@@ -174,3 +174,9 @@ class MonitoringHandler(BaseHTTPRequestHandler):
             self.send_header("Content-type", "text/html")
             self.end_headers()
             self.wfile.write(bytes("All Processor and Threads are running", encoding='utf8'))
+
+    def log_request(self, code='-', size='-'):
+        if code == 200:
+            return
+        else:
+            super().log_request(code, size)
