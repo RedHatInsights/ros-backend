@@ -51,7 +51,7 @@ class RecommendationsApi(Resource):
 
         filter_description = request.args.get('description')
 
-        tenant_query = db.session.query(RhAccount.id).filter(RhAccount.org_id == ident['internal']['org_id']).subquery()
+        tenant_query = db.session.query(RhAccount.id).filter(RhAccount.org_id == ident['org_id']).subquery()
         system = db.session.query(System) \
             .filter(System.tenant_id.in_(tenant_query)).filter(System.inventory_id == host_id).first()
 
