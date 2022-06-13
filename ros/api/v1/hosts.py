@@ -12,7 +12,7 @@ from ros.lib.utils import (
     user_data_from_identity,
     sort_io_dict, system_ids_by_org_id,
     count_per_state,
-    calculate_percentage
+    calculate_percentage, org_id_from_identity_header
 )
 from ros.api.common.pagination import (
     build_paginated_system_list_response,
@@ -57,7 +57,7 @@ SYSTEM_COLUMNS = [
 
 class IsROSConfiguredApi(Resource):
     def get(self):
-        org_id = identity(request)['identity']['internal']['org_id']
+        org_id = org_id_from_identity_header(request)
         query = (
             db.session.query(System.id)
             .join(PerformanceProfile, PerformanceProfile.system_id == System.id)
@@ -130,7 +130,7 @@ class HostsApi(Resource):
         ).strip().lower()
         order_how = (request.args.get('order_how') or 'desc').strip().lower()
 
-        org_id = identity(request)['identity']['internal']['org_id']
+        org_id = org_id_from_identity_header(request)
         # Note that When using LIMIT, it is important to use an ORDER BY clause
         # that constrains the result rows into a unique order.
         # Otherwise you will get an unpredictable subset of the query's rows.
@@ -286,7 +286,7 @@ class HostDetailsApi(Resource):
         ident = identity(request)['identity']
         user = user_data_from_identity(ident)
         username = user['username'] if 'username' in user else None
-        org_id = identity(request)['identity']['internal']['org_id']
+        org_id = org_id_from_identity_header(request)
 
         system_query = system_ids_by_org_id(org_id).filter(System.inventory_id == host_id).subquery()
 
@@ -349,7 +349,7 @@ class HostHistoryApi(Resource):
         if not is_valid_uuid(host_id):
             abort(404, message='Invalid host_id, Id should be in form of UUID4')
 
-        org_id = identity(request)['identity']['internal']['org_id']
+        org_id = org_id_from_identity_header(request)
 
         system_query = system_ids_by_org_id(org_id).filter(System.inventory_id == host_id).subquery()
 
@@ -410,7 +410,7 @@ class ExecutiveReportAPI(Resource):
 
     @marshal_with(report_fields)
     def get(self):
-        org_id = identity(request)['identity']['internal']['org_id']
+        org_id = org_id_from_identity_header(request)
         system_queryset = system_ids_by_org_id(org_id, fetch_records=True)
         systems_with_performance_record_query = (
             db.session.query(PerformanceProfile.system_id)

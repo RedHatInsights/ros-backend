@@ -125,6 +125,10 @@ def system_ids_by_org_id(org_id, fetch_records=False):
     return db.session.query(System.id).filter(System.tenant_id.in_(account_query))
 
 
+def org_id_from_identity_header(request):
+    return identity(request)['identity']['org_id']
+
+
 def insert_performance_profiles(session, system_id, fields):
     """This method deletes an old entry from performance_profile &
        inserts latest data inside performance_profile as well as
