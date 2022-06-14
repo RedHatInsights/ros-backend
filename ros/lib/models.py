@@ -124,6 +124,32 @@ class RhAccount(db.Model):
     )
 
 
+class CloudAccount(db.Model):
+    __tablename__ = 'cloud_accounts'
+    id = db.Column(db.BigInteger, primary_key=True)
+    ros_account_id = db.Column(db.Integer, nullable=False)
+    is_enabled = db.Column(db.Boolean, default=False)
+    platform_authentication_id = db.Column(db.BigInteger, nullable=False)
+    platform_application_id = db.Column(db.BigInteger, nullable=False)
+    platform_source_id = db.Column(db.BigInteger, nullable=False)
+    platform_source_type = db.Column(db.String(25), nullable=False)
+    platform_application_is_paused = db.Column(db.Boolean, nullable=False, default=False)
+    __table_args__ = (
+        db.ForeignKeyConstraint(['ros_account_id'], ['rh_accounts.id'], name='cloud_account_id_fkey'),
+    )
+
+
+class AwsCloudAccount(db.Model):
+    __tablename__ = 'aws_cloud_accounts'
+    id = db.Column(db.BigInteger, primary_key=True)
+    cloud_account_id = db.Column(db.BigInteger, nullable=False)
+    aws_account_id = db.Column(db.Text, nullable=False, unique=True)
+    account_arn = db.Column(db.Text, nullable=False, unique=True)
+    __table_args__ = (
+        db.ForeignKeyConstraint(['cloud_account_id'], ['cloud_accounts.id'], name='aws_cloud_account_id_fkey'),
+    )
+
+
 class Rule(db.Model):
     __tablename__ = 'rules'
     id = db.Column(db.Integer, primary_key=True)

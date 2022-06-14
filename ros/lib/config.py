@@ -33,9 +33,14 @@ if CLOWDER_ENABLED:
     DB_PASSWORD = LoadedConfig.database.password
     DB_HOST = LoadedConfig.database.hostname
     DB_PORT = LoadedConfig.database.port
+    REDIS_USERNAME = LoadedConfig.inMemoryDb.username
+    REDIS_PASSWORD = LoadedConfig.inMemoryDb.password
+    REDIS_HOST = LoadedConfig.inMemoryDb.hostname
+    REDIS_PORT = LoadedConfig.inMemoryDb.port
     METRICS_PORT = LoadedConfig.metricsPort
     INSIGHTS_KAFKA_ADDRESS = LoadedConfig.kafka.brokers[0].hostname + ":" + str(LoadedConfig.kafka.brokers[0].port)
     INVENTORY_EVENTS_TOPIC = KafkaTopics["platform.inventory.events"].name
+    SOURCES_EVENTS_TOPIC = KafkaTopics["platform.sources.event-stream"].name
     ENGINE_RESULT_TOPIC = KafkaTopics["platform.engine.results"].name
     for endpoint in LoadedConfig.endpoints:
         if endpoint.app == "rbac":
@@ -56,10 +61,15 @@ else:
     DB_PASSWORD = os.getenv("ROS_DB_PASS", "postgres")
     DB_HOST = os.getenv("ROS_DB_HOST", "localhost")
     DB_PORT = os.getenv("ROS_DB_PORT", "15432")
+    REDIS_USERNAME = os.getenv("REDIS_USERNAME", default="")
+    REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", default="")
+    REDIS_HOST = os.getenv("REDIS_HOST", default="localhost")
+    REDIS_PORT = os.getenv("REDIS_PORT", default=6379)
     INSIGHTS_KAFKA_HOST = os.getenv("INSIGHTS_KAFKA_HOST", "localhost")
     INSIGHTS_KAFKA_PORT = os.getenv("INSIGHTS_KAFKA_PORT", "9092")
     INSIGHTS_KAFKA_ADDRESS = f"{INSIGHTS_KAFKA_HOST}:{INSIGHTS_KAFKA_PORT}"
     INVENTORY_EVENTS_TOPIC = os.getenv("INVENTORY_EVENTS_TOPIC", "platform.inventory.events")
+    SOURCES_EVENTS_TOPIC = os.getenv("SOURCES_EVENTS_TOPIC", "platform.sources.event-stream")
     ENGINE_RESULT_TOPIC = os.getenv("ENGINE_RESULT_TOPIC", "platform.engine.results")
     METRICS_PORT = os.getenv("METRICS_PORT", 5005)
     RBAC_HOST = os.getenv("RBAC_HOST", "localhost")
@@ -75,6 +85,30 @@ else:
 
 DB_URI = f"postgresql://{DB_USER}:{DB_PASSWORD}"\
                 f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+REDIS_AUTH = f"{REDIS_USERNAME or ''}:{REDIS_PASSWORD}@" if REDIS_PASSWORD else ""
+REDIS_URL = f"redis://{REDIS_AUTH}{REDIS_HOST}:{REDIS_PORT}"
+
+SOURCES_API_BASE_URL = os.getenv('SOURCES_API_BASE_URL', 'http://127.0.0.1:8002')
+if CLOWDER_ENABLED:
+    CLOWDER_SOURCES_API_BASE_URL = ""
+    for endpoint in LoadedConfig.endpoints:
+        if endpoint.app == "sources-api":
+            CLOWDER_SOURCES_API_BASE_URL = f"http://{endpoint.hostname}:{endpoint.port}"
+    if CLOWDER_SOURCES_API_BASE_URL == "":
+        LOG(
+            f"Clowder: Sources api service was not found, "
+            f"using default url: {SOURCES_API_BASE_URL}"
+        )
+    else:
+        SOURCES_API_BASE_URL = CLOWDER_SOURCES_API_BASE_URL
+        LOG(f"Clowder: Sources api service url: {SOURCES_API_BASE_URL}")
+
+SOURCES_API_INTERNAL_BASE_URL = f"{SOURCES_API_BASE_URL}/internal/v1.0"
+SOURCES_API_EXTERNAL_BASE_URL = f"{SOURCES_API_BASE_URL}/api/sources/v3.0"
+SOURCES_PSK = os.getenv("SOURCES_PSK")
+SOURCES_ROS_AUTHTYPES = "cloud-meter-arn"
+SOURCES_RESOURCE_TYPE = "Application"
+
 GROUP_ID = os.getenv('GROUP_ID', 'resource-optimization')
 PATH_PREFIX = os.getenv("PATH_PREFIX", "/api/")
 APP_NAME = os.getenv("APP_NAME", "ros")

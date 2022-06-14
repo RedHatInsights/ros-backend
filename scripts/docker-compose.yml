@@ -27,6 +27,7 @@ services:
     command: "bash -c 'echo Waiting for Kafka to be ready... && \
                        cub kafka-ready -b kafka:29092 1 20 && \
                        kafka-topics --create --if-not-exists --topic platform.inventory.events --bootstrap-server kafka:29092 && \
+                       kafka-topics --create --if-not-exists --topic platform.upload.announce --bootstrap-server kafka:29092 && \
                        kafka-topics --create --if-not-exists --topic platform.engine.results --bootstrap-server kafka:29092'"
     depends_on:
       - kafka
@@ -92,6 +93,15 @@ services:
       POSTGRES_DB: insights
     ports:
       - "15433:5432"
+  db-sources:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: sources_api_development
+    ports:
+      - "15434:5432"
 
   insights-inventory-mq: &inventory
     image: quay.io/cloudservices/insights-inventory:latest
@@ -132,6 +142,7 @@ services:
     depends_on:
       - kafka
       - ingress
+      - createbuckets
     # Not yet used, we are not running clowder ATM
     volumes:
       - './cdappconfig.json:/cdappconfig.json:Z'
@@ -143,6 +154,41 @@ services:
       - puptoo
       - kafka-create-topics
       - insights-inventory-mq
+
+  redis:
+    image: quay.io/cloudservices/redis-ephemeral:6
+    ports:
+      - "6379:6379"
+
+  sources-db-setup: &sources
+    image: quay.io/cloudservices/sources-api-go
+    restart: on-failure
+    command: -setup
+    environment:
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+      - DATABASE_HOST=db-sources
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=sources_api_development
+      - LOG_LEVEL=DEBUG
+      - REDIS_CACHE_HOST=redis
+      - REDIS_CACHE_PORT=6379
+      - BYPASS_RBAC=true
+      - QUEUE_HOST=kafka
+      - QUEUE_PORT=29092
+    depends_on:
+      - kafka
+      - db-sources
+      - redis
+
+  sources-api-go:
+    <<: *sources
+    command: ""
+    restart: always
+    ports:
+      - 8002:8000
+    depends_on:
+      - sources-db-setup
   # Allows us to run the application in the form it's going to be deployed, will be needed for tests
   ros-processor: &ros
     build:
