@@ -10,9 +10,9 @@ from ros.lib.models import (
 from ros.lib.utils import (
     is_valid_uuid, identity,
     user_data_from_identity,
-    sort_io_dict, system_ids_by_account,
+    sort_io_dict, system_ids_by_org_id,
     count_per_state,
-    calculate_percentage
+    calculate_percentage, org_id_from_identity_header
 )
 from ros.api.common.pagination import (
     build_paginated_system_list_response,
@@ -57,12 +57,12 @@ SYSTEM_COLUMNS = [
 
 class IsROSConfiguredApi(Resource):
     def get(self):
-        account_number = identity(request)['identity']['account_number']
+        org_id = org_id_from_identity_header(request)
         query = (
             db.session.query(System.id)
             .join(PerformanceProfile, PerformanceProfile.system_id == System.id)
-            .join(RhAccount, RhAccount.id == System.account_id)
-            .filter(RhAccount.account == account_number)
+            .join(RhAccount, RhAccount.id == System.tenant_id)
+            .filter(RhAccount.org_id == org_id)
         )
         system_count = query.count()
         systems_with_suggestions = query.filter(PerformanceProfile.number_of_recommendations > 0).count()
@@ -130,19 +130,19 @@ class HostsApi(Resource):
         ).strip().lower()
         order_how = (request.args.get('order_how') or 'desc').strip().lower()
 
-        account_number = identity(request)['identity']['account_number']
+        org_id = org_id_from_identity_header(request)
         # Note that When using LIMIT, it is important to use an ORDER BY clause
         # that constrains the result rows into a unique order.
         # Otherwise you will get an unpredictable subset of the query's rows.
         # Refer - https://www.postgresql.org/docs/13/queries-limit.html
 
-        system_query = system_ids_by_account(account_number).filter(*self.build_system_filters())
+        system_query = system_ids_by_org_id(org_id).filter(*self.build_system_filters())
         sort_expression = self.build_sort_expression(order_how, order_by)
 
         query = (
             db.session.query(PerformanceProfile, System, RhAccount)
             .join(System, System.id == PerformanceProfile.system_id)
-            .join(RhAccount, RhAccount.id == System.account_id)
+            .join(RhAccount, RhAccount.id == System.tenant_id)
             .filter(PerformanceProfile.system_id.in_(system_query.subquery()))
             .order_by(*sort_expression)
         )
@@ -286,9 +286,9 @@ class HostDetailsApi(Resource):
         ident = identity(request)['identity']
         user = user_data_from_identity(ident)
         username = user['username'] if 'username' in user else None
-        account_number = identity(request)['identity']['account_number']
+        org_id = org_id_from_identity_header(request)
 
-        system_query = system_ids_by_account(account_number).filter(System.inventory_id == host_id).subquery()
+        system_query = system_ids_by_org_id(org_id).filter(System.inventory_id == host_id).subquery()
 
         profile = PerformanceProfile.query.filter(
             PerformanceProfile.system_id.in_(system_query)).first()
@@ -349,9 +349,9 @@ class HostHistoryApi(Resource):
         if not is_valid_uuid(host_id):
             abort(404, message='Invalid host_id, Id should be in form of UUID4')
 
-        account_number = identity(request)['identity']['account_number']
+        org_id = org_id_from_identity_header(request)
 
-        system_query = system_ids_by_account(account_number).filter(System.inventory_id == host_id).subquery()
+        system_query = system_ids_by_org_id(org_id).filter(System.inventory_id == host_id).subquery()
 
         query = PerformanceProfileHistory.query.filter(
             PerformanceProfileHistory.system_id.in_(system_query)
@@ -410,12 +410,12 @@ class ExecutiveReportAPI(Resource):
 
     @marshal_with(report_fields)
     def get(self):
-        account_number = identity(request)['identity']['account_number']
-        system_queryset = system_ids_by_account(account_number, fetch_records=True)
+        org_id = org_id_from_identity_header(request)
+        system_queryset = system_ids_by_org_id(org_id, fetch_records=True)
         systems_with_performance_record_query = (
             db.session.query(PerformanceProfile.system_id)
             .filter(PerformanceProfile.system_id.in_(
-                system_ids_by_account(account_number).subquery()
+                system_ids_by_org_id(org_id).subquery()
             ))
         )
 

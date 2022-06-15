@@ -26,6 +26,7 @@ def auth_token():
                 "is_internal": True,
                 "locale": "en_US"
             },
+            "org_id": "000001",
             "internal": {
                 "org_id": "000001"
             }
