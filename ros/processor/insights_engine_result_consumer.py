@@ -196,11 +196,11 @@ class InsightsEngineResultConsumer:
                 processor_requests_success.labels(
                     reporter=self.reporter, account_number=host['account']
                 ).inc()
-                LOG.info("%s - Refreshed system %s (%s) belonging to account: %s (%s).",
-                         self.prefix, system.inventory_id, system.id, account.account, account.id)
+                LOG.info("%s - Refreshed system %s (%s) belonging to account: %s (%s) and org_id: %s.",
+                         self.prefix, system.inventory_id, system.id, account.account, account.id, account.org_id)
             except Exception as err:
                 processor_requests_failures.labels(
                     reporter=self.reporter, account_number=host['account']
                 ).inc()
-                LOG.error("%s - Unable to add system %s to DB belonging to account: %s - %s",
-                          self.prefix, host['id'], host['account'], err)
+                LOG.error("%s - Unable to add system %s to DB belonging to account: %s and org_id: %s - %s",
+                          self.prefix, host['id'], host['account'], account.org_id, err)

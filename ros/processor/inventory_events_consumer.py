@@ -53,15 +53,18 @@ class InventoryEventsConsumer:
 
             account = None
             host_id = None
+            org_id = None
             try:
                 msg = json.loads(msg.value().decode("utf-8"))
                 event_type = msg['type']
                 if event_type == 'delete':
                     account = msg['account']
                     host_id = msg['id']
+                    org_id = msg['org_id']
                 else:
                     account = msg['host']['account']
                     host_id = msg['host']['id']
+                    org_id = msg['platform_metadata'].get('org_id')
 
                 if event_type in self.event_type_map.keys():
                     handler = self.event_type_map[event_type]
@@ -84,11 +87,13 @@ class InventoryEventsConsumer:
                     reporter=self.reporter, account_number=account
                 ).inc()
                 LOG.error(
-                    '%s - An error occurred during message processing: %s in the system %s created from account: %s',
+                    '%s - An error occurred during message processing: %s in the system %s created \
+                    from account: %s and org_id: %s',
                     self.prefix,
                     repr(err),
                     host_id,
-                    account
+                    account,
+                    org_id
                 )
             finally:
                 self.consumer.commit()
@@ -126,8 +131,8 @@ class InventoryEventsConsumer:
                 and msg['type'] == 'updated'
         ) or 'is_ros' in msg['platform_metadata']:
             LOG.info(
-                '%s - Processing a message for system(%s) belonging to account %s',
-                self.prefix, msg['host']['id'], msg['host']['account']
+                '%s - Processing a message for system(%s) belonging to account: %s and org_id: %s',
+                self.prefix, msg['host']['id'], msg['host']['account'], msg['platform_metadata'].get('org_id')
             )
             self.process_system_details(msg)
 
@@ -159,12 +164,12 @@ class InventoryEventsConsumer:
                     reporter=self.reporter, account_number=host['account']
                 ).inc()
                 LOG.info(
-                    "%s - Refreshed system %s (%s) belonging to account: %s (%s).",
-                    self.prefix, system.inventory_id, system.id, account.account, account.id
+                    "%s - Refreshed system %s (%s) belonging to account: %s (%s) and org_id: %s.",
+                    self.prefix, system.inventory_id, system.id, account.account, account.id, account.org_id
                 )
             except Exception as err:
                 processor_requests_failures.labels(
                     reporter=self.reporter, account_number=host['account']
                 ).inc()
-                LOG.error("%s - Unable to add system %s to DB belonging to account: %s - %s",
-                          self.prefix, host['fqdn'], host['account'], err)
+                LOG.error("%s - Unable to add system %s to DB belonging to account: %s and org_id: %s - %s",
+                          self.prefix, host['fqdn'], host['account'], account.org_id, err)
