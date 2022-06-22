@@ -356,6 +356,9 @@
                     "account": {
                         "type": "string"
                     },
+                    "org_id": {
+                        "type": "string"
+                    },
                     "number_of_suggestions": {
                         "type": "integer"
                     },
