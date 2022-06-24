@@ -19,6 +19,7 @@ objects:
       webServices:
         public:
           enabled: true
+          apiPath: ros
       podSpec:
         image: ${IMAGE}:${IMAGE_TAG}
         minReplicas: 1
