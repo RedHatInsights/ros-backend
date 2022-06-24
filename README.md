@@ -64,7 +64,25 @@ pipenv install --dev
 pytest --cov=ros tests
 ```
 
-## Available v0 API endpoints
+## Available v1 API endpoints
+
+### Request
+`GET /api/ros/v1/status` Shows the status of the server
+
+    curl -v -H "Content-Type: application/json" https://cloud.redhat.com/api/ros/v1/status
+
+### Response
+
+    HTTP/1.1 200 OK
+    Date: Thu, 24 Feb 2011 12:36:30 GMT
+    Status: 200 OK
+    Connection: close
+    Content-Type: application/json
+    Content-Length: 2
+
+    {"status": "Application is running!"}
+
+
 
 ### Request
 `GET /api/ros/v1/systems` Shows list of all systems from Host Inventory having a Performance Profile
@@ -85,6 +103,7 @@ pytest --cov=ros tests
       "display_name": "string",
       "inventory_id": "string",
       "account": "string",
+      "org_id": "string",
       "number_of_suggestions": 0,
       "state": "string",
       "performance_utilization": {
@@ -94,42 +113,10 @@ pytest --cov=ros tests
       },
       "cloud_provider": "string",
       "instance_type": "string",
-      "idling_time": 0
+      "idling_time": 0,
+      "os": "string",
+      "report_date": "string"
     }]
 
 
-### Request
-`GET /api/ros/v1/systems/<host_id>` To get the individual system details using their <host_id>
-
-    curl -v -H "Content-Type: application/json" https://cloud.redhat.com/api/ros/v1/systems/<host_id>
-
-### Response
-
-    HTTP/1.1 200 OK
-    Date: Thu, 24 Feb 2011 12:36:30 GMT
-    Status: 200 OK
-    Connection: close
-    Content-Type: application/json
-    Content-Length: 2
-
-    {"host_id": "12345-57575757", "performance_record": "{'avg_memory': '3998008.000', 'avg_memory_used': '2487908.973'}", "performance_utilization": "{'memory': 62}"}
-
-
-### Request
-`GET /api/ros/v1/status` Shows the status of the server
-
-    curl -v -H "Content-Type: application/json" https://cloud.redhat.com/api/ros/v1/status
-
-### Response
-
-    HTTP/1.1 200 OK
-    Date: Thu, 24 Feb 2011 12:36:30 GMT
-    Status: 200 OK
-    Connection: close
-    Content-Type: application/json
-    Content-Length: 2
-
-    {"status": "Application is running!"}
-
-
-For local dev setup, please remember to use the x-rh-identity header encoded from your account number, the one used while running `make insights-upload-data` and `make ros-upload-data` commands.
+For local dev setup, please remember to use the x-rh-identity header encoded from your account number and org_id, the one used while running `make insights-upload-data` and `make ros-upload-data` commands.
