@@ -75,7 +75,7 @@ class InsightsEngineResultConsumer:
             except Exception as err:
                 processor_requests_failures.labels(
                     reporter=self.reporter,
-                    account_number=msg['input']['host']['account']
+                    org_id=msg["input"]["platform_metadata"].get('org_id')
                 ).inc()
                 LOG.error(
                     'An error occurred during message processing: %s - %s',
@@ -93,7 +93,7 @@ class InsightsEngineResultConsumer:
             system_metadata = msg["results"]["system"]["metadata"]
             performance_record = get_performance_profile(
                 platform_metadata['url'],
-                platform_metadata['account'],
+                platform_metadata.get('org_id'),
                 custom_prefix=self.prefix
             )
             reports = msg["results"]["reports"]  \
@@ -194,13 +194,13 @@ class InsightsEngineResultConsumer:
                 )
                 db.session.commit()
                 processor_requests_success.labels(
-                    reporter=self.reporter, account_number=host['account']
+                    reporter=self.reporter, org_id=account.org_id
                 ).inc()
                 LOG.info("%s - Refreshed system %s (%s) belonging to account: %s (%s) and org_id: %s.",
                          self.prefix, system.inventory_id, system.id, account.account, account.id, account.org_id)
             except Exception as err:
                 processor_requests_failures.labels(
-                    reporter=self.reporter, account_number=host['account']
+                    reporter=self.reporter, org_id=account.org_id
                 ).inc()
                 LOG.error("%s - Unable to add system %s to DB belonging to account: %s and org_id: %s - %s",
-                          self.prefix, host['id'], host['account'], account.org_id, err)
+                          self.prefix, host['id'], account.account, account.org_id, err)
