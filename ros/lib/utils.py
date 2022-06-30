@@ -126,7 +126,10 @@ def system_ids_by_org_id(org_id, fetch_records=False):
 
 
 def org_id_from_identity_header(request):
-    return identity(request)['identity']['org_id']
+    ident = identity(request)['identity']
+    print(ident);
+    return ident['internal']['org_id']
+    # return identity(request)['identity']['org_id']
 
 
 def insert_performance_profiles(session, system_id, fields):
