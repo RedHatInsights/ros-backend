@@ -77,6 +77,8 @@ class RecommendationsApi(Resource):
                     rule_data = db.session.query(Rule).filter(Rule.rule_id == rule_hit['rule_id']).first()
                 if rule_data:
                     rule_dict = rule_data.__dict__
+                    if system.cloud_provider is None:
+                        rule_dict['reason'] = rule_dict['reason'].replace("cloud_provider.upper()", "cloud_provider")
                     recommendation = {}
                     rule_hit_details = rule_hit.get('details')
                     candidates = rule_hit_details.get('candidates')
