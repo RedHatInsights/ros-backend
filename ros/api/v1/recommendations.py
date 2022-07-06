@@ -59,6 +59,17 @@ class RecommendationsApi(Resource):
             abort(404, message="host with id {} doesn't exist"
                   .format(host_id))
 
+        # cloud_provider & instance_type are necessary for suggestions
+        if (
+                system.cloud_provider is None
+                or system.instance_type is None
+        ):
+            return {
+                'inventory_id': system.inventory_id,
+                'data': [],
+                'meta': {'count': 0}
+            }
+
         profile = PerformanceProfile.query.filter_by(system_id=system.id).first()
         if not profile:
             abort(
@@ -77,8 +88,6 @@ class RecommendationsApi(Resource):
                     rule_data = db.session.query(Rule).filter(Rule.rule_id == rule_hit['rule_id']).first()
                 if rule_data:
                     rule_dict = rule_data.__dict__
-                    if system.cloud_provider is None:
-                        rule_dict['reason'] = rule_dict['reason'].replace("cloud_provider.upper()", "cloud_provider")
                     recommendation = {}
                     rule_hit_details = rule_hit.get('details')
                     candidates = rule_hit_details.get('candidates')
