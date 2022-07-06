@@ -64,7 +64,7 @@ class InventoryEventsConsumer:
                 else:
                     account = msg['host']['account']
                     host_id = msg['host']['id']
-                    org_id = msg['platform_metadata'].get('org_id')
+                    org_id = msg['host'].get('org_id')
 
                 if event_type in self.event_type_map.keys():
                     handler = self.event_type_map[event_type]
@@ -132,7 +132,7 @@ class InventoryEventsConsumer:
         ) or 'is_ros' in msg['platform_metadata']:
             LOG.info(
                 '%s - Processing a message for system(%s) belonging to account: %s and org_id: %s',
-                self.prefix, msg['host']['id'], msg['host']['account'], msg['platform_metadata'].get('org_id')
+                self.prefix, msg['host']['id'], msg['host']['account'], msg['host'].get('org_id')
             )
             self.process_system_details(msg)
 
@@ -144,7 +144,7 @@ class InventoryEventsConsumer:
                 account = get_or_create(
                     db.session, RhAccount, 'account',
                     account=host['account'],
-                    org_id=msg['platform_metadata'].get('org_id')
+                    org_id=host.get('org_id')
                 )
 
                 system_fields = {
