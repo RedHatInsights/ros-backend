@@ -1,5 +1,9 @@
 version: "3.8"
 services:
+  redis:
+    image: quay.io/cloudservices/redis-ephemeral:6
+    ports:
+      - "6379:6379"
   zookeeper:
     image: confluentinc/cp-zookeeper
     environment:

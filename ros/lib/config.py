@@ -47,6 +47,10 @@ if CLOWDER_ENABLED:
     DB_PASSWORD = LoadedConfig.database.password
     DB_HOST = LoadedConfig.database.hostname
     DB_PORT = LoadedConfig.database.port
+    REDIS_USERNAME = LoadedConfig.inMemoryDb.username
+    REDIS_PASSWORD = LoadedConfig.inMemoryDb.password
+    REDIS_HOST = LoadedConfig.inMemoryDb.hostname
+    REDIS_PORT = LoadedConfig.inMemoryDb.port
     METRICS_PORT = LoadedConfig.metricsPort
     KAFKA_BROKER = LoadedConfig.kafka.brokers[0]
     INSIGHTS_KAFKA_ADDRESS = KAFKA_BROKER.hostname + ":" + str(KAFKA_BROKER.port)
@@ -71,6 +75,10 @@ else:
     DB_PASSWORD = os.getenv("ROS_DB_PASS", "postgres")
     DB_HOST = os.getenv("ROS_DB_HOST", "localhost")
     DB_PORT = os.getenv("ROS_DB_PORT", "15432")
+    REDIS_USERNAME = os.getenv("REDIS_USERNAME", default="")
+    REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", default="")
+    REDIS_HOST = os.getenv("REDIS_HOST", default="localhost")
+    REDIS_PORT = os.getenv("REDIS_PORT", default=6379)
     INSIGHTS_KAFKA_HOST = os.getenv("INSIGHTS_KAFKA_HOST", "localhost")
     INSIGHTS_KAFKA_PORT = os.getenv("INSIGHTS_KAFKA_PORT", "9092")
     INSIGHTS_KAFKA_ADDRESS = f"{INSIGHTS_KAFKA_HOST}:{INSIGHTS_KAFKA_PORT}"
@@ -91,6 +99,8 @@ else:
 
 DB_URI = f"postgresql://{DB_USER}:{DB_PASSWORD}"\
                 f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+REDIS_AUTH = f"{REDIS_USERNAME or ''}:{REDIS_PASSWORD}@" if REDIS_PASSWORD else ""
+REDIS_URL = f"redis://{REDIS_AUTH}{REDIS_HOST}:{REDIS_PORT}"
 GROUP_ID = os.getenv('GROUP_ID', 'resource-optimization')
 PATH_PREFIX = os.getenv("PATH_PREFIX", "/api/")
 APP_NAME = os.getenv("APP_NAME", "ros")
