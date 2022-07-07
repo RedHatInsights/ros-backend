@@ -31,7 +31,7 @@ def garbage_collector():
 
 
 def thread_monitor():
-    server = HTTPServer(('', 5003), MonitoringHandler)
+    server = HTTPServer(('', 8000), MonitoringHandler)
     server.serve_forever()
 
 
