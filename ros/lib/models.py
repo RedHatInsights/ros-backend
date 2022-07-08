@@ -120,7 +120,7 @@ class RhAccount(db.Model):
     org_id = db.Column(db.Text)
     __table_args__ = (
         db.UniqueConstraint('account', 'org_id'),
-        db.CheckConstraint('NOT(account IS NULL OR org_id IS NULL)'),
+        db.CheckConstraint('NOT(org_id IS NULL)'),
     )
 
 
