@@ -1,10 +1,15 @@
-FROM registry.redhat.io/rhscl/python-38-rhel7
+FROM registry.redhat.io/ubi8/ubi-minimal
 
-COPY Pipfile Pipfile.lock manage.py seed.py ${APP_ROOT}/src/
+WORKDIR /app_root/src
 
-COPY ros ${APP_ROOT}/src/ros/
-COPY migrations ${APP_ROOT}/src/migrations/
-COPY seed.d ${APP_ROOT}/src/seed.d/
-RUN pip install --upgrade pip && \
-    pip install pipenv && \
+COPY Pipfile Pipfile.lock manage.py seed.py ./
+
+RUN microdnf install --disableplugin=subscription-manager --nodocs -y python38 tar gzip
+
+COPY ros ros
+COPY migrations migrations
+COPY seed.d seed.d
+
+RUN pip3 install --upgrade pip setuptools wheel && \
+    pip3 install pipenv && \
     pipenv install --system --deploy --ignore-pipfile
