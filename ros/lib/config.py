@@ -22,6 +22,20 @@ def get_logger(name):
     return logging.getLogger(name)
 
 
+def kafka_auth_config(connection_object):
+    if KAFKA_BROKER:
+        if KAFKA_BROKER.cacert:
+            connection_object["ssl.ca.location"] = KAFKA_BROKER.cacert
+        if KAFKA_BROKER.sasl and KAFKA_BROKER.sasl.username:
+            connection_object.update({
+                "security.protocol": KAFKA_BROKER.sasl.securityProtocol,
+                "sasl.mechanisms": KAFKA_BROKER.sasl.saslMechanism,
+                "sasl.username": KAFKA_BROKER.sasl.username,
+                "sasl.password": KAFKA_BROKER.sasl.password,
+            })
+    return connection_object
+
+
 LOG = logging.getLogger(__name__)
 CLOWDER_ENABLED = True if os.getenv("CLOWDER_ENABLED", default="False").lower() in ["true", "t", "yes", "y"] else False
 
