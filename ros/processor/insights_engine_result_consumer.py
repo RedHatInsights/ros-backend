@@ -1,12 +1,7 @@
 from datetime import datetime, timezone
 import json
 from ros.lib.app import app, db
-from ros.lib.config import (
-    INSIGHTS_KAFKA_ADDRESS,
-    GROUP_ID,
-    ENGINE_RESULT_TOPIC,
-    get_logger
-)
+from ros.lib.config import ENGINE_RESULT_TOPIC, INSIGHTS_KAFKA_ADDRESS, GROUP_ID, kafka_auth_config, get_logger
 from ros.lib.models import RhAccount, System
 from ros.lib.utils import (
     get_or_create,
@@ -35,12 +30,13 @@ LOG = get_logger(__name__)
 
 class InsightsEngineResultConsumer:
     def __init__(self):
-        self.consumer = Consumer({
-            'bootstrap.servers': INSIGHTS_KAFKA_ADDRESS,
+        connection_object = {
             'group.id': GROUP_ID,
+            'bootstrap.servers': INSIGHTS_KAFKA_ADDRESS,
             'enable.auto.commit': False
-        })
-
+        }
+        self.consumer = kafka_auth_config(connection_object)
+        self.consumer = Consumer(connection_object)
         # Subscribe to topic
         self.consumer.subscribe([ENGINE_RESULT_TOPIC])
 
