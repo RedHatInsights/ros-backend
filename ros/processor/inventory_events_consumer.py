@@ -1,7 +1,7 @@
 
 import json
 from confluent_kafka import Consumer, KafkaException
-from ros.lib.config import INSIGHTS_KAFKA_ADDRESS, INVENTORY_EVENTS_TOPIC, GROUP_ID, get_logger
+from ros.lib.config import INVENTORY_EVENTS_TOPIC, KAFKA_BROKER, GROUP_ID, INSIGHTS_KAFKA_ADDRESS, get_logger
 from ros.lib.app import app, db
 from ros.lib.models import RhAccount, System
 from ros.lib.utils import get_or_create
@@ -18,11 +18,22 @@ class InventoryEventsConsumer:
 
     def __init__(self):
         """Create a Inventory Events Consumer."""
-        self.consumer = Consumer({
-            'bootstrap.servers': INSIGHTS_KAFKA_ADDRESS,
+        connection_object = {
             'group.id': GROUP_ID,
+            'bootstrap.servers': INSIGHTS_KAFKA_ADDRESS,
             'enable.auto.commit': False
-        })
+        }
+        if KAFKA_BROKER:
+            if KAFKA_BROKER.cacert:
+                connection_object["ssl.ca.location"] = KAFKA_BROKER.cacert
+            if KAFKA_BROKER.sasl and KAFKA_BROKER.sasl.username:
+                connection_object.update({
+                    "security.protocol": KAFKA_BROKER.sasl.securityProtocol,
+                    "sasl.mechanisms": KAFKA_BROKER.sasl.saslMechanism,
+                    "sasl.username": KAFKA_BROKER.sasl.username,
+                    "sasl.password": KAFKA_BROKER.sasl.password,
+                })
+        self.consumer = Consumer(connection_object)
 
         # Subscribe to topic
         self.consumer.subscribe([INVENTORY_EVENTS_TOPIC])

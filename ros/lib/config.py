@@ -34,7 +34,8 @@ if CLOWDER_ENABLED:
     DB_HOST = LoadedConfig.database.hostname
     DB_PORT = LoadedConfig.database.port
     METRICS_PORT = LoadedConfig.metricsPort
-    INSIGHTS_KAFKA_ADDRESS = LoadedConfig.kafka.brokers[0].hostname + ":" + str(LoadedConfig.kafka.brokers[0].port)
+    KAFKA_BROKER = LoadedConfig.kafka.brokers[0]
+    INSIGHTS_KAFKA_ADDRESS = KAFKA_BROKER.hostname + ":" + str(KAFKA_BROKER.port)
     INVENTORY_EVENTS_TOPIC = KafkaTopics["platform.inventory.events"].name
     ENGINE_RESULT_TOPIC = KafkaTopics["platform.engine.results"].name
     for endpoint in LoadedConfig.endpoints:
@@ -62,6 +63,7 @@ else:
     INVENTORY_EVENTS_TOPIC = os.getenv("INVENTORY_EVENTS_TOPIC", "platform.inventory.events")
     ENGINE_RESULT_TOPIC = os.getenv("ENGINE_RESULT_TOPIC", "platform.engine.results")
     METRICS_PORT = os.getenv("METRICS_PORT", 5005)
+    KAFKA_BROKER = None
     RBAC_HOST = os.getenv("RBAC_HOST", "localhost")
     RBAC_PORT = os.getenv("RBAC_PORT", "8114")
     RBAC_SVC_URL = os.getenv("RBAC_SVC_URL", f"http://{RBAC_HOST}:{RBAC_PORT}/")
