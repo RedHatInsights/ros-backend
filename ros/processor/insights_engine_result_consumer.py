@@ -128,24 +128,32 @@ class InsightsEngineResultConsumer:
                         "%s - Marking the state of system with inventory id: %s as %s.",
                         self.prefix, host['id'], SYSTEM_STATES[state_key])
 
-                if reports and 'states' in reports[0]['details'].keys():
-                    substates = reports[0]['details']['states']
-                else:
-                    substates = {}
+                system_attrs = {
+                    'tenant_id': account.id,
+                    'inventory_id': host['id'],
+                    'display_name': host['display_name'],
+                    'fqdn': host['fqdn'],
+                    'state': SYSTEM_STATES[state_key],
+                    'instance_type': performance_record.get('instance_type'),
+                    'region': performance_record.get('region')
+                }
+
+                if reports:
+                    if 'states' in reports[0]['details'].keys():
+                        substates = reports[0]['details']['states']
+                    else:
+                        substates = {}
+
+                    system_attrs.update({
+                        'cpu_states': substates.get('cpu'),
+                        'io_states': substates.get('io'),
+                        'memory_states': substates.get('memory'),
+                        'cloud_provider': reports[0]['details'].get(
+                            'cloud_provider')
+                    })
 
                 system = get_or_create(
-                    db.session, System, 'inventory_id',
-                    tenant_id=account.id,
-                    inventory_id=host['id'],
-                    display_name=host['display_name'],
-                    fqdn=host['fqdn'],
-                    state=SYSTEM_STATES[state_key],
-                    instance_type=performance_record.get('instance_type'),
-                    region=performance_record.get('region'),
-                    cpu_states=substates.get('cpu'),
-                    io_states=substates.get('io'),
-                    memory_states=substates.get('memory'),
-                )
+                    db.session, System, 'inventory_id', **system_attrs)
                 LOG.info(
                     f"{self.prefix} - System created/updated successfully: {host['id']}"
                 )
