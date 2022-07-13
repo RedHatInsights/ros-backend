@@ -296,7 +296,14 @@
 					["g4dn.12xlarge", 3.912],
 					["g4dn.16xlarge", 4.352]
 				],
-				"summary": ["CPU utilization is too high", "Memory utilization is too high"],
+				"states":{
+            "cpu":[
+                "CPU_UNDERSIZED"
+            ],
+            "memory":[
+                "MEMORY_UNDERSIZED"
+            ]
+        },
 				"type": "rule",
 				"error_key": "INSTANCE_UNDERSIZED"
 			},

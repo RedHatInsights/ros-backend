@@ -440,11 +440,19 @@
               4.352
             ]
           ],
-          "summary": [
-            "System is suffering from CPU pressure",
-            "System is suffering from IO pressure",
-            "System is suffering from memory pressure"
-          ],
+          "states": {
+              "cpu": [
+                  "CPU_OVERSIZED",
+                  "CPU_UNDERSIZED_BY_PRESSURE"
+              ],
+              "io": [
+                  "IO_UNDERSIZED_BY_PRESSURE"
+              ],
+              "memory": [
+                  "MEMORY_OVERSIZED",
+                  "MEMORY_UNDERSIZED_BY_PRESSURE"
+              ]
+          },
           "type": "rule",
           "error_key": "INSTANCE_OPTIMIZED_UNDER_PRESSURE"
         },
