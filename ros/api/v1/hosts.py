@@ -94,7 +94,6 @@ class HostsApi(Resource):
         'fqdn': fields.String,
         'display_name': fields.String,
         'inventory_id': fields.String,
-        'account': fields.String,
         'org_id': fields.String,
         'number_of_suggestions': fields.Integer(attribute='number_of_recommendations'),
         'state': fields.String,
@@ -158,7 +157,6 @@ class HostsApi(Resource):
             try:
                 system_dict = row.System.__dict__
                 host = {skey: system_dict[skey] for skey in SYSTEM_COLUMNS}
-                host['account'] = row.RhAccount.account
                 host['org_id'] = row.RhAccount.org_id
                 host['performance_utilization'] = sort_io_dict(
                     row.PerformanceProfile.performance_utilization
