@@ -58,8 +58,8 @@ def performance_profile(lscpu, aws_instance_id, azure_instance_type, pmlog_summa
     return metadata_response
 
 
-def get_performance_profile(report_url, account_number, custom_prefix=prefix):
-    with _download_and_extract_report(report_url, account_number, custom_prefix=custom_prefix) as archive:
+def get_performance_profile(report_url, org_id, custom_prefix=prefix):
+    with _download_and_extract_report(report_url, org_id, custom_prefix=custom_prefix) as archive:
         try:
             LOG.debug(
                 "%s - Extracting performance profile from the report present at %s.\n",
@@ -73,23 +73,23 @@ def get_performance_profile(report_url, account_number, custom_prefix=prefix):
             return result
         except Exception as e:
             processor_requests_failures.labels(
-                reporter='INSIGHTS ENGINE', account_number=account_number
+                reporter='INSIGHTS ENGINE', org_id=org_id
             ).inc()
             LOG.error("%s - Failed to extract performance_profile from the report present at %s. ERROR - %s\n",
                       custom_prefix, report_url, e)
 
 
 @contextmanager
-def _download_and_extract_report(report_url, account_number, custom_prefix=prefix):
+def _download_and_extract_report(report_url, org_id, custom_prefix=prefix):
     download_response = requests.get(report_url)
     LOG.info("%s - Downloading the report from %s.\n", custom_prefix, report_url)
 
     if download_response.status_code != HTTPStatus.OK:
-        archive_failed_to_download.labels(account_number=account_number).inc()
+        archive_failed_to_download.labels(org_id=org_id).inc()
         LOG.error("%s - Unable to download the report from %s. ERROR - %s\n",
                   custom_prefix, report_url, download_response.reason)
     else:
-        archive_downloaded_success.labels(account_number=account_number).inc()
+        archive_downloaded_success.labels(org_id=org_id).inc()
         with NamedTemporaryFile() as tf:
             tf.write(download_response.content)
             LOG.debug("%s - Downloaded the report successfully from %s.\n", custom_prefix, report_url)

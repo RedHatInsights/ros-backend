@@ -86,7 +86,7 @@ class InventoryEventsConsumer:
                 )
             except Exception as err:
                 processor_requests_failures.labels(
-                    reporter=self.reporter, account_number=account
+                    reporter=self.reporter, org_id=org_id
                 ).inc()
                 LOG.error(
                     '%s - An error occurred during message processing: %s in the system %s created \
@@ -117,7 +117,7 @@ class InventoryEventsConsumer:
             db.session.commit()
             if rows_deleted == 1:
                 processor_requests_success.labels(
-                    reporter=self.reporter, account_number=msg['account']
+                    reporter=self.reporter, org_id=msg['org_id']
                 ).inc()
                 LOG.info(
                     '%s - Deleted system with inventory id: %s',
@@ -163,7 +163,7 @@ class InventoryEventsConsumer:
                 # Commit changes
                 db.session.commit()
                 processor_requests_success.labels(
-                    reporter=self.reporter, account_number=host['account']
+                    reporter=self.reporter, org_id=account.org_id
                 ).inc()
                 LOG.info(
                     "%s - Refreshed system %s (%s) belonging to account: %s (%s) and org_id: %s.",
@@ -171,7 +171,7 @@ class InventoryEventsConsumer:
                 )
             except Exception as err:
                 processor_requests_failures.labels(
-                    reporter=self.reporter, account_number=host['account']
+                    reporter=self.reporter, org_id=account.org_id
                 ).inc()
                 LOG.error("%s - Unable to add system %s to DB belonging to account: %s and org_id: %s - %s",
-                          self.prefix, host['fqdn'], host['account'], account.org_id, err)
+                          self.prefix, host['fqdn'], account.account, account.org_id, err)
