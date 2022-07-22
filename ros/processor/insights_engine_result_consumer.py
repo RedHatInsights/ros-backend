@@ -102,7 +102,7 @@ class InsightsEngineResultConsumer:
             ]
             self.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
 
-    def process_report(self, host, platform_metadata, reports, utilization_info, performance_record):
+    def process_report(self, host, platform_metadata, reports, system_metadata, performance_record):
         """create/update system and performance_profile based on reports data."""
         with app.app_context():
             try:
@@ -124,38 +124,44 @@ class InsightsEngineResultConsumer:
                         "%s - Marking the state of system with inventory id: %s as %s.",
                         self.prefix, host['id'], SYSTEM_STATES[state_key])
 
+                system_attrs = {
+                    'tenant_id': account.id,
+                    'inventory_id': host['id'],
+                    'display_name': host['display_name'],
+                    'fqdn': host['fqdn'],
+                    'state': SYSTEM_STATES[state_key],
+                    'instance_type': performance_record.get('instance_type'),
+                    'region': performance_record.get('region'),
+                    'cloud_provider': system_metadata.get('cloud_provider')
+                }
+
                 if reports and 'states' in reports[0]['details'].keys():
                     substates = reports[0]['details']['states']
                 else:
                     substates = {}
 
+                system_attrs.update({
+                    'cpu_states': substates.get('cpu'),
+                    'io_states': substates.get('io'),
+                    'memory_states': substates.get('memory')
+                })
+
                 system = get_or_create(
-                    db.session, System, 'inventory_id',
-                    tenant_id=account.id,
-                    inventory_id=host['id'],
-                    display_name=host['display_name'],
-                    fqdn=host['fqdn'],
-                    state=SYSTEM_STATES[state_key],
-                    instance_type=performance_record.get('instance_type'),
-                    region=performance_record.get('region'),
-                    cpu_states=substates.get('cpu'),
-                    io_states=substates.get('io'),
-                    memory_states=substates.get('memory'),
-                )
+                    db.session, System, 'inventory_id', **system_attrs)
                 LOG.info(
                     f"{self.prefix} - System created/updated successfully: {host['id']}"
                 )
 
                 set_default_utilization = False
-                # For Optimized state, reports would be empty, but utilization_info would be present
+                # For Optimized state, reports would be empty, but system_metadata would be present
                 if reports and reports[0].get('key') == 'NO_PCP_DATA':
                     set_default_utilization = True
 
                 if set_default_utilization is False:
                     performance_utilization = {
-                        'memory': int(utilization_info['mem_utilization']),
-                        'cpu': int(utilization_info['cpu_utilization']),
-                        'io': cast_iops_as_float(utilization_info['io_utilization'])
+                        'memory': int(system_metadata['mem_utilization']),
+                        'cpu': int(system_metadata['cpu_utilization']),
+                        'io': cast_iops_as_float(system_metadata['io_utilization'])
                     }
                     # max_io will be used to sort systems endpoint response instead of io
                     performance_utilization.update(
