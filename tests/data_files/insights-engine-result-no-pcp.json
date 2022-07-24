@@ -86,6 +86,7 @@
 					"virtual_machine": true
 				},
 				"rhel_version": "8.4",
+				"cloud_provider": "aws",
 				"release": "Red Hat Enterprise Linux release 8.4 (Ootpa)"
 			},
 			"hostname": "ip-172-31-25-176.ec2.internal",

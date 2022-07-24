@@ -86,6 +86,7 @@
                     "virtual_machine": true
                 },
                 "rhel_version": "8.4",
+                "cloud_provider": "aws",
                 "cpu_utilization": "50",
                 "mem_utilization": "36",
                 "io_utilization": {
