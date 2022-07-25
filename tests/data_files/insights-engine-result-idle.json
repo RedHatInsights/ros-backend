@@ -90,6 +90,7 @@
             "manufacturer": "Xen",
             "virtual_machine": true
           },
+          "cloud_provider": "aws",
           "cpu_utilization": "0",
           "mem_utilization": "0",
           "io_utilization": {
@@ -353,7 +354,7 @@
                       0.0058
                   ]
               ],
-              "cloud_provider": "Amazon Web Services",
+              "cloud_provider": "aws",
               "error_key": "INSTANCE_IDLE",
               "instance_type": "t2.micro",
               "price": 0.0116,

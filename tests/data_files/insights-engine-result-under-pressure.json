@@ -90,6 +90,7 @@
           "manufacturer": "Xen",
           "virtual_machine": true
         },
+        "cloud_provider": "aws",
         "cpu_utilization": "10",
         "mem_utilization": "12",
         "io_utilization": {
@@ -354,7 +355,7 @@
         "key": "INSTANCE_OPTIMIZED_UNDER_PRESSURE",
         "details": {
           "rhel": "8.4",
-          "cloud_provider": "Amazon Web Services",
+          "cloud_provider": "aws",
           "instance_type": "t2.micro",
           "region": "us-east-1",
           "price": 0.0116,

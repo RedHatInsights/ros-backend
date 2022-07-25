@@ -86,6 +86,7 @@
 					"virtual_machine": true
 				},
 				"rhel_version": "8.4",
+				"cloud_provider": "aws",
 				"cpu_utilization": "90",
 				"mem_utilization": "97",
 				"io_utilization": {
@@ -273,7 +274,7 @@
 			"key": "INSTANCE_UNDERSIZED",
 			"details": {
 				"rhel": "8.4",
-				"cloud_provider": "Amazon Web Services",
+				"cloud_provider": "aws",
 				"instance_type": "t2.micro",
 				"region": "us-east-1",
 				"price": 0.0116,
