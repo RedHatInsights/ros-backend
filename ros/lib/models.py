@@ -116,7 +116,7 @@ class RecommendationRating(db.Model):
 class RhAccount(db.Model):
     __tablename__ = 'rh_accounts'
     id = db.Column(db.Integer, primary_key=True)
-    account = db.Column(db.Text)
+    account = db.Column(db.Text, nullable=True)
     org_id = db.Column(db.Text)
     __table_args__ = (
         db.UniqueConstraint('account', 'org_id'),
