@@ -3,8 +3,9 @@ from .models import db
 from .config import DB_URI
 from flask import request
 from .rbac_interface import ensure_has_permission
-from .config import get_logger
+from .config import get_logger, REDIS_URL
 from prometheus_flask_exporter import RESTfulPrometheusMetrics
+from flask_caching import Cache
 
 # Since we're using flask_sqlalchemy, we must create the flask app in both processor and web api
 app = Flask(__name__)
@@ -12,6 +13,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 metrics = RESTfulPrometheusMetrics.for_app_factory(defaults_prefix='ros')
+cache = Cache(config={'CACHE_TYPE': 'RedisCache', 'CACHE_REDIS_URL': REDIS_URL, 'CACHE_DEFAULT_TIMEOUT': 300})
 db.init_app(app)
 
 

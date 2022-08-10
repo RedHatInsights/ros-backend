@@ -102,6 +102,7 @@ objects:
     database:
       name: ros
       version: 12
+    inMemoryDb: true
     kafkaTopics:
       - topicName: platform.inventory.events
         partitions: 1
