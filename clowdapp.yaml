@@ -59,6 +59,10 @@ objects:
             value: ${CLOWDER_ENABLED}
           - name: ENABLE_RBAC
             value: "${ENABLE_RBAC}"
+          - name: DB_POOL_SIZE
+            value: ${DB_POOL_SIZE}
+          - name: DB_MAX_OVERFLOW
+            value: ${DB_MAX_OVERFLOW}
     - name: processor
       podSpec:
         image: ${IMAGE}:${IMAGE_TAG}
@@ -99,6 +103,10 @@ objects:
             value: ${GARBAGE_COLLECTION_INTERVAL}
           - name: DAYS_UNTIL_STALE
             value: ${DAYS_UNTIL_STALE}
+          - name: DB_POOL_SIZE
+            value: ${DB_POOL_SIZE}
+          - name: DB_MAX_OVERFLOW
+            value: ${DB_MAX_OVERFLOW}
     database:
       name: ros
       version: 12
@@ -202,3 +210,7 @@ parameters:
   value: "localhost"
 - name: POPULATOR_LOG_FORMAT
   value: cloudwatch 
+- name: DB_POOL_SIZE
+  value: "20"
+- name: DB_MAX_OVERFLOW
+  value: "20"
