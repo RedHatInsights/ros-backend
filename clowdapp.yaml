@@ -213,4 +213,4 @@ parameters:
 - name: DB_POOL_SIZE
   value: "20"
 - name: DB_MAX_OVERFLOW
-  value: "50"
+  value: "20"
