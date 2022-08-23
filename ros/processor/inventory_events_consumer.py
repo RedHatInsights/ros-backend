@@ -122,6 +122,7 @@ class InventoryEventsConsumer:
         if (
                 msg['platform_metadata'] is None
                 and msg['type'] == 'updated'
+                and msg['host']['system_profile']['cloud_provider']
         ) or 'is_ros' in msg['platform_metadata']:
             LOG.info(
                 '%s - Processing a message for system(%s) belonging to account: %s and org_id: %s',

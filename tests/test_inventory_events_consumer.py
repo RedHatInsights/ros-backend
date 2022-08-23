@@ -12,7 +12,7 @@ PERFORMANCE_RECORD = {'total_cpus': 1, 'instance_type': 't2.micro', 'mem.physmem
                       'mem.util.free': 161906.595, 'region': 'ap-south-1'}
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def inventory_event_message():
     f = open(f"{Path(__file__).parent}/data_files/events-message.json")
     msg = json.loads(f.read())
@@ -20,7 +20,7 @@ def inventory_event_message():
     f.close()
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def inventory_event_consumer():
     return InventoryEventsConsumer()
 
@@ -73,6 +73,29 @@ def test_host_update_events(inventory_event_consumer, inventory_event_message, d
     with app.app_context():
         updated_system = db_get_host(inventory_event_message['host']['id'])
         assert updated_system.display_name == updated_display_name
+
+
+def test_host_update_event_no_cp(inventory_event_consumer, inventory_event_message, db_setup, mocker):
+    mocker.patch.object(
+        inventory_event_consumer,
+        'process_system_details',
+        side_effect=inventory_event_consumer.process_system_details,
+        autospec=True
+    )
+
+    # Setup to meet test case conditions
+    inventory_event_message['type'] = 'created'
+    inventory_event_consumer.host_create_update_events(inventory_event_message)  # creating system for test
+    inventory_event_message['type'] = 'updated'
+    inventory_event_message['platform_metadata'] = {'org_id': '000001'}
+    updated_display_name = 'Test - Display Name Update'  # Test case change
+    inventory_event_message['host']['display_name'] = updated_display_name
+    inventory_event_message['host']['system_profile']['cloud_provider'] = None
+    inventory_event_consumer.host_create_update_events(inventory_event_message)
+    inventory_event_consumer.process_system_details.call_count = 2
+    with app.app_context():
+        updated_system = db_get_host(inventory_event_message['host']['id'])
+        assert updated_system.display_name != updated_display_name
 
 
 def test_host_delete_event(inventory_event_consumer, db_setup):
