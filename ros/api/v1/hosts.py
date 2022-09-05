@@ -1,4 +1,4 @@
-from sqlalchemy import asc, desc, nullslast, nullsfirst, or_
+from sqlalchemy import asc, desc, nullslast, nullsfirst
 from sqlalchemy.types import Float
 from flask import request
 from flask_restful import Resource, abort, fields, marshal_with
@@ -420,7 +420,7 @@ class ExecutiveReportAPI(Resource):
         )
 
         # System counts
-        all_systems_count = systems_with_performance_record_query.count()
+        total_systems = systems_with_performance_record_query.count()
         optimized_systems = count_per_state(system_queryset, {'state': "Optimized"})
         under_pressure_systems = count_per_state(system_queryset, {'state': "Under pressure"})
         undersized_systems = count_per_state(system_queryset, {'state': "Undersized"})
@@ -429,108 +429,103 @@ class ExecutiveReportAPI(Resource):
         idling_systems = count_per_state(system_queryset, {'state': "Idling"})
 
         non_optimized = system_queryset.filter(
-            or_(
-                System.state == 'Oversized',
-                System.state == 'Undersized',
-                System.state == 'Idling',
-                System.state == 'Under pressure'
-            )
+            System.state.in_(
+                ['Oversized', 'Undersized', 'Idling', 'Under pressure'])
         )
-        non_optimized_count = non_optimized.count()
+        non_optimized_count = 0
+        total_keys = ['cpu', 'memory', 'io']
+        state_keys = ['undersized', 'under_pressure', 'oversized']
+        totals = dict.fromkeys(total_keys, 0)
+        cpu_states_dict = dict.fromkeys(state_keys, 0)
+        memory_states_dict = dict.fromkeys(state_keys, 0)
+        io_states_dict = dict.fromkeys(state_keys, 0)
 
-        # cpu counts
-        total_cpu_issues = sum([
-            len(system.cpu_states) if system.cpu_states else 0
-            for system in non_optimized.filter(System.cpu_states is not None)
-        ])
-        cpu_undersized = non_optimized.filter(System.cpu_states.any(SubStates.CPU_UNDERSIZED.value)).count()
-        cpu_under_pressure = non_optimized.filter(System.cpu_states.any(
-            SubStates.CPU_UNDER_PRESSURE.value)
-        ).count()
-        cpu_oversized = non_optimized.filter(System.cpu_states.any(SubStates.CPU_OVERSIZED.value)).count()
+        for system in non_optimized:
+            non_optimized_count += 1
+            if system.cpu_states:
+                totals['cpu'] = totals['cpu'] + len(system.cpu_states)
+                if SubStates.CPU_UNDERSIZED.value in system.cpu_states:
+                    cpu_states_dict['undersized'] += 1
+                if SubStates.CPU_UNDER_PRESSURE.value in system.cpu_states:
+                    cpu_states_dict['under_pressure'] += 1
+                if SubStates.CPU_OVERSIZED.value in system.cpu_states:
+                    cpu_states_dict['oversized'] += 1
+            if system.memory_states:
+                totals['memory'] = totals['memory'] + len(system.memory_states)
+                if SubStates.MEMORY_UNDERSIZED.value in system.memory_states:
+                    memory_states_dict['undersized'] += 1
+                if SubStates.MEMORY_UNDER_PRESSURE.value in system.memory_states:
+                    memory_states_dict['under_pressure'] += 1
+                if SubStates.MEMORY_OVERSIZED.value in system.memory_states:
+                    memory_states_dict['oversized'] += 1
+            if system.io_states:
+                totals['io'] = totals['io'] + len(system.io_states)
+                if SubStates.IO_UNDER_PRESSURE.value in system.io_states:
+                    io_states_dict['under_pressure'] += 1
+                # FIXME - enable this logic after getting IO states from advisor engine
+                # if SubStates.IO_UNDERSIZED.value in system.io_states:
+                #     io_states_dict['undersized'] += 1
+                # if SubStates.IO_OVERSIZED.value in system.io_states:
+                #     io_states_dict['oversized'] += 1
 
-        # memory counts
-        total_memory_issues = sum([
-            len(system.memory_states) if system.memory_states else 0
-            for system in non_optimized.filter(System.memory_states is not None)
-        ])
-        memory_undersized = non_optimized.filter(System.memory_states.any(SubStates.MEMORY_UNDERSIZED.value)).count()
-        memory_pressure = non_optimized.filter(System.memory_states.any(
-            SubStates.MEMORY_UNDER_PRESSURE.value)
-        ).count()
-        memory_oversized = non_optimized.filter(System.memory_states.any(SubStates.MEMORY_OVERSIZED.value)).count()
-
-        # io counts
-        total_io_issues = sum([
-            len(system.io_states) if system.io_states else 0
-            for system in non_optimized.filter(System.io_states is not None)
-        ])
-        io_pressure = non_optimized.filter(System.io_states.any(SubStates.IO_UNDER_PRESSURE.value)).count()
-
-        # FIXME - enable this logic after getting IO states from advisor engine
-        # io_undersized = non_optimized.filter(
-        #    System.io_states.any(SubStates.IO_UNDERSIZED.value)).count()
-        # io_oversized = non_optimized.filter(
-        #    System.io_states.any(SubStates.IO_OVERSIZED.value)).count()
-        io_undersized = -1
-        io_oversized = -1
-
-        all_conditions_count = total_cpu_issues + total_memory_issues + total_io_issues
+        io_states_dict['oversized'] = -1
+        io_states_dict['undersized'] = -1
+        total_conditions = totals['cpu'] + totals['memory'] + totals['io']
 
         response = {
             "systems_per_state": {
                 "optimized": {
                     "count": optimized_systems,
-                    "percentage": calculate_percentage(optimized_systems, all_systems_count)
+                    "percentage": calculate_percentage(optimized_systems, total_systems)
                 },
                 "under_pressure": {
                     "count": under_pressure_systems,
-                    "percentage": calculate_percentage(under_pressure_systems, all_systems_count)
+                    "percentage": calculate_percentage(under_pressure_systems, total_systems)
                 },
                 "undersized": {
                     "count": undersized_systems,
-                    "percentage": calculate_percentage(undersized_systems, all_systems_count)
+                    "percentage": calculate_percentage(undersized_systems, total_systems)
                 },
                 "oversized": {
                     "count": oversized_systems,
-                    "percentage": calculate_percentage(oversized_systems, all_systems_count)
+                    "percentage": calculate_percentage(oversized_systems, total_systems)
                 },
                 "idling": {
                     "count": idling_systems,
-                    "percentage": calculate_percentage(idling_systems, all_systems_count)
+                    "percentage": calculate_percentage(idling_systems, total_systems)
                 },
                 "waiting_for_data": {
                     "count": waiting_for_data_systems,
-                    "percentage": calculate_percentage(waiting_for_data_systems, all_systems_count)
+                    "percentage": calculate_percentage(waiting_for_data_systems, total_systems)
                 }
             },
             "conditions": {
                 "io": {
-                    "count": total_io_issues,
-                    "percentage": calculate_percentage(total_io_issues, all_conditions_count),
-                    "undersized": io_undersized,
-                    "oversized": io_oversized,
-                    "under_pressure": io_pressure
+                    "count": totals['io'],
+                    "percentage": calculate_percentage(totals['io'], total_conditions),
+                    "undersized": io_states_dict['undersized'],
+                    "oversized": io_states_dict['oversized'],
+                    "under_pressure": io_states_dict['under_pressure']
                 },
                 "memory": {
-                    "count": total_memory_issues,
-                    "percentage": calculate_percentage(total_memory_issues, all_conditions_count),
-                    "undersized": memory_undersized,
-                    "oversized": memory_oversized,
-                    "under_pressure": memory_pressure
+                    "count": totals['memory'],
+                    "percentage": calculate_percentage(totals['memory'], total_conditions),
+                    "undersized": memory_states_dict['undersized'],
+                    "oversized": memory_states_dict['oversized'],
+                    "under_pressure": memory_states_dict['under_pressure']
                 },
                 "cpu": {
-                    "count": total_cpu_issues,
-                    "percentage": calculate_percentage(total_cpu_issues, all_conditions_count),
-                    "undersized": cpu_undersized,
-                    "oversized": cpu_oversized,
-                    "under_pressure": cpu_under_pressure
+                    "count": totals['cpu'],
+                    "percentage": calculate_percentage(totals['cpu'], total_conditions),
+                    "undersized": cpu_states_dict['undersized'],
+                    "oversized": cpu_states_dict['oversized'],
+                    "under_pressure": cpu_states_dict['under_pressure']
                 }
             },
             "meta": {
-                "total_count": all_systems_count,
+                "total_count": total_systems,
                 "non_optimized_count": non_optimized_count,
-                "conditions_count": all_conditions_count
+                "conditions_count": total_conditions
             }
         }
 
