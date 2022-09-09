@@ -1,19 +1,20 @@
-from datetime import datetime, timezone
 import json
+from ros.lib import consume
 from ros.lib.app import app, db
-from ros.lib.config import ENGINE_RESULT_TOPIC, INSIGHTS_KAFKA_ADDRESS, GROUP_ID, kafka_auth_config, get_logger
+from datetime import datetime, timezone
+from confluent_kafka import KafkaException
 from ros.lib.models import RhAccount, System
+from ros.lib.config import ENGINE_RESULT_TOPIC, get_logger
+from ros.processor.process_archive import get_performance_profile
 from ros.lib.utils import (
     get_or_create,
     cast_iops_as_float,
     insert_performance_profiles,
     validate_type
 )
-from confluent_kafka import Consumer, KafkaException
 from ros.processor.metrics import (processor_requests_success,
                                    processor_requests_failures,
                                    kafka_failures)
-from ros.processor.process_archive import get_performance_profile
 
 SYSTEM_STATES = {
     "INSTANCE_OVERSIZED": "Oversized",
@@ -30,15 +31,8 @@ LOG = get_logger(__name__)
 
 class InsightsEngineResultConsumer:
     def __init__(self):
-        connection_object = {
-            'group.id': GROUP_ID,
-            'bootstrap.servers': INSIGHTS_KAFKA_ADDRESS,
-            'enable.auto.commit': False
-        }
-        self.consumer = kafka_auth_config(connection_object)
-        self.consumer = Consumer(connection_object)
-        # Subscribe to topic
-        self.consumer.subscribe([ENGINE_RESULT_TOPIC])
+        """Create Engine Consumer."""
+        self.consumer = consume.init_consumer(ENGINE_RESULT_TOPIC)
 
         self.prefix = 'PROCESSING ENGINE RESULTS'
         self.reporter = 'INSIGHTS ENGINE'
