@@ -7,25 +7,25 @@ from ros.lib.config import NOTIFICATIONS_TOPIC, get_logger
 logger = get_logger(__name__)
 
 
-# Event for new recommendation
-def new_recommendation_event(host, platform_metadata):
+# Event for new suggestion
+def new_suggestion_event(host, platform_metadata):
     request_id = platform_metadata.get('request_id')
     payload = {
         "version": "v1.0.0",
         "bundle": "rhel",
         "application": "ros",
-        "event_type": "",
+        "event_type": "new-suggestion",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "account_id": host.get("account_id") or "",
         "org_id": host.get("org_id"),
-        "context": {"event_name": "New Recommendation"},
+        "context": {"event_name": "New suggestion"},
         "events": [
             {
                 "metadata": {},
                 "payload": {
                     "display_name": host.get('display_name'),
                     "inventory_id": host.get('id'),
-                    "message": f"{host.get('display_name')} has a new recommendation."
+                    "message": f"{host.get('display_name')} has a new suggestion."
                 },
             }
         ],
@@ -35,20 +35,21 @@ def new_recommendation_event(host, platform_metadata):
 
 def delivery_report(err, msg, request_id):
     try:
-        if err is not None:
-            logger.error(
-                "Message delivery for topic %s failed for request_id [%s]: %s",
-                msg.topic(),
-                err,
-                request_id,
-            )
-        else:
+        if not err:
             logger.info(
                 "Message delivered to %s [%s] for request_id [%s]",
                 msg.topic(),
                 msg.partition(),
                 request_id,
             )
+            return
+
+        logger.error(
+                "Message delivery for topic %s failed for request_id [%s]: %s",
+                msg.topic(),
+                err,
+                request_id,
+        )
     except KafkaError:
         logger.exception(
             "Failed to produce message to [%s] topic: %s", NOTIFICATIONS_TOPIC, request_id

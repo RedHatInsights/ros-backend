@@ -6,7 +6,7 @@ from confluent_kafka import KafkaException
 from ros.lib.models import RhAccount, System
 from ros.lib.config import ENGINE_RESULT_TOPIC, get_logger
 from ros.processor.process_archive import get_performance_profile
-from ros.processor.event_producer import new_recommendation_event
+from ros.processor.event_producer import new_suggestion_event
 from ros.lib.utils import (
     get_or_create,
     cast_iops_as_float,
@@ -121,7 +121,7 @@ class InsightsEngineResultConsumer:
 
                 # get previous state of the system
                 system_previous_state = db.session.query(System.state) \
-                    .filter(System.inventory_id == host['id']).first()[0]
+                    .filter(System.inventory_id == host['id']).first()
 
                 system_attrs = {
                     'tenant_id': account.id,
@@ -199,11 +199,9 @@ class InsightsEngineResultConsumer:
                 db.session.commit()
 
                 # Trigger event for notification
-                if system_previous_state not in (SYSTEM_STATES['OPTIMIZED'], system_current_state):
-                    LOG.info(
-                        f"{self.prefix} - New recommendation event triggered for the system: {host['id']}"
-                    )
-                    new_recommendation_event(host, platform_metadata)
+                self.trigger_notification(
+                    system, account, host, platform_metadata, system_previous_state, system_current_state
+                )
 
                 processor_requests_success.labels(
                     reporter=self.reporter, org_id=account.org_id
@@ -216,3 +214,15 @@ class InsightsEngineResultConsumer:
                 ).inc()
                 LOG.error("%s - Unable to add system %s to DB belonging to account: %s and org_id: %s - %s",
                           self.prefix, host['id'], account.account, account.org_id, err)
+
+    def trigger_notification(
+        self, system, account, host, platform_metadata, system_previous_state, system_current_state
+    ):
+        if system_previous_state:
+            if system_current_state not in (SYSTEM_STATES['OPTIMIZED'], system_previous_state[0]):
+                LOG.info(
+                    "%s - New suggestion event triggered for the system: %s belonging" +
+                    "to account: %s (%s) and org_id: %s",
+                    self.prefix, system.inventory_id, account.account, account.id, account.org_id
+                )
+                new_suggestion_event(host, platform_metadata)
