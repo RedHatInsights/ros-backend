@@ -56,6 +56,7 @@ if CLOWDER_ENABLED:
     INSIGHTS_KAFKA_ADDRESS = KAFKA_BROKER.hostname + ":" + str(KAFKA_BROKER.port)
     INVENTORY_EVENTS_TOPIC = KafkaTopics["platform.inventory.events"].name
     ENGINE_RESULT_TOPIC = KafkaTopics["platform.engine.results"].name
+    NOTIFICATIONS_TOPIC = KafkaTopics["platform.notifications.ingress"].name
     for endpoint in LoadedConfig.endpoints:
         if endpoint.app == "rbac":
             RBAC_SVC_URL = f"http://{endpoint.hostname}:{endpoint.port}"
@@ -89,6 +90,7 @@ else:
     RBAC_HOST = os.getenv("RBAC_HOST", "localhost")
     RBAC_PORT = os.getenv("RBAC_PORT", "8114")
     RBAC_SVC_URL = os.getenv("RBAC_SVC_URL", f"http://{RBAC_HOST}:{RBAC_PORT}/")
+    NOTIFICATIONS_TOPIC = os.getenv("NOTIFICATIONS_TOPIC", "platform.notifications.ingress")
 
     CW_ENABLED = str_to_bool(os.getenv('CW_ENABLED', 'False'))  # CloudWatch/Kibana Logging
     if CW_ENABLED is True:

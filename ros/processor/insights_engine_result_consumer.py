@@ -6,6 +6,7 @@ from confluent_kafka import KafkaException
 from ros.lib.models import RhAccount, System
 from ros.lib.config import ENGINE_RESULT_TOPIC, get_logger
 from ros.processor.process_archive import get_performance_profile
+from ros.processor.event_producer import new_recommendation_event
 from ros.lib.utils import (
     get_or_create,
     cast_iops_as_float,
@@ -118,6 +119,10 @@ class InsightsEngineResultConsumer:
                         "%s - Marking the state of system with inventory id: %s as %s.",
                         self.prefix, host['id'], SYSTEM_STATES[state_key])
 
+                # get previous state of the system
+                system_previous_state = db.session.query(System.state) \
+                    .filter(System.inventory_id == host['id']).first()[0]
+
                 system_attrs = {
                     'tenant_id': account.id,
                     'inventory_id': host['id'],
@@ -128,6 +133,9 @@ class InsightsEngineResultConsumer:
                     'region': performance_record.get('region'),
                     'cloud_provider': system_metadata.get('cloud_provider')
                 }
+
+                # get current state of the system
+                system_current_state = system_attrs['state']
 
                 if reports and 'states' in reports[0]['details'].keys():
                     substates = reports[0]['details']['states']
@@ -189,6 +197,14 @@ class InsightsEngineResultConsumer:
                     f"{self.prefix} - Performance profile created/updated successfully for the system: {host['id']}"
                 )
                 db.session.commit()
+
+                # Trigger event for notification
+                if system_previous_state not in (SYSTEM_STATES['OPTIMIZED'], system_current_state):
+                    LOG.info(
+                        f"{self.prefix} - New recommendation event triggered for the system: {host['id']}"
+                    )
+                    new_recommendation_event(host, platform_metadata)
+
                 processor_requests_success.labels(
                     reporter=self.reporter, org_id=account.org_id
                 ).inc()

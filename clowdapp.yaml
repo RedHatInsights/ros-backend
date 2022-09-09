@@ -116,6 +116,8 @@ objects:
         partitions: 1
       - topicName: platform.engine.results
         partitions: 1
+      - topicName: platform.notifications.ingress
+        partitions: 1
     testing:
       iqePlugin: ros
 
