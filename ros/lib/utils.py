@@ -158,7 +158,7 @@ def calculate_percentage(numerator, denominator):
         return 0
 
 
-def systems_with_profile(org_id):
+def systems_ids_for_existing_profiles(org_id):
     return db.session.query(PerformanceProfile.system_id) \
         .filter(PerformanceProfile.system_id.in_(system_ids_by_org_id(org_id)))
 

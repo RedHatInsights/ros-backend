@@ -1,7 +1,7 @@
 from flask_restful import Resource
 from flask import request
 from ros.lib.utils import (
-    org_id_from_identity_header, systems_with_profile)
+    org_id_from_identity_header, systems_ids_for_existing_profiles)
 from ros.lib.models import (
     PerformanceProfile)
 from ros.lib.app import cache
@@ -14,7 +14,7 @@ class CallToActionApi(Resource):
         if res := cache.get(cache_key):
             return res
 
-        query = systems_with_profile(org_id).filter(PerformanceProfile.number_of_recommendations > 0)
+        query = systems_ids_for_existing_profiles(org_id).filter(PerformanceProfile.number_of_recommendations > 0)
         total_system_count = query.count()
 
         configTryLearn_Object = {
