@@ -19,6 +19,7 @@ def new_suggestion_event(host, platform_metadata):
         "account_id": host.get("account_id") or "",
         "org_id": host.get("org_id"),
         "context": {"event_name": "New suggestion"},
+        "rh-message-id": platform_metadata.get("request_id"),
         "events": [
             {
                 "metadata": {},
