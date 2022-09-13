@@ -158,6 +158,11 @@ def calculate_percentage(numerator, denominator):
         return 0
 
 
+def systems_ids_for_existing_profiles(org_id):
+    return db.session.query(PerformanceProfile.system_id) \
+        .filter(PerformanceProfile.system_id.in_(system_ids_by_org_id(org_id)))
+
+
 class MonitoringHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         total_processors_names = list(map(lambda i: i.processor_name, PROCESSOR_INSTANCES))
