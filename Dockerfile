@@ -2,7 +2,7 @@ FROM registry.redhat.io/ubi8/ubi-minimal
 
 WORKDIR /app_root/src
 
-COPY Pipfile Pipfile.lock manage.py seed.py ./
+COPY Pipfile Pipfile.lock manage.py seed.py gunicorn.conf.py ./
 
 RUN microdnf install --disableplugin=subscription-manager --nodocs -y python38 tar gzip
 
