@@ -225,4 +225,4 @@ class InsightsEngineResultConsumer:
                     "to account: %s (%s) and org_id: %s",
                     self.prefix, system.inventory_id, account.account, account.id, account.org_id
                 )
-                new_suggestion_event(host, platform_metadata)
+                new_suggestion_event(host, platform_metadata, system_previous_state, system_current_state)

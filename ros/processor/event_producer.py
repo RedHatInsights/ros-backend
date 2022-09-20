@@ -8,7 +8,7 @@ logger = get_logger(__name__)
 
 
 # Event for new suggestion
-def new_suggestion_event(host, platform_metadata):
+def new_suggestion_event(host, platform_metadata, previous_state, current_state):
     request_id = platform_metadata.get('request_id')
     payload = {
         "version": "v1.0.0",
@@ -26,7 +26,9 @@ def new_suggestion_event(host, platform_metadata):
                 "payload": {
                     "display_name": host.get('display_name'),
                     "inventory_id": host.get('id'),
-                    "message": f"{host.get('display_name')} has a new suggestion."
+                    "message": f"{host.get('display_name')} has a new suggestion.",
+                    "previous_state": previous_state,
+                    "current_state": current_state
                 },
             }
         ],
