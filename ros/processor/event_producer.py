@@ -1,14 +1,21 @@
 import json
+from flask import request
 from ros.lib import produce
 from confluent_kafka import KafkaError
 from datetime import datetime, timezone
+from ros.lib.models import PerformanceProfile
 from ros.lib.config import NOTIFICATIONS_TOPIC, get_logger
+from ros.lib.utils import org_id_from_identity_header, systems_ids_for_existing_profiles
 
 logger = get_logger(__name__)
 
 
 # Event for new suggestion
 def new_suggestion_event(host, platform_metadata, previous_state, current_state):
+
+    org_id = org_id_from_identity_header(request)
+    query = systems_ids_for_existing_profiles(org_id)
+    systems_with_suggestions = query.filter(PerformanceProfile.number_of_recommendations > 0).count()
     request_id = platform_metadata.get('request_id')
     payload = {
         "version": "v1.0.0",
@@ -18,7 +25,10 @@ def new_suggestion_event(host, platform_metadata, previous_state, current_state)
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "account_id": host.get("account_id") or "",
         "org_id": host.get("org_id"),
-        "context": {"event_name": "New suggestion"},
+        "context": {
+            "event_name": "New suggestion",
+            "systems_with_suggestions": systems_with_suggestions
+        },
         "rh-message-id": platform_metadata.get("request_id"),
         "events": [
             {
