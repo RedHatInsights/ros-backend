@@ -9,7 +9,7 @@ api = Api(app)
 initialize_routes(api)
 cache.init_app(app)
 metrics.init_app(app, api)
+commence_cw_log_streaming('ros-api')
 
 if __name__ == "__main__":
-    commence_cw_log_streaming('ros-api')
     app.run(host='0.0.0.0', port=8000)

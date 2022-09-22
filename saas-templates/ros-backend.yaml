@@ -68,7 +68,7 @@ objects:
         containers:
         - args:
           - -c
-          - python -m manage db upgrade && python -m manage seed && python -m ros.api.main
+          - python -m manage db upgrade && python -m manage seed && gunicorn ros.api.main:app
           command:
           - bash
           env:
