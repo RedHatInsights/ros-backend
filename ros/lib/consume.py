@@ -1,5 +1,13 @@
 from confluent_kafka import Consumer
-from ros.lib.config import INSIGHTS_KAFKA_ADDRESS, GROUP_ID, kafka_auth_config
+from ros.lib.config import (INSIGHTS_KAFKA_ADDRESS,
+                            GROUP_ID,
+                            kafka_auth_config,
+                            KAFKA_BROKER,
+                            write_cert)
+
+if KAFKA_BROKER:
+    if KAFKA_BROKER.cacert:
+        write_cert(KAFKA_BROKER.cacert)
 
 
 def init_consumer(kafka_topic):

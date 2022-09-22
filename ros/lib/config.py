@@ -22,10 +22,15 @@ def get_logger(name):
     return logging.getLogger(name)
 
 
+def write_cert(cert):
+    with open('/tmp/cacert', 'w') as f:
+        f.write(cert)
+
+
 def kafka_auth_config(connection_object):
     if KAFKA_BROKER:
         if KAFKA_BROKER.cacert:
-            connection_object["ssl.ca.location"] = KAFKA_BROKER.cacert
+            connection_object["ssl.ca.location"] = '/tmp/cacert'
         if KAFKA_BROKER.sasl and KAFKA_BROKER.sasl.username:
             connection_object.update({
                 "security.protocol": KAFKA_BROKER.sasl.securityProtocol,
