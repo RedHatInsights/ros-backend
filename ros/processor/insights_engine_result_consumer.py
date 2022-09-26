@@ -1,5 +1,5 @@
 import json
-from ros.lib import consume
+from ros.lib import consume, produce
 from ros.lib.app import app, db
 from datetime import datetime, timezone
 from confluent_kafka import KafkaException
@@ -29,6 +29,8 @@ SYSTEM_STATES = {
 OPTIMIZED_SYSTEM_KEY = "OPTIMIZED"
 LOG = get_logger(__name__)
 
+producer = None
+
 
 class InsightsEngineResultConsumer:
     def __init__(self):
@@ -49,6 +51,11 @@ class InsightsEngineResultConsumer:
 
     def run(self):
         LOG.info(f"{self.prefix} - Processor is running. Awaiting msgs.")
+
+        # initialize producer
+        global producer
+        producer = produce.init_producer()
+
         for msg in iter(self):
             if msg.error():
                 LOG.error("%s - Consumer error: %s", self.prefix, msg.error())
@@ -218,11 +225,11 @@ class InsightsEngineResultConsumer:
     def trigger_notification(
         self, system, account, host, platform_metadata, system_previous_state, system_current_state
     ):
-        if system_previous_state:
+        if system_previous_state[0] is not None:
             if system_current_state not in (SYSTEM_STATES['OPTIMIZED'], system_previous_state[0]):
                 LOG.info(
-                    "%s - New suggestion event triggered for the system: %s belonging" +
+                    "%s - Triggering a new suggestion event for the system: %s belonging" +
                     "to account: %s (%s) and org_id: %s",
                     self.prefix, system.inventory_id, account.account, account.id, account.org_id
                 )
-                new_suggestion_event(host, platform_metadata, system_previous_state, system_current_state)
+                new_suggestion_event(host, platform_metadata, system_previous_state, system_current_state, producer)
