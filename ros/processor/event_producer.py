@@ -16,7 +16,7 @@ def new_suggestion_event(host, platform_metadata, previous_state, current_state,
     request_id = platform_metadata.get('request_id')
     payload = {
         "bundle": "rhel",
-        "application": "ros",
+        "application": "resource-optimization",
         "event_type": "new-suggestion",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "account_id": host.get("account_id") or "",
