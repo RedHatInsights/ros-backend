@@ -1,11 +1,12 @@
 import json
-from ros.lib import consume
+from ros.lib import consume, produce
 from ros.lib.app import app, db
 from datetime import datetime, timezone
 from confluent_kafka import KafkaException
 from ros.lib.models import RhAccount, System
 from ros.lib.config import ENGINE_RESULT_TOPIC, get_logger
 from ros.processor.process_archive import get_performance_profile
+from ros.processor.event_producer import new_suggestion_event
 from ros.lib.utils import (
     get_or_create,
     cast_iops_as_float,
@@ -28,6 +29,8 @@ SYSTEM_STATES = {
 OPTIMIZED_SYSTEM_KEY = "OPTIMIZED"
 LOG = get_logger(__name__)
 
+producer = None
+
 
 class InsightsEngineResultConsumer:
     def __init__(self):
@@ -48,6 +51,11 @@ class InsightsEngineResultConsumer:
 
     def run(self):
         LOG.info(f"{self.prefix} - Processor is running. Awaiting msgs.")
+
+        # initialize producer
+        global producer
+        producer = produce.init_producer()
+
         for msg in iter(self):
             if msg.error():
                 LOG.error("%s - Consumer error: %s", self.prefix, msg.error())
@@ -118,6 +126,10 @@ class InsightsEngineResultConsumer:
                         "%s - Marking the state of system with inventory id: %s as %s.",
                         self.prefix, host['id'], SYSTEM_STATES[state_key])
 
+                # get previous state of the system
+                system_previous_state = db.session.query(System.state) \
+                    .filter(System.inventory_id == host['id']).first()
+
                 system_attrs = {
                     'tenant_id': account.id,
                     'inventory_id': host['id'],
@@ -128,6 +140,9 @@ class InsightsEngineResultConsumer:
                     'region': performance_record.get('region'),
                     'cloud_provider': system_metadata.get('cloud_provider')
                 }
+
+                # get current state of the system
+                system_current_state = system_attrs['state']
 
                 if reports and 'states' in reports[0]['details'].keys():
                     substates = reports[0]['details']['states']
@@ -189,6 +204,12 @@ class InsightsEngineResultConsumer:
                     f"{self.prefix} - Performance profile created/updated successfully for the system: {host['id']}"
                 )
                 db.session.commit()
+
+                # Trigger event for notification
+                self.trigger_notification(
+                    system, account, host, platform_metadata, system_previous_state, system_current_state
+                )
+
                 processor_requests_success.labels(
                     reporter=self.reporter, org_id=account.org_id
                 ).inc()
@@ -200,3 +221,15 @@ class InsightsEngineResultConsumer:
                 ).inc()
                 LOG.error("%s - Unable to add system %s to DB belonging to account: %s and org_id: %s - %s",
                           self.prefix, host['id'], account.account, account.org_id, err)
+
+    def trigger_notification(
+        self, system, account, host, platform_metadata, system_previous_state, system_current_state
+    ):
+        if system_previous_state[0] is not None:
+            if system_current_state not in (SYSTEM_STATES['OPTIMIZED'], system_previous_state[0]):
+                LOG.info(
+                    "%s - Triggering a new suggestion event for the system: %s belonging" +
+                    "to account: %s (%s) and org_id: %s",
+                    self.prefix, system.inventory_id, account.account, account.id, account.org_id
+                )
+                new_suggestion_event(host, platform_metadata, system_previous_state, system_current_state, producer)
