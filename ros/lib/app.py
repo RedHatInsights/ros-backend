@@ -16,7 +16,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'max_overflow': DB_MAX_OVERFLOW
 }
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-metrics = RESTfulPrometheusMetrics.for_app_factory(defaults_prefix='ros')
+metrics = RESTfulPrometheusMetrics.for_app_factory(defaults_prefix='ros', group_by='url_rule')
 cache = Cache(config={'CACHE_TYPE': 'RedisCache', 'CACHE_REDIS_URL': REDIS_URL, 'CACHE_DEFAULT_TIMEOUT': 300})
 db.init_app(app)
 
