@@ -24,8 +24,8 @@ def get_logger(name):
 
 def kafka_auth_config(connection_object):
     if KAFKA_BROKER:
-        if KAFKA_BROKER.cacert:
-            connection_object["ssl.ca.location"] = KAFKA_BROKER.cacert
+        if KAFKA_CACERT_LOCATION:
+            connection_object["ssl.ca.location"] = KAFKA_CACERT_LOCATION
         if KAFKA_BROKER.sasl and KAFKA_BROKER.sasl.username:
             connection_object.update({
                 "security.protocol": KAFKA_BROKER.sasl.securityProtocol,
@@ -53,6 +53,8 @@ if CLOWDER_ENABLED:
     REDIS_PORT = LoadedConfig.inMemoryDb.port
     METRICS_PORT = LoadedConfig.metricsPort
     KAFKA_BROKER = LoadedConfig.kafka.brokers[0]
+    if KAFKA_BROKER.cacert:
+        KAFKA_CACERT_LOCATION = LoadedConfig.kafka_ca()
     INSIGHTS_KAFKA_ADDRESS = KAFKA_BROKER.hostname + ":" + str(KAFKA_BROKER.port)
     INVENTORY_EVENTS_TOPIC = KafkaTopics["platform.inventory.events"].name
     ENGINE_RESULT_TOPIC = KafkaTopics["platform.engine.results"].name
@@ -87,6 +89,7 @@ else:
     ENGINE_RESULT_TOPIC = os.getenv("ENGINE_RESULT_TOPIC", "platform.engine.results")
     METRICS_PORT = os.getenv("METRICS_PORT", 5005)
     KAFKA_BROKER = None
+    KAFKA_CACERT_LOCATION = None
     RBAC_HOST = os.getenv("RBAC_HOST", "localhost")
     RBAC_PORT = os.getenv("RBAC_PORT", "8114")
     RBAC_SVC_URL = os.getenv("RBAC_SVC_URL", f"http://{RBAC_HOST}:{RBAC_PORT}/")
