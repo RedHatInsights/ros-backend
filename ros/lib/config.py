@@ -53,6 +53,7 @@ if CLOWDER_ENABLED:
     REDIS_PORT = LoadedConfig.inMemoryDb.port
     METRICS_PORT = LoadedConfig.metricsPort
     KAFKA_BROKER = LoadedConfig.kafka.brokers[0]
+    KAFKA_CACERT_LOCATION = None
     if KAFKA_BROKER.cacert:
         KAFKA_CACERT_LOCATION = LoadedConfig.kafka_ca()
     INSIGHTS_KAFKA_ADDRESS = KAFKA_BROKER.hostname + ":" + str(KAFKA_BROKER.port)
