@@ -204,7 +204,7 @@ parameters:
 - description: Host for the EAN to OrgId translator.
   name: TENANT_TRANSLATOR_HOST
   required: true
-  value: 'apicast.3scale-dev.svc.cluster.local'
+  value: 'gateway.3scale-dev.svc.cluster.local'
 - description: Port for the EAN to OrgId translator.
   name: TENANT_TRANSLATOR_PORT
   value: '8892'
