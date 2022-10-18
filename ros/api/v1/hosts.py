@@ -2,20 +2,29 @@ import logging
 from flask import request
 from sqlalchemy.types import Float
 from ros.lib.constants import SubStates
+
+from datetime import datetime, timedelta, timezone
 from sqlalchemy import asc, desc, nullslast, nullsfirst
 from flask_restful import Resource, abort, fields, marshal_with
 
 from ros.lib.models import (
-    db, System, RhAccount, PerformanceProfile,
-    RecommendationRating, PerformanceProfileHistory
+    db,
+    System,
+    RhAccount,
+    PerformanceProfile,
+    RecommendationRating,
+    PerformanceProfileHistory,
 )
 from ros.lib.utils import (
-    count_per_state,
     is_valid_uuid, identity,
     user_data_from_identity,
     systems_ids_for_existing_profiles,
     sort_io_dict, system_ids_by_org_id,
-    calculate_percentage, org_id_from_identity_header
+    count_per_state,
+    calculate_percentage,
+    org_id_from_identity_header,
+    highlights_instance_types,
+    performance_profiles_by_system_id,
 )
 from ros.api.common.pagination import (
     limit_value,
@@ -390,20 +399,27 @@ class ExecutiveReportAPI(Resource):
         "idling": fields.Nested(count_and_percentage),
         "waiting_for_data": fields.Nested(count_and_percentage)
     }
-    condtions = {
+    conditions = {
         "io": fields.Raw,
         "memory": fields.Raw,
         "cpu": fields.Raw
+    }
+    instance_types_highlights = {
+        "current": fields.Raw,
+        "suggested": fields.Raw,
+        "historical": fields.Raw,
     }
     meta = {
         "total_count": fields.Integer,
         "non_optimized_count": fields.Integer,
         "conditions_count": fields.Integer,
+        "stale_count": fields.Integer,
         "non_psi_count": fields.Integer,
     }
     report_fields = {
         "systems_per_state": fields.Nested(systems_per_state),
-        "conditions": fields.Nested(condtions),
+        "conditions": fields.Nested(conditions),
+        "instance_types_highlights": fields.Nested(instance_types_highlights),
         "meta": fields.Nested(meta)
     }
 
@@ -466,6 +482,25 @@ class ExecutiveReportAPI(Resource):
         io_states_dict['undersized'] = -1
         total_conditions = totals['cpu'] + totals['memory'] + totals['io']
 
+        current_utc_datetime = datetime.now(timezone.utc)
+        upload_date = (current_utc_datetime - timedelta(days=1)).date()
+
+        current_performance_profiles = [
+            record
+            for system in system_queryset
+            for record in performance_profiles_by_system_id(system.id, PerformanceProfile)
+            if record.report_date.date() == upload_date
+        ]
+
+        historical_performance_profiles = [
+            record
+            for system in system_queryset
+            for record in performance_profiles_by_system_id(system.id, PerformanceProfileHistory)
+        ]  # Systems older than 7 days/stale systems are considered here
+
+        stale_count = db.session.query(PerformanceProfile). \
+            filter(PerformanceProfile.report_date < (current_utc_datetime - timedelta(days=7))).count()
+
         non_psi_count = systems_with_performance_record_queryset.filter_by(psi_enabled=False).count()
 
         response = {
@@ -518,10 +553,16 @@ class ExecutiveReportAPI(Resource):
                     "under_pressure": cpu_states_dict['under_pressure']
                 }
             },
+            "instance_types_highlights": {
+                "current": highlights_instance_types(current_performance_profiles, 'current'),
+                "suggested": highlights_instance_types(current_performance_profiles, 'suggested'),
+                "historical": highlights_instance_types(historical_performance_profiles, 'historical')
+            },
             "meta": {
                 "total_count": total_systems,
                 "non_optimized_count": non_optimized_count,
                 "conditions_count": total_conditions,
+                "stale_count": stale_count,
                 "non_psi_count": non_psi_count
             }
         }

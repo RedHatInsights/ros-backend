@@ -1,4 +1,6 @@
 import ast as type_evaluation
+
+from collections import Counter
 from http.server import BaseHTTPRequestHandler
 import threading
 import uuid
@@ -13,7 +15,8 @@ from ros.lib.models import (
     PerformanceProfileHistory,
     db,)
 from ros.lib.config import get_logger
-
+from ros.lib.aws_instance_types import INSTANCE_TYPES
+from ros.processor.metrics import ec2_instance_lookup_failures
 
 LOG = get_logger(__name__)
 PROCESSOR_INSTANCES = []
@@ -125,6 +128,11 @@ def system_ids_by_org_id(org_id, fetch_records=False):
     return db.session.query(System.id).filter(System.tenant_id.in_(account_query))
 
 
+def performance_profiles_by_system_id(system_id, model):
+    if model in [PerformanceProfile, PerformanceProfileHistory]:
+        return db.session.query(model).filter(model.system_id == system_id)
+
+
 def org_id_from_identity_header(request):
     return identity(request)['identity']['org_id']
 
@@ -185,3 +193,61 @@ class MonitoringHandler(BaseHTTPRequestHandler):
             return
         else:
             super().log_request(code, size)
+
+
+def generate_highlight_description(instance_type):
+    if instance_type not in INSTANCE_TYPES.keys():
+        # logging lookup failure on Prometheus
+        ec2_instance_lookup_failures.labels(reporter='API Events').inc()
+        return 'NA'
+
+    cpu_type = INSTANCE_TYPES[instance_type]['extra']['physicalProcessor']
+    num_vcpus = INSTANCE_TYPES[instance_type]['extra']['vcpu']
+    ram_gb = INSTANCE_TYPES[instance_type]['extra']['memory']
+    cloud_regions = INSTANCE_TYPES[instance_type]['extra']['regionCode']
+    cloud = 'AWS'  # Update when multi cloud provider support is added
+
+    description_text = f'{cpu_type} instance with {num_vcpus} vCPUs ' \
+                       f'and {ram_gb} of RAM, running on {cloud} ' \
+                       f'{cloud_regions} regions'
+
+    return description_text
+
+
+def highlights_instance_types(queryset, highlight_type):
+    instance_candidates, values_dict, highlights_list = [], {}, []
+    if highlight_type == 'current':
+        for performance_profile in queryset:
+            try:
+                instance_candidates.append(performance_profile.rule_hit_details[0]['details']['instance_type'])
+            except (IndexError, KeyError):
+                # Systems w/o profiles are being considered in 'current'
+                # Ex: Optimized, Waiting for Data, etc.
+                system_record = db.session.query(System).\
+                    filter_by(id=performance_profile.system_id).first()
+                if system_record:
+                    instance_candidates.append(system_record.instance_type)
+    elif highlight_type in ['suggested', 'historical']:
+        for performance_profile in queryset:
+            try:
+                instance_candidates.append(performance_profile.rule_hit_details[0]['details']['candidates'][0][0])
+            except (IndexError, KeyError):
+                continue
+
+    if instance_candidates:
+        # Creates a dict with {value: count} values sorts the same, DESC order
+        values_dict = dict(sorted(Counter(instance_candidates).items(), key=lambda x: x[1], reverse=True))
+
+    item_count = 1
+    for key, value in values_dict.items():
+        if item_count == 5:
+            break
+
+        highlights_list.append({
+            "type": key,
+            "count": value,
+            "desc": generate_highlight_description(key)
+        })
+        item_count += 1
+
+    return highlights_list
