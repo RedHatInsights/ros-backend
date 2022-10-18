@@ -88,7 +88,7 @@ services:
     ports:
       - "15432:5432"
   db-host-inventory:
-    image: postgres
+    image: debezium/postgres
     restart: always
     environment:
       POSTGRES_PASSWORD: insights
@@ -110,6 +110,7 @@ services:
       - INVENTORY_DB_NAME=insights
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - PAYLOAD_TRACKER_ENABLED=false
+      - XJOIN_GRAPHQL_URL=http://xjoin:4000/graphql
     depends_on:
        - kafka-create-topics
        - db-host-inventory
@@ -187,3 +188,56 @@ services:
       volumes:
           - ./prometheus.yml:/etc/prometheus/prometheus.yml
       image: prom/prometheus
+  debezium:
+    image: quay.io/cloudservices/xjoin-kafka-connect-strimzi
+    restart: always
+    entrypoint: /opt/kafka/kafka_connect_run.sh
+    volumes:
+      - ./xjoin-config/log4j.properties/:/opt/kafka/custom-config/log4j.properties:Z
+    environment:
+      - KAFKA_CONNECT_BOOTSTRAP_SERVERS=kafka:29092
+      - KAFKA_CONNECT_METRICS_ENABLED=false
+      - STRIMZI_KAFKA_GC_LOG_ENABLED=false
+      - |
+        KAFKA_CONNECT_CONFIGURATION=
+        offset.storage.topic=connect-cluster-offsets
+        value.converter=org.apache.kafka.connect.json.JsonConverter
+        config.storage.topic=connect-cluster-configs
+        key.converter=org.apache.kafka.connect.json.JsonConverter
+        group.id=connect-cluster
+        status.storage.topic=connect-cluster-status
+        config.storage.replication.factor=1
+        connector.client.config.override.policy=All
+        offset.storage.replication.factor=1
+        status.storage.replication.factor=1
+    depends_on:
+      - kafka
+      - db-host-inventory
+      - insights-inventory-mq
+    ports:
+      - 8083:8083
+  elasticsearch:
+    restart: always
+    image: elasticsearch:7.10.1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - cluster.routing.allocation.disk.threshold_enabled=false
+  xjoin:
+    image: quay.io/cloudservices/xjoin-search:3c3f8b0
+    restart: always
+    environment:
+      - LOG_LEVEL=debug
+      - LOG_PRETTY=false
+      - NODE_ENV=development
+      - ES_NODES=http://elasticsearch:9200
+      - HOSTS_INDEX=xjoin.inventory
+    ports:
+      - 4000:4000
+    depends_on:
+      - elasticsearch
+      - debezium

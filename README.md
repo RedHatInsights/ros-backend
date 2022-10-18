@@ -25,7 +25,7 @@ The application depends on several parts of the insights platform. These depende
 
 To run the dependencies, just run following command:
 ```bash
-cd scripts && docker-compose up insights-inventory-web db-ros insights-engine
+cd scripts && docker-compose up insights-inventory-mq db-ros insights-engine
 ```
 ## Running the ROS application
 ### Within docker
@@ -63,6 +63,14 @@ It is possible to run the tests using pytest:
 pipenv install --dev
 pytest --cov=ros tests
 ```
+
+## Running Inventory API with xjoin pipeline
+To run full inventory api with xjoin , run the following command:
+```bash
+docker-compose up insights-inventory-web xjoin
+make configure-xjoin 
+```
+Note - Before running the above commands make sure kafka and db-host-inventory containers are up and running.
 
 ## Available v1 API endpoints
 
