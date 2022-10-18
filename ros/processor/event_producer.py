@@ -23,7 +23,8 @@ def new_suggestion_event(host, platform_metadata, previous_state, current_state,
         "org_id": org_id,
         "context": {
             "event_name": "New suggestion",
-            "systems_with_suggestions": systems_with_suggestions
+            "systems_with_suggestions": systems_with_suggestions,
+            "display_name": host.get('display_name')
         },
         "events": [
             {
