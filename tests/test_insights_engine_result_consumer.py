@@ -203,3 +203,16 @@ def test_substate_updates(engine_result_message, engine_consumer, db_setup, perf
         assert system_record.cpu_states == ['CPU_UNDERSIZED', 'CPU_UNDERSIZED_BY_PRESSURE']
         assert system_record.io_states == ['IO_UNDERSIZED_BY_PRESSURE']
         assert system_record.memory_states == ['MEMORY_UNDERSIZED', 'MEMORY_UNDERSIZED_BY_PRESSURE']
+
+
+def test_process_report_psi_enabled(engine_result_message, engine_consumer, db_setup, performance_record):
+    engine_result_message = engine_result_message("insights-engine-result-idle.json")
+    host = engine_result_message["input"]["host"]
+    ros_reports = [engine_result_message["results"]["reports"][7]]
+    system_metadata = engine_result_message["results"]["system"]["metadata"]
+    platform_metadata = engine_result_message["input"]["platform_metadata"]
+    engine_consumer.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
+    system_record = db_get_host(host['id'])
+    psi_enabled = db.session.query(PerformanceProfile).\
+        filter_by(system_id=system_record.id).first().psi_enabled
+    assert psi_enabled is True

@@ -120,6 +120,7 @@ def db_create_performance_profile():
         performance_utilization=performance_utilization,
         report_date=datetime.datetime.utcnow(),
         number_of_recommendations=1,
+        psi_enabled=False,
         rule_hit_details=[{
           "key": "INSTANCE_IDLE",
           "tags": [],

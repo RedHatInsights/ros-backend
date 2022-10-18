@@ -96,6 +96,7 @@
           "io_utilization": {
             "xvda": "0.314"
           },
+          "psi_enabled": true,
           "release": "Red Hat Enterprise Linux release 8.4 (Ootpa)"
         },
         "hostname": "ip-172-31-28-69.ec2.internal",

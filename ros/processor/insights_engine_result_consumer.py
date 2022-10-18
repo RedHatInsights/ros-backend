@@ -181,7 +181,8 @@ class InsightsEngineResultConsumer:
                     "rule_hit_details": reports,
                     "number_of_recommendations": -1 if state_key == 'NO_PCP_DATA' else rec_count,
                     "state": SYSTEM_STATES[state_key],
-                    "operating_system": system.operating_system
+                    "operating_system": system.operating_system,
+                    'psi_enabled': system_metadata.get('psi_enabled'),
                 }
                 insert_performance_profiles(
                     db.session, system.id, pprofile_fields)
