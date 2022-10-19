@@ -5,7 +5,6 @@
       "errors.log.include.messages": "true",
       "database.dbname": "insights",
       "database.user": "insights",
-      "max.queue.size": "1000",
       "transforms.unwrap.delete.handling.mode": "rewrite",
       "slot.name": "xjoin_inventory",
       "transforms": "unwrap",
@@ -14,10 +13,8 @@
       "table.include.list": "public.hosts",
       "database.hostname": "db-host-inventory",
       "database.password": "insights",
-      "poll.interval.ms": "100",
       "name": "xjoin.inventory.db",
       "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
-      "max.batch.size": "10",
       "errors.log.enable": "true"
     }
 }
