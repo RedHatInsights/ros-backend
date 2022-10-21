@@ -1,24 +1,27 @@
-from sqlalchemy import asc, desc, nullslast, nullsfirst
-from sqlalchemy.types import Float
+import logging
 from flask import request
+from sqlalchemy.types import Float
+from ros.lib.constants import SubStates
+from sqlalchemy import asc, desc, nullslast, nullsfirst
 from flask_restful import Resource, abort, fields, marshal_with
 
-from ros.lib.constants import SubStates
 from ros.lib.models import (
-    PerformanceProfile, RhAccount, System,
-    db, RecommendationRating, PerformanceProfileHistory)
+    db, System, RhAccount, PerformanceProfile,
+    RecommendationRating, PerformanceProfileHistory
+)
 from ros.lib.utils import (
+    count_per_state,
     is_valid_uuid, identity,
     user_data_from_identity,
+    systems_ids_for_existing_profiles,
     sort_io_dict, system_ids_by_org_id,
-    count_per_state,
     calculate_percentage, org_id_from_identity_header
 )
 from ros.api.common.pagination import (
-    build_paginated_system_list_response,
     limit_value,
-    offset_value)
-import logging
+    offset_value,
+    build_paginated_system_list_response
+)
 
 
 LOG = logging.getLogger(__name__)
@@ -58,15 +61,10 @@ SYSTEM_COLUMNS = [
 class IsROSConfiguredApi(Resource):
     def get(self):
         org_id = org_id_from_identity_header(request)
-        query = (
-            db.session.query(System.id)
-            .join(PerformanceProfile, PerformanceProfile.system_id == System.id)
-            .join(RhAccount, RhAccount.id == System.tenant_id)
-            .filter(RhAccount.org_id == org_id)
-        )
+        query = systems_ids_for_existing_profiles(org_id)
         system_count = query.count()
         systems_with_suggestions = query.filter(PerformanceProfile.number_of_recommendations > 0).count()
-        systems_waiting_for_data = query.filter(System.state == 'Waiting for data').count()
+        systems_waiting_for_data = query.filter(PerformanceProfile.state == 'Waiting for data').count()
 
         if system_count <= 0:
             status, code = False, 'NO_SYSTEMS'
