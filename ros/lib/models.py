@@ -10,12 +10,16 @@ class PerformanceProfile(db.Model):
     performance_record = db.Column(JSONB)
     performance_utilization = db.Column(JSONB)
     report_date = db.Column(
-        db.DateTime(timezone=True), default=datetime.datetime.utcnow)
+        db.DateTime(timezone=True),
+        default=datetime.datetime.utcnow,
+        nullable=False
+    )
     state = db.Column(db.String(25))
     operating_system = db.Column(JSONB)
     rule_hit_details = db.Column(JSONB)
     number_of_recommendations = db.Column(db.Integer)
     system_id = db.Column(db.Integer)
+    psi_enabled = db.Column(db.Boolean)
     __table_args__ = (
         db.PrimaryKeyConstraint('system_id', name='performance_profile_pkey'),
         db.ForeignKeyConstraint(
@@ -36,12 +40,16 @@ class PerformanceProfileHistory(db.Model):
     performance_record = db.Column(JSONB)
     performance_utilization = db.Column(JSONB)
     report_date = db.Column(
-        db.DateTime(timezone=True), default=datetime.datetime.utcnow)
+        db.DateTime(timezone=True),
+        default=datetime.datetime.utcnow,
+        nullable=False
+    )
     state = db.Column(db.String(25))
     operating_system = db.Column(JSONB)
     rule_hit_details = db.Column(JSONB)
     number_of_recommendations = db.Column(db.Integer)
     system_id = db.Column(db.Integer)
+    psi_enabled = db.Column(db.Boolean)
     __table_args__ = (
         db.PrimaryKeyConstraint('system_id', 'report_date', name='pk_performance_profile_history'),
         db.ForeignKeyConstraint(

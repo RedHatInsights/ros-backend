@@ -399,6 +399,7 @@ class ExecutiveReportAPI(Resource):
         "total_count": fields.Integer,
         "non_optimized_count": fields.Integer,
         "conditions_count": fields.Integer,
+        "non_psi_count": fields.Integer,
     }
     report_fields = {
         "systems_per_state": fields.Nested(systems_per_state),
@@ -410,15 +411,11 @@ class ExecutiveReportAPI(Resource):
     def get(self):
         org_id = org_id_from_identity_header(request)
         system_queryset = system_ids_by_org_id(org_id, fetch_records=True)
-        systems_with_performance_record_query = (
-            db.session.query(PerformanceProfile.system_id)
-            .filter(PerformanceProfile.system_id.in_(
-                system_ids_by_org_id(org_id).subquery()
-            ))
-        )
+        systems_with_performance_record_queryset = db.session.query(PerformanceProfile.system_id)\
+            .filter(PerformanceProfile.system_id.in_(system_ids_by_org_id(org_id)))
 
         # System counts
-        total_systems = systems_with_performance_record_query.count()
+        total_systems = systems_with_performance_record_queryset.count()
         optimized_systems = count_per_state(system_queryset, {'state': "Optimized"})
         under_pressure_systems = count_per_state(system_queryset, {'state': "Under pressure"})
         undersized_systems = count_per_state(system_queryset, {'state': "Undersized"})
@@ -469,6 +466,8 @@ class ExecutiveReportAPI(Resource):
         io_states_dict['oversized'] = -1
         io_states_dict['undersized'] = -1
         total_conditions = totals['cpu'] + totals['memory'] + totals['io']
+
+        non_psi_count = systems_with_performance_record_queryset.filter_by(psi_enabled=False).count()
 
         response = {
             "systems_per_state": {
@@ -523,7 +522,8 @@ class ExecutiveReportAPI(Resource):
             "meta": {
                 "total_count": total_systems,
                 "non_optimized_count": non_optimized_count,
-                "conditions_count": total_conditions
+                "conditions_count": total_conditions,
+                "non_psi_count": non_psi_count
             }
         }
 

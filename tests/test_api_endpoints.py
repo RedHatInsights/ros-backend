@@ -197,6 +197,7 @@ def test_executive_report(
         assert response.json['conditions']['cpu']['count'] == 2
         assert response.json['conditions']['io']['count'] == 1
         assert response.json['conditions']['memory']['count'] == 2
+        assert response.json['meta']['non_psi_count'] == 1
 
 
 def test_openapi_endpoint():

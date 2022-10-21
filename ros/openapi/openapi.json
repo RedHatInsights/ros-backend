@@ -616,6 +616,9 @@
                           },
                           "conditions_count": {
                             "type": "integer"
+                          },
+                          "non_psi_count": {
+                            "type": "integer"
                           }
                         }
                       }
