@@ -390,6 +390,9 @@
                     },
                     "os": {
                         "type": "string"
+                    },
+                    "report_date": {
+                        "type": "string"
                     }
                 }
             },
