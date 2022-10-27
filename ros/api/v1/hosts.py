@@ -4,7 +4,7 @@ from sqlalchemy.types import Float
 from ros.lib.constants import SubStates
 
 from datetime import datetime, timedelta, timezone
-from sqlalchemy import asc, desc, nullslast, nullsfirst
+from sqlalchemy import asc, desc, nullslast, nullsfirst, select
 from flask_restful import Resource, abort, fields, marshal_with
 
 from ros.lib.models import (
@@ -24,7 +24,6 @@ from ros.lib.utils import (
     calculate_percentage,
     org_id_from_identity_header,
     highlights_instance_types,
-    performance_profiles_by_system_id,
 )
 from ros.api.common.pagination import (
     limit_value,
@@ -426,8 +425,10 @@ class ExecutiveReportAPI(Resource):
     @marshal_with(report_fields)
     def get(self):
         org_id = org_id_from_identity_header(request)
-        system_queryset = system_ids_by_org_id(org_id, fetch_records=True)
-        systems_with_performance_record_queryset = systems_ids_for_existing_profiles(org_id)
+        system_queryset = system_ids_by_org_id(org_id, fetch_records=True)  # Necesary for component state aggregations
+        systems_with_performance_record_queryset = db.session.query(PerformanceProfile) \
+            .filter(PerformanceProfile.system_id.in_(system_ids_by_org_id(org_id)))
+        systems_with_performance_record_subquery = systems_with_performance_record_queryset.subquery()
 
         # System counts
         total_systems = systems_with_performance_record_queryset.count()
@@ -487,19 +488,20 @@ class ExecutiveReportAPI(Resource):
 
         current_performance_profiles = [
             record
-            for system in system_queryset
-            for record in performance_profiles_by_system_id(system.id, PerformanceProfile)
+            for record in systems_with_performance_record_queryset
             if record.report_date.date() == upload_date
         ]
 
-        historical_performance_profiles = [
-            record
-            for system in system_queryset
-            for record in performance_profiles_by_system_id(system.id, PerformanceProfileHistory)
-        ]  # Systems older than 7 days/stale systems are considered here
+        historical_performance_profiles = db.session.query(PerformanceProfile).\
+            select_entity_from(select([PerformanceProfileHistory]))\
+            .join(
+            systems_with_performance_record_subquery,
+            systems_with_performance_record_subquery.c.system_id == PerformanceProfileHistory.system_id
+        )  # Systems older than 7 days/stale systems are considered here
 
-        stale_count = db.session.query(PerformanceProfile). \
-            filter(PerformanceProfile.report_date < (current_utc_datetime - timedelta(days=7))).count()
+        stale_count = systems_with_performance_record_queryset.filter(
+            PerformanceProfile.report_date < (current_utc_datetime - timedelta(days=7))
+        ).count()
 
         non_psi_count = systems_with_performance_record_queryset.filter_by(psi_enabled=False).count()
 
