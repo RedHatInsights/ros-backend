@@ -19,7 +19,7 @@ def new_suggestion_event(host, platform_metadata, previous_state, current_state,
         "application": "resource-optimization",
         "event_type": "new-suggestion",
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "account_id": host.get("account_id") or "",
+        "account_id": host.get("account") or "",
         "org_id": org_id,
         "context": {
             "event_name": "New suggestion",
