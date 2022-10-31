@@ -1,12 +1,12 @@
-## Description 📋
+## Description :clipboard:
 
 Please include a summary of the change/issue here along with the JIRA card number
 
-## Motivation and Context 💭
+## Motivation and Context :thought_balloon:
 
 Please include the __idea behind this change__ here, also docs if relevant
 
-## :guardsman: Checklist 🎯
+## :guardsman: Checklist :dart:
 
 - [ ] Bugfix
 - [ ] New Feature
