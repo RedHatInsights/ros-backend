@@ -672,6 +672,9 @@
                           },
                           "non_psi_count": {
                             "type": "integer"
+                          },
+                          "psi_enabled_count": {
+                            "type": "integer"
                           }
                         }
                       }

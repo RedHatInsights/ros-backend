@@ -16,10 +16,12 @@ from ros.lib.models import (
     PerformanceProfileHistory,
 )
 from ros.lib.utils import (
-    is_valid_uuid, identity,
+    is_valid_uuid,
+    identity,
     user_data_from_identity,
     systems_ids_for_existing_profiles,
-    sort_io_dict, system_ids_by_org_id,
+    sort_io_dict,
+    system_ids_by_org_id,
     count_per_state,
     calculate_percentage,
     org_id_from_identity_header,
@@ -414,6 +416,7 @@ class ExecutiveReportAPI(Resource):
         "conditions_count": fields.Integer,
         "stale_count": fields.Integer,
         "non_psi_count": fields.Integer,
+        "psi_enabled_count": fields.Integer,
     }
     report_fields = {
         "systems_per_state": fields.Nested(systems_per_state),
@@ -522,6 +525,7 @@ class ExecutiveReportAPI(Resource):
         ).count()
 
         non_psi_count = systems_with_performance_record_queryset.filter_by(psi_enabled=False).count()
+        psi_enabled_count = systems_with_performance_record_queryset.filter_by(psi_enabled=True).count()
 
         response = {
             "systems_per_state": {
@@ -583,7 +587,8 @@ class ExecutiveReportAPI(Resource):
                 "non_optimized_count": non_optimized_count,
                 "conditions_count": total_conditions,
                 "stale_count": stale_count,
-                "non_psi_count": non_psi_count
+                "non_psi_count": non_psi_count,
+                "psi_enabled_count": psi_enabled_count
             }
         }
 
