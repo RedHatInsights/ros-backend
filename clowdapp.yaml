@@ -22,7 +22,7 @@ objects:
           apiPath: ros
       podSpec:
         image: ${IMAGE}:${IMAGE_TAG}
-        minReplicas: 1
+        replicas: ${{API_REPLICA_COUNT}}
         command: ["sh"]
         args: ["-c", "python -m manage db upgrade && python -m manage seed && gunicorn ros.api.main:app"]
         resources:
@@ -66,7 +66,7 @@ objects:
     - name: processor
       podSpec:
         image: ${IMAGE}:${IMAGE_TAG}
-        minReplicas: ${{MIN_REPLICAS}}
+        replicas: ${{PROCESSOR_REPLICA_COUNT}}
         command: ["bash"]
         args: ["-c", "python -m ros.processor.main"]
         resources:
@@ -162,8 +162,11 @@ parameters:
 - description : ClowdEnvironment name
   name: ENV_NAME
   required: true
-- description: min replicas
-  name: MIN_REPLICAS
+- description: Replica count for api pod
+  name: API_REPLICA_COUNT
+  value: "1"
+- description: Replica count for processor pod
+  name: PROCESSOR_REPLICA_COUNT
   value: "1"
 - description: Image NAME
   name: IMAGE
