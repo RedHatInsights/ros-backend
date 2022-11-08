@@ -109,7 +109,7 @@ objects:
             value: ${DB_MAX_OVERFLOW}
     database:
       name: ros
-      version: 12
+      version: 13
     inMemoryDb: true
     kafkaTopics:
       - topicName: platform.inventory.events
