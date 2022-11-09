@@ -6,7 +6,7 @@ from ros.processor.insights_engine_result_consumer import InsightsEngineResultCo
 from ros.processor.garbage_collector import GarbageCollector
 from prometheus_client import start_http_server
 import threading
-from ros.lib.config import METRICS_PORT
+from ros.lib.config import METRICS_PORT, ROS_PROCESSOR_PORT
 
 
 def process_engine_results():
@@ -31,7 +31,7 @@ def garbage_collector():
 
 
 def thread_monitor():
-    server = HTTPServer(('', 8000), MonitoringHandler)
+    server = HTTPServer(('', ROS_PROCESSOR_PORT), MonitoringHandler)
     server.serve_forever()
 
 
