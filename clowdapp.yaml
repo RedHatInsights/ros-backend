@@ -16,13 +16,13 @@ objects:
     - engine
     deployments:
     - name: api
+      replicas: ${{API_REPLICA_COUNT}}
       webServices:
         public:
           enabled: true
           apiPath: ros
       podSpec:
         image: ${IMAGE}:${IMAGE_TAG}
-        replicas: ${{API_REPLICA_COUNT}}
         command: ["sh"]
         args: ["-c", "python -m manage db upgrade && python -m manage seed && gunicorn ros.api.main:app"]
         resources:
@@ -64,9 +64,9 @@ objects:
           - name: DB_MAX_OVERFLOW
             value: ${DB_MAX_OVERFLOW}
     - name: processor
+      replicas: ${{PROCESSOR_REPLICA_COUNT}}
       podSpec:
         image: ${IMAGE}:${IMAGE_TAG}
-        replicas: ${{PROCESSOR_REPLICA_COUNT}}
         command: ["bash"]
         args: ["-c", "python -m ros.processor.main"]
         resources:
