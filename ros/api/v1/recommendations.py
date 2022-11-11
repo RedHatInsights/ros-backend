@@ -1,5 +1,5 @@
-from ros.lib.models import Rule, RhAccount, System, db, PerformanceProfile
-from ros.lib.utils import is_valid_uuid, identity
+from ros.lib.models import Rule, System, db, PerformanceProfile
+from ros.lib.utils import is_valid_uuid, identity, system_ids_by_org_id
 from ros.lib.config import INSTANCE_PRICE_UNIT
 from flask_restful import Resource, abort, fields, marshal_with
 from flask import request
@@ -51,9 +51,7 @@ class RecommendationsApi(Resource):
 
         filter_description = request.args.get('description')
 
-        tenant_query = db.session.query(RhAccount.id).filter(RhAccount.org_id == ident['org_id']).subquery()
-        system = db.session.query(System) \
-            .filter(System.tenant_id.in_(tenant_query)).filter(System.inventory_id == host_id).first()
+        system = system_ids_by_org_id(ident['org_id'], True).filter(System.inventory_id == host_id).first()
 
         if not system:
             abort(404, message="host with id {} doesn't exist"

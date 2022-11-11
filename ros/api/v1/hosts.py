@@ -411,8 +411,7 @@ class ExecutiveReportAPI(Resource):
     def get(self):
         org_id = org_id_from_identity_header(request)
         system_queryset = system_ids_by_org_id(org_id, fetch_records=True)
-        systems_with_performance_record_queryset = db.session.query(PerformanceProfile.system_id)\
-            .filter(PerformanceProfile.system_id.in_(system_ids_by_org_id(org_id)))
+        systems_with_performance_record_queryset = systems_ids_for_existing_profiles(org_id)
 
         # System counts
         total_systems = systems_with_performance_record_queryset.count()
