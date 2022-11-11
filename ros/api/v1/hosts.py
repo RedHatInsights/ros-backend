@@ -425,23 +425,40 @@ class ExecutiveReportAPI(Resource):
     @marshal_with(report_fields)
     def get(self):
         org_id = org_id_from_identity_header(request)
-        system_queryset = system_ids_by_org_id(org_id, fetch_records=True)  # Necesary for component state aggregations
-        systems_with_performance_record_queryset = db.session.query(PerformanceProfile) \
-            .filter(PerformanceProfile.system_id.in_(system_ids_by_org_id(org_id)))
+        systems_with_performance_record_queryset = db.session.query(
+            System.id,
+            System.state,
+            System.instance_type,
+            System.cpu_states,
+            System.io_states,
+            System.memory_states,
+            PerformanceProfile.system_id,
+            PerformanceProfile.report_date,
+            PerformanceProfile.rule_hit_details,
+            PerformanceProfile.psi_enabled
+        ).select_from(System).join(PerformanceProfile).filter(
+            System.id == PerformanceProfile.system_id
+            and System.id.in_(system_ids_by_org_id(org_id))
+        )
+
         systems_with_performance_record_subquery = systems_with_performance_record_queryset.subquery()
 
         # System counts
         total_systems = systems_with_performance_record_queryset.count()
-        optimized_systems = count_per_state(system_queryset, {'state': "Optimized"})
-        under_pressure_systems = count_per_state(system_queryset, {'state': "Under pressure"})
-        undersized_systems = count_per_state(system_queryset, {'state': "Undersized"})
-        oversized_systems = count_per_state(system_queryset, {'state': "Oversized"})
-        waiting_for_data_systems = count_per_state(system_queryset, {'state': "Waiting for data"})
-        idling_systems = count_per_state(system_queryset, {'state': "Idling"})
+        optimized_systems = count_per_state(systems_with_performance_record_queryset, {'state': "Optimized"})
+        under_pressure_systems = count_per_state(systems_with_performance_record_queryset, {'state': "Under pressure"})
+        undersized_systems = count_per_state(systems_with_performance_record_queryset, {'state': "Undersized"})
+        oversized_systems = count_per_state(systems_with_performance_record_queryset, {'state': "Oversized"})
+        waiting_for_data_systems = count_per_state(
+            systems_with_performance_record_queryset,
+            {'state': "Waiting for data"}
+        )
+        idling_systems = count_per_state(systems_with_performance_record_queryset, {'state': "Idling"})
 
-        non_optimized = system_queryset.filter(
+        non_optimized_queryset = systems_with_performance_record_queryset.filter(
             System.state.in_(
-                ['Oversized', 'Undersized', 'Idling', 'Under pressure'])
+                ['Oversized', 'Undersized', 'Idling', 'Under pressure']
+            )
         )
         non_optimized_count = 0
         total_keys = ['cpu', 'memory', 'io']
@@ -451,27 +468,27 @@ class ExecutiveReportAPI(Resource):
         memory_states_dict = dict.fromkeys(state_keys, 0)
         io_states_dict = dict.fromkeys(state_keys, 0)
 
-        for system in non_optimized:
+        for record in non_optimized_queryset:
             non_optimized_count += 1
-            if system.cpu_states:
-                totals['cpu'] = totals['cpu'] + len(system.cpu_states)
-                if SubStates.CPU_UNDERSIZED.value in system.cpu_states:
+            if record.cpu_states:
+                totals['cpu'] = totals['cpu'] + len(record.cpu_states)
+                if SubStates.CPU_UNDERSIZED.value in record.cpu_states:
                     cpu_states_dict['undersized'] += 1
-                if SubStates.CPU_UNDER_PRESSURE.value in system.cpu_states:
+                if SubStates.CPU_UNDER_PRESSURE.value in record.cpu_states:
                     cpu_states_dict['under_pressure'] += 1
-                if SubStates.CPU_OVERSIZED.value in system.cpu_states:
+                if SubStates.CPU_OVERSIZED.value in record.cpu_states:
                     cpu_states_dict['oversized'] += 1
-            if system.memory_states:
-                totals['memory'] = totals['memory'] + len(system.memory_states)
-                if SubStates.MEMORY_UNDERSIZED.value in system.memory_states:
+            if record.memory_states:
+                totals['memory'] = totals['memory'] + len(record.memory_states)
+                if SubStates.MEMORY_UNDERSIZED.value in record.memory_states:
                     memory_states_dict['undersized'] += 1
-                if SubStates.MEMORY_UNDER_PRESSURE.value in system.memory_states:
+                if SubStates.MEMORY_UNDER_PRESSURE.value in record.memory_states:
                     memory_states_dict['under_pressure'] += 1
-                if SubStates.MEMORY_OVERSIZED.value in system.memory_states:
+                if SubStates.MEMORY_OVERSIZED.value in record.memory_states:
                     memory_states_dict['oversized'] += 1
-            if system.io_states:
-                totals['io'] = totals['io'] + len(system.io_states)
-                if SubStates.IO_UNDER_PRESSURE.value in system.io_states:
+            if record.io_states:
+                totals['io'] = totals['io'] + len(record.io_states)
+                if SubStates.IO_UNDER_PRESSURE.value in record.io_states:
                     io_states_dict['under_pressure'] += 1
                 # FIXME - enable this logic after getting IO states from advisor engine
                 # if SubStates.IO_UNDERSIZED.value in system.io_states:
@@ -492,9 +509,12 @@ class ExecutiveReportAPI(Resource):
             if record.report_date.date() == upload_date
         ]
 
-        historical_performance_profiles = db.session.query(PerformanceProfile).\
-            select_entity_from(select([PerformanceProfileHistory]))\
-            .join(
+        historical_performance_profiles = db.session.query(
+            PerformanceProfile).select_entity_from(
+            select([
+                PerformanceProfileHistory.system_id,
+                PerformanceProfileHistory.rule_hit_details
+            ])).join(
             systems_with_performance_record_subquery,
             systems_with_performance_record_subquery.c.system_id == PerformanceProfileHistory.system_id
         )  # Systems older than 7 days/stale systems are considered here

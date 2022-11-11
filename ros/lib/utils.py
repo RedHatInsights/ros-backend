@@ -15,7 +15,7 @@ from ros.lib.models import (
     PerformanceProfileHistory,
     db,)
 from ros.lib.config import get_logger
-from ros.lib.aws_instance_types import INSTANCE_TYPES
+from ros.lib import aws_instance_types
 from ros.processor.metrics import ec2_instance_lookup_failures
 
 LOG = get_logger(__name__)
@@ -128,11 +128,6 @@ def system_ids_by_org_id(org_id, fetch_records=False):
     return db.session.query(System.id).filter(System.tenant_id.in_(account_query))
 
 
-def performance_profiles_by_system_id(system_id, model):
-    if model in [PerformanceProfile, PerformanceProfileHistory]:
-        return db.session.query(model).filter(model.system_id == system_id)
-
-
 def org_id_from_identity_header(request):
     return identity(request)['identity']['org_id']
 
@@ -195,20 +190,22 @@ class MonitoringHandler(BaseHTTPRequestHandler):
             super().log_request(code, size)
 
 
-def generate_highlight_description(instance_type):
-    if instance_type not in INSTANCE_TYPES.keys():
-        # logging lookup failure on Prometheus
-        ec2_instance_lookup_failures.labels(reporter='API Events').inc()
-        return 'NA'
+def generate_highlight_description(instance_type, cloud_provider):
+    instance_type_properties, cpu_type, num_vcpus, ram_gb, cloud_regions = None, None, None, None, None
+    if cloud_provider == 'AWS':
+        instance_type_properties = aws_instance_types.INSTANCE_TYPES.get(instance_type, None)
+        if instance_type_properties is None:
+            # logging lookup failure on Prometheus
+            ec2_instance_lookup_failures.labels(reporter='API Events').inc()
+            return 'NA'
 
-    cpu_type = INSTANCE_TYPES[instance_type]['extra']['physicalProcessor']
-    num_vcpus = INSTANCE_TYPES[instance_type]['extra']['vcpu']
-    ram_gb = INSTANCE_TYPES[instance_type]['extra']['memory']
-    cloud_regions = INSTANCE_TYPES[instance_type]['extra']['regionCode']
-    cloud = 'AWS'  # Update when multi cloud provider support is added
+        cpu_type = instance_type_properties['extra']['physicalProcessor']
+        num_vcpus = instance_type_properties['extra']['vcpu']
+        ram_gb = instance_type_properties['extra']['memory']
+        cloud_regions = instance_type_properties['extra']['regionCode']
 
     description_text = f'{cpu_type} instance with {num_vcpus} vCPUs ' \
-                       f'and {ram_gb} of RAM, running on {cloud} ' \
+                       f'and {ram_gb} of RAM, running on {cloud_provider} ' \
                        f'{cloud_regions} regions'
 
     return description_text
@@ -217,20 +214,16 @@ def generate_highlight_description(instance_type):
 def highlights_instance_types(queryset, highlight_type):
     instance_candidates, values_dict, highlights_list = [], {}, []
     if highlight_type == 'current':
-        for performance_profile in queryset:
+        for record in queryset:
             try:
-                instance_candidates.append(performance_profile.rule_hit_details[0]['details']['instance_type'])
+                _instance_type = record.rule_hit_details[0]['details']['instance_type']
             except (IndexError, KeyError):
-                # Systems w/o profiles are being considered in 'current'
-                # Ex: Optimized, Waiting for Data, etc.
-                system_record = db.session.query(System).\
-                    filter_by(id=performance_profile.system_id).first()
-                if system_record:
-                    instance_candidates.append(system_record.instance_type)
+                _instance_type = None
+            instance_candidates.append(_instance_type if _instance_type else record.instance_type)
     elif highlight_type in ['suggested', 'historical']:
-        for performance_profile in queryset:
+        for _record in queryset:
             try:
-                instance_candidates.append(performance_profile.rule_hit_details[0]['details']['candidates'][0][0])
+                instance_candidates.append(_record.rule_hit_details[0]['details']['candidates'][0][0])
             except (IndexError, KeyError):
                 continue
 
@@ -246,7 +239,8 @@ def highlights_instance_types(queryset, highlight_type):
         highlights_list.append({
             "type": key,
             "count": value,
-            "desc": generate_highlight_description(key)
+            # file will differ w.r.t. instance_type properties as per cloud_provider value
+            "desc": generate_highlight_description(key, 'AWS')
         })
         item_count += 1
 
