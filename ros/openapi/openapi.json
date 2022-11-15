@@ -825,7 +825,9 @@
                             "RHEL 8.2",
                             "RHEL 8.3",
                             "RHEL 8.4",
-                            "RHEL 8.5"
+                            "RHEL 8.5",
+                            "RHEL 8.6",
+                            "RHEL 9.0"
                         ]
                     }
                 }
