@@ -1,6 +1,5 @@
 import logging
 from flask import request
-from sqlalchemy.orm import aliased
 from sqlalchemy.types import Float
 from ros.lib.constants import SubStates
 
@@ -510,16 +509,12 @@ class ExecutiveReportAPI(Resource):
             if record.report_date.date() == upload_date
         ]
 
-        aliased_performance_profile_history = aliased(PerformanceProfileHistory, name='performance_profile_history')
-
         historical_performance_profiles = db.session.query(
-            systems_with_performance_record_subquery.c.system_id,
-            systems_with_performance_record_subquery.c.rule_hit_details
-        ).select_from(
-            aliased_performance_profile_history
+            PerformanceProfileHistory.system_id,
+            PerformanceProfileHistory.rule_hit_details
         ).join(
             systems_with_performance_record_subquery,
-            systems_with_performance_record_subquery.c.system_id == aliased_performance_profile_history.system_id
+            systems_with_performance_record_subquery.c.system_id == PerformanceProfileHistory.system_id
         )  # Systems older than 7 days/stale systems are considered here
 
         stale_count = systems_with_performance_record_queryset.filter(
