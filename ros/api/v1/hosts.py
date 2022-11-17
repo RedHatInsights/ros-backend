@@ -501,12 +501,15 @@ class ExecutiveReportAPI(Resource):
         total_conditions = totals['cpu'] + totals['memory'] + totals['io']
 
         current_utc_datetime = datetime.now(timezone.utc)
-        upload_date = (current_utc_datetime - timedelta(days=1)).date()
+        stale_date = (current_utc_datetime - timedelta(days=7)).date()
 
         current_performance_profiles = [
             record
             for record in systems_with_performance_record_queryset
-            if record.report_date.date() == upload_date
+            if (
+                    record.report_date.date() == current_utc_datetime.date()
+                    and record.report_date.date() > stale_date
+            )
         ]
 
         historical_performance_profiles = db.session.query(
@@ -518,7 +521,7 @@ class ExecutiveReportAPI(Resource):
         )  # Systems older than 7 days/stale systems are considered here
 
         stale_count = systems_with_performance_record_queryset.filter(
-            PerformanceProfile.report_date < (current_utc_datetime - timedelta(days=7))
+            PerformanceProfile.report_date <= stale_date
         ).count()
 
         non_psi_count = systems_with_performance_record_queryset.filter_by(psi_enabled=False).count()
