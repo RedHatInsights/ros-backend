@@ -8,12 +8,11 @@ from ros.lib.utils import systems_ids_for_existing_profiles
 logger = get_logger(__name__)
 
 
-def new_suggestion_event(host, platform_metadata, previous_state, current_state, producer):
+def notification_payload(host, previous_state, current_state):
 
     org_id = host.get("org_id")
     query = systems_ids_for_existing_profiles(org_id)
     systems_with_suggestions = query.filter(PerformanceProfile.number_of_recommendations > 0).count()
-    request_id = platform_metadata.get('request_id')
     payload = {
         "bundle": "rhel",
         "application": "resource-optimization",
@@ -40,7 +39,7 @@ def new_suggestion_event(host, platform_metadata, previous_state, current_state,
             }
         ],
     }
-    upload_message_to_notification(payload, request_id, producer)
+    return payload
 
 
 def delivery_report(err, msg, request_id):
@@ -66,7 +65,9 @@ def delivery_report(err, msg, request_id):
         )
 
 
-def upload_message_to_notification(payload, request_id, producer):
+def new_suggestion_event(host, platform_metadata, system_previous_state, system_current_state, producer):
+    request_id = platform_metadata.get('request_id')
+    payload = notification_payload(host, system_previous_state, system_current_state)
     bytes_ = json.dumps(payload).encode('utf-8')
     producer.produce(NOTIFICATIONS_TOPIC, bytes_, on_delivery=lambda err, msg: delivery_report(err, msg, request_id))
     producer.poll()

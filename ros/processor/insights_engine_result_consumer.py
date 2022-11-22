@@ -208,7 +208,7 @@ class InsightsEngineResultConsumer:
 
                 # Trigger event for notification
                 self.trigger_notification(
-                    system, account, host, platform_metadata, system_previous_state, system_current_state
+                    system.inventory_id, account, host, platform_metadata, system_previous_state, system_current_state
                 )
 
                 processor_requests_success.labels(
@@ -224,13 +224,13 @@ class InsightsEngineResultConsumer:
                           self.prefix, host['id'], account.account, account.org_id, err)
 
     def trigger_notification(
-        self, system, account, host, platform_metadata, system_previous_state, system_current_state
+        self, inventory_id, account, host, platform_metadata, system_previous_state, system_current_state
     ):
         if system_previous_state[0] is not None:
             if system_current_state not in (SYSTEM_STATES['OPTIMIZED'], system_previous_state[0]):
                 LOG.info(
                     "%s - Triggering a new suggestion event for the system: %s belonging" +
                     "to account: %s (%s) and org_id: %s",
-                    self.prefix, system.inventory_id, account.account, account.id, account.org_id
+                    self.prefix, inventory_id, account.account, account.id, account.org_id
                 )
                 new_suggestion_event(host, platform_metadata, system_previous_state, system_current_state, producer)
