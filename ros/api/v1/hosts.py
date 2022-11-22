@@ -506,10 +506,7 @@ class ExecutiveReportAPI(Resource):
         current_performance_profiles = [
             record
             for record in systems_with_performance_record_queryset
-            if (
-                    record.report_date.date() == current_utc_datetime.date()
-                    and record.report_date.date() > stale_date
-            )
+            if current_utc_datetime.date() >= record.report_date.date() > stale_date
         ]
 
         historical_performance_profiles = db.session.query(
