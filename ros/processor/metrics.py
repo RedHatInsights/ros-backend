@@ -29,3 +29,9 @@ archive_failed_to_download = Counter(
     "Number of archives that failed to download",
     ["org_id"]
 )
+
+ec2_instance_lookup_failures = Counter(
+    "failed_to_lookup_ec2_instance_type",
+    "Number of AWS EC2 instance type lookup failures",
+    ["org_id"]
+)

@@ -608,6 +608,53 @@
                           }
                         }
                       },
+                      "instance_types_highlights": {
+                        "type": "object",
+                        "properties":{
+                          "current": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "count": {
+                                "type": "integer"
+                                },
+                              "desc": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "suggested": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "count": {
+                                "type": "integer"
+                                },
+                              "desc": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "historical": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "count": {
+                                "type": "integer"
+                                },
+                              "desc": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      },
                       "meta": {
                         "type": "object",
                         "properties": {
@@ -618,6 +665,9 @@
                             "type": "integer"
                           },
                           "conditions_count": {
+                            "type": "integer"
+                          },
+                          "stale_count": {
                             "type": "integer"
                           },
                           "non_psi_count": {
