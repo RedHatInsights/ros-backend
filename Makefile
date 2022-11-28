@@ -16,3 +16,6 @@ insights-upload-data:
 
 api-get-hosts:
 	curl -v -H "Content-Type: application/json"  -H "x-rh-identity: ${b64_identity}" "localhost:8000/api/ros/v1/systems?order_by=max_io&order_how=DESC" | python -m json.tool
+
+configure-xjoin:
+	@./scripts/xjoin-config/configure-xjoin.sh
