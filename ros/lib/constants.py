@@ -17,3 +17,8 @@ class SubStates(Enum):
     MEMORY_OVERSIZED = 'MEMORY_OVERSIZED'
     IO_OVERSIZED = 'IO_OVERSIZED'
     CPU_IDLING = 'CPU_IDLING'
+
+
+BUNDLE = "rhel"
+APPLICATION = "resource-optimization"
+EVENT_TYPE = "new-suggestion"

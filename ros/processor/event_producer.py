@@ -4,20 +4,20 @@ from datetime import datetime, timezone
 from ros.lib.models import PerformanceProfile
 from ros.lib.config import NOTIFICATIONS_TOPIC, get_logger
 from ros.lib.utils import systems_ids_for_existing_profiles
+from ros.lib.constants import BUNDLE, APPLICATION, EVENT_TYPE
 
 logger = get_logger(__name__)
 
 
-def new_suggestion_event(host, platform_metadata, previous_state, current_state, producer):
+def notification_payload(host, system_previous_state, system_current_state):
 
     org_id = host.get("org_id")
     query = systems_ids_for_existing_profiles(org_id)
     systems_with_suggestions = query.filter(PerformanceProfile.number_of_recommendations > 0).count()
-    request_id = platform_metadata.get('request_id')
     payload = {
-        "bundle": "rhel",
-        "application": "resource-optimization",
-        "event_type": "new-suggestion",
+        "bundle": BUNDLE,
+        "application": APPLICATION,
+        "event_type": EVENT_TYPE,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "account_id": host.get("account") or "",
         "org_id": org_id,
@@ -34,13 +34,13 @@ def new_suggestion_event(host, platform_metadata, previous_state, current_state,
                     "display_name": host.get('display_name'),
                     "inventory_id": host.get('id'),
                     "message": f"{host.get('display_name')} has a new suggestion.",
-                    "previous_state": previous_state,
-                    "current_state": current_state
+                    "previous_state": system_previous_state,
+                    "current_state": system_current_state
                 },
             }
         ],
     }
-    upload_message_to_notification(payload, request_id, producer)
+    return payload
 
 
 def delivery_report(err, msg, request_id):
@@ -66,7 +66,9 @@ def delivery_report(err, msg, request_id):
         )
 
 
-def upload_message_to_notification(payload, request_id, producer):
+def new_suggestion_event(host, platform_metadata, system_previous_state, system_current_state, producer):
+    request_id = platform_metadata.get('request_id')
+    payload = notification_payload(host, system_previous_state, system_current_state)
     bytes_ = json.dumps(payload).encode('utf-8')
     producer.produce(NOTIFICATIONS_TOPIC, bytes_, on_delivery=lambda err, msg: delivery_report(err, msg, request_id))
     producer.poll()

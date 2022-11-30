@@ -6,6 +6,7 @@ from ros.lib.app import app
 from ros.lib.models import db, PerformanceProfile, PerformanceProfileHistory
 from ros.processor.insights_engine_result_consumer import InsightsEngineResultConsumer, SYSTEM_STATES
 from tests.helpers.db_helper import db_get_host, db_get_record
+from ros.processor.event_producer import notification_payload
 
 
 @pytest.fixture(scope="function")
@@ -216,3 +217,25 @@ def test_process_report_psi_enabled(engine_result_message, engine_consumer, db_s
     psi_enabled = db.session.query(PerformanceProfile).\
         filter_by(system_id=system_record.id).first().psi_enabled
     assert psi_enabled is True
+
+
+def test_notification(engine_result_message, engine_consumer, db_setup, performance_record):
+    engine_result_message = engine_result_message("insights-engine-result-under-pressure.json")
+    host = engine_result_message["input"]["host"]
+    platform_metadata = engine_result_message["input"]["platform_metadata"]
+    ros_reports = [engine_result_message["results"]["reports"][7]]
+    system_metadata = engine_result_message["results"]["system"]["metadata"]
+    system_previous_state = "Idle"
+    engine_consumer.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
+    system_record = db_get_host(host['id'])
+    response = notification_payload(
+                    host, system_previous_state, system_record.state)
+
+    assert response["account_id"] == host["account"]
+    assert response["context"]["display_name"] == "ip-172-31-28-69.ec2.internal"
+    assert response["events"][0]["payload"]["inventory_id"] == host["id"]
+    assert response["events"][0]["payload"]["previous_state"] == system_previous_state
+    assert response["events"][0]["payload"]["current_state"] == system_record.state
+    assert response["bundle"] == "rhel"
+    assert response["application"] == "resource-optimization"
+    assert response["event_type"] == "new-suggestion"
