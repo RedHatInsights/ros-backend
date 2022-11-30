@@ -8,7 +8,7 @@ from ros.lib.utils import systems_ids_for_existing_profiles
 logger = get_logger(__name__)
 
 
-def notification_payload(host, previous_state, current_state):
+def notification_payload(host, system_previous_state, system_current_state):
 
     org_id = host.get("org_id")
     query = systems_ids_for_existing_profiles(org_id)
@@ -33,8 +33,8 @@ def notification_payload(host, previous_state, current_state):
                     "display_name": host.get('display_name'),
                     "inventory_id": host.get('id'),
                     "message": f"{host.get('display_name')} has a new suggestion.",
-                    "previous_state": previous_state,
-                    "current_state": current_state
+                    "previous_state": system_previous_state,
+                    "current_state": system_current_state
                 },
             }
         ],
