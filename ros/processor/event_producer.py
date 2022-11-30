@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from ros.lib.models import PerformanceProfile
 from ros.lib.config import NOTIFICATIONS_TOPIC, get_logger
 from ros.lib.utils import systems_ids_for_existing_profiles
+from ros.lib.constants import BUNDLE, APPLICATION, EVENT_TYPE
 
 logger = get_logger(__name__)
 
@@ -14,9 +15,9 @@ def notification_payload(host, system_previous_state, system_current_state):
     query = systems_ids_for_existing_profiles(org_id)
     systems_with_suggestions = query.filter(PerformanceProfile.number_of_recommendations > 0).count()
     payload = {
-        "bundle": "rhel",
-        "application": "resource-optimization",
-        "event_type": "new-suggestion",
+        "bundle": BUNDLE,
+        "application": APPLICATION,
+        "event_type": EVENT_TYPE,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "account_id": host.get("account") or "",
         "org_id": org_id,

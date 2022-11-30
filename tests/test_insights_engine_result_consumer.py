@@ -236,3 +236,6 @@ def test_notification(engine_result_message, engine_consumer, db_setup, performa
     assert response["events"][0]["payload"]["inventory_id"] == host["id"]
     assert response["events"][0]["payload"]["previous_state"] == system_previous_state
     assert response["events"][0]["payload"]["current_state"] == system_record.state
+    assert response["bundle"] == "rhel"
+    assert response["application"] == "resource-optimization"
+    assert response["event_type"] == "new-suggestion"
