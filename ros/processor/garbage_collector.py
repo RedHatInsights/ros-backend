@@ -1,7 +1,9 @@
 from ros.lib.app import app, db
 from ros.lib.models import PerformanceProfile, PerformanceProfileHistory
 from datetime import datetime, timedelta, timezone
-from ros.lib.config import GARBAGE_COLLECTION_INTERVAL, DAYS_UNTIL_STALE, get_logger
+from ros.lib.config import GARBAGE_COLLECTION_INTERVAL, DAYS_UNTIL_STALE, METRICS_PORT, get_logger
+from ros.lib.cw_logging import commence_cw_log_streaming
+from prometheus_client import start_http_server
 import time
 
 LOG = get_logger(__name__)
@@ -47,3 +49,10 @@ class GarbageCollector():
                 f"{self.prefix} - Could not remove outdated records "
                 f"due to the following error {str(error)}."
             )
+
+
+if __name__ == "__main__":
+    start_http_server(int(METRICS_PORT))
+    commence_cw_log_streaming('ros-processor')
+    processor = GarbageCollector()
+    processor.run()
