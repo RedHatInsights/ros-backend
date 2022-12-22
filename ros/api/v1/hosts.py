@@ -54,7 +54,9 @@ OS_VERSIONS = {
     '8.2': {"name": "RHEL", "major": 8, "minor": 2},
     '8.3': {"name": "RHEL", "major": 8, "minor": 3},
     '8.4': {"name": "RHEL", "major": 8, "minor": 4},
-    '8.5': {"name": "RHEL", "major": 8, "minor": 5}
+    '8.5': {"name": "RHEL", "major": 8, "minor": 5},
+    '8.6': {"name": "RHEL", "major": 8, "minor": 6},
+    '9.0': {"name": "RHEL", "major": 9, "minor": 0},
 }
 
 SYSTEM_COLUMNS = [
