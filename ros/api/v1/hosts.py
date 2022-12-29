@@ -187,6 +187,8 @@ class HostsApi(Resource):
             modified_operating_systems = []
             for os in operating_systems:
                 os_object = {"name": "RHEL"}
+                if len(os) == 1:
+                    os += ".0"
                 os_object["major"] = int(os.split(".")[0])
                 os_object["minor"] = int(os.split(".")[1])
                 modified_operating_systems.append(os_object)
