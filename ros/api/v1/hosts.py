@@ -197,9 +197,9 @@ class HostsApi(Resource):
             modified_states = []
             for state in states:
                 state = state.capitalize()
-                modified_states.append(state)
                 if state not in SYSTEM_STATES_EXCEPT_EMPTY:
                     abort(400, message='values are not matching')
+                modified_states.append(state)
             filters.append(System.state.in_(modified_states))
         else:
             filters.append(System.state.in_(SYSTEM_STATES_EXCEPT_EMPTY))
