@@ -4,7 +4,7 @@ from sqlalchemy.types import Float
 from ros.lib.constants import SubStates
 
 from datetime import datetime, timedelta, timezone
-from sqlalchemy import asc, desc, nullslast, nullsfirst
+from sqlalchemy import asc, desc, nullslast, nullsfirst, Integer
 from flask_restful import Resource, abort, fields, marshal_with
 
 from ros.lib.models import (
@@ -428,7 +428,8 @@ class ExecutiveReportAPI(Resource):
             PerformanceProfile.system_id,
             PerformanceProfile.report_date,
             PerformanceProfile.rule_hit_details,
-            PerformanceProfile.psi_enabled
+            PerformanceProfile.psi_enabled,
+            PerformanceProfile.operating_system
         ).select_from(System).join(PerformanceProfile).filter(
             System.id == PerformanceProfile.system_id
             and System.id.in_(system_ids_by_org_id(org_id))
@@ -514,7 +515,11 @@ class ExecutiveReportAPI(Resource):
             PerformanceProfile.report_date <= stale_date
         ).count()
 
-        non_psi_count = systems_with_performance_record_queryset.filter_by(psi_enabled=False).count()
+        non_psi_count = systems_with_performance_record_queryset.filter(
+            PerformanceProfile.operating_system['major'].astext.cast(Integer) != 7,
+            PerformanceProfile.psi_enabled == False  # noqa
+        ).count()
+
         psi_enabled_count = systems_with_performance_record_queryset.filter_by(psi_enabled=True).count()
 
         response = {

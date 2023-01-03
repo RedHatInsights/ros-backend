@@ -6,8 +6,8 @@ from base64 import b64encode
 import pytest
 
 from ros.api.main import app
-from ros.lib.models import db
-from tests.helpers.db_helper import db_get_host
+from ros.lib.models import db, PerformanceProfile
+from tests.helpers.db_helper import db_get_host, db_get_record
 
 
 @pytest.fixture(scope="session")
@@ -197,7 +197,32 @@ def test_executive_report(
         assert response.json['conditions']['cpu']['count'] == 2
         assert response.json['conditions']['io']['count'] == 1
         assert response.json['conditions']['memory']['count'] == 2
-        assert response.json['meta']['non_psi_count'] == 1
+
+
+def test_psi_enabled(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        db_create_performance_profile
+):
+    with app.test_client() as client:
+        response = client.get(
+            '/api/ros/v1/executive_report',
+            headers={"x-rh-identity": auth_token}
+        )
+    assert response.json['meta']['non_psi_count'] == 1
+
+    performance_profile = db_get_record(PerformanceProfile)
+    performance_profile.operating_system = {"name": "RHEL", "major": 7, "minor": 7}
+    db.session.commit()
+
+    with app.test_client() as client:
+        response = client.get(
+            '/api/ros/v1/executive_report',
+            headers={"x-rh-identity": auth_token}
+        )
+    assert response.json['meta']['non_psi_count'] == 0
 
 
 def test_openapi_endpoint():
