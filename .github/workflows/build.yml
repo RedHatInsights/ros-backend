@@ -80,3 +80,9 @@ jobs:
         DB_PORT: 15432
         DB_USER: postgres
         DB_PASSWORD: postgres
+    - name: Upload coverage to codecov
+      uses: codecov/codecov-action@v3
+      with:
+        fail_ci_if_error: true
+        verbose: true
+        flags: unittests
