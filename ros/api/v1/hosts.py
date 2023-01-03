@@ -189,12 +189,15 @@ class HostsApi(Resource):
                 # FIXME: remove `if` block after getting OS values as numeric from frontend
                 if "RHEL" in os:
                     os = os.split(" ")[1]
-                os_object = {"name": "RHEL"}
-                if len(os) == 1:
-                    os += ".0"
-                os_object["major"] = int(os.split(".")[0])
-                os_object["minor"] = int(os.split(".")[1])
-                modified_operating_systems.append(os_object)
+                if os.replace('.', '', 1).isdigit():
+                    os_object = {"name": "RHEL"}
+                    if len(os) == 1:
+                        os += ".0"
+                    os_object["major"] = int(os.split(".")[0])
+                    os_object["minor"] = int(os.split(".")[1])
+                    modified_operating_systems.append(os_object)
+                else:
+                    abort(400, message='Not a valid RHEL version')
             filters.append(System.operating_system.in_(modified_operating_systems))
         return filters
 
