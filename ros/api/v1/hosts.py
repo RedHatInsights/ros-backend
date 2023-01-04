@@ -38,26 +38,6 @@ LOG = logging.getLogger(__name__)
 SYSTEM_STATES_EXCEPT_EMPTY = [
     "Oversized", "Undersized", "Idling", "Under pressure", "Storage rightsizing", "Optimized", "Waiting for data"
 ]
-OS_VERSIONS = {
-    '7.0': {"name": "RHEL", "major": 7, "minor": 0},
-    '7.1': {"name": "RHEL", "major": 7, "minor": 1},
-    '7.2': {"name": "RHEL", "major": 7, "minor": 2},
-    '7.3': {"name": "RHEL", "major": 7, "minor": 3},
-    '7.4': {"name": "RHEL", "major": 7, "minor": 4},
-    '7.5': {"name": "RHEL", "major": 7, "minor": 5},
-    '7.6': {"name": "RHEL", "major": 7, "minor": 6},
-    '7.7': {"name": "RHEL", "major": 7, "minor": 7},
-    '7.8': {"name": "RHEL", "major": 7, "minor": 8},
-    '7.9': {"name": "RHEL", "major": 7, "minor": 9},
-    '8.0': {"name": "RHEL", "major": 8, "minor": 0},
-    '8.1': {"name": "RHEL", "major": 8, "minor": 1},
-    '8.2': {"name": "RHEL", "major": 8, "minor": 2},
-    '8.3': {"name": "RHEL", "major": 8, "minor": 3},
-    '8.4': {"name": "RHEL", "major": 8, "minor": 4},
-    '8.5': {"name": "RHEL", "major": 8, "minor": 5},
-    '8.6': {"name": "RHEL", "major": 8, "minor": 6},
-    '9.0': {"name": "RHEL", "major": 9, "minor": 0},
-}
 
 SYSTEM_COLUMNS = [
     'inventory_id',
@@ -206,10 +186,18 @@ class HostsApi(Resource):
         if operating_systems := request.args.getlist('os'):
             modified_operating_systems = []
             for os in operating_systems:
-                os = os.split(" ")[1]
-                if os not in OS_VERSIONS.keys():
+                # FIXME: remove `if` block after getting OS values as numeric from frontend
+                if "RHEL" in os:
+                    os = os.split(" ")[1]
+                if os.replace('.', '', 1).isdigit():
+                    os_object = {"name": "RHEL"}
+                    if len(os) == 1:
+                        os += ".0"
+                    os_object["major"] = int(os.split(".")[0])
+                    os_object["minor"] = int(os.split(".")[1])
+                    modified_operating_systems.append(os_object)
+                else:
                     abort(400, message='Not a valid RHEL version')
-                modified_operating_systems.append(OS_VERSIONS[os])
             filters.append(System.operating_system.in_(modified_operating_systems))
         return filters
 

@@ -863,31 +863,11 @@
                 "name": "os",
                 "in": "query",
                 "required": false,
-                "description": "Filter system with the given os version",
+                "description": "Filter system with the given RHEL OS version. Eg, 8.4",
                 "schema": {
                     "type": "array",
                     "items": {
-                        "type": "string",
-                        "enum": [
-                            "RHEL 7.0",
-                            "RHEL 7.1",
-                            "RHEL 7.2",
-                            "RHEL 7.3",
-                            "RHEL 7.4",
-                            "RHEL 7.5",
-                            "RHEL 7.6",
-                            "RHEL 7.7",
-                            "RHEL 7.8",
-                            "RHEL 7.9",
-                            "RHEL 8.0",
-                            "RHEL 8.1",
-                            "RHEL 8.2",
-                            "RHEL 8.3",
-                            "RHEL 8.4",
-                            "RHEL 8.5",
-                            "RHEL 8.6",
-                            "RHEL 9.0"
-                        ]
+                        "type": "string"
                     }
                 }
             }

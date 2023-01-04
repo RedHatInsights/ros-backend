@@ -124,7 +124,7 @@ def test_system_no_os(auth_token, db_setup, db_create_account, db_create_system,
 def test_system_os_filter(auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile):
     with app.test_client() as client:
         response = client.get(
-            '/api/ros/v1/systems?os=RHEL 8.4',
+            '/api/ros/v1/systems?os=8.4',
             headers={"x-rh-identity": auth_token}
         )
         assert response.status_code == 200
