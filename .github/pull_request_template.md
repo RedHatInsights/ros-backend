@@ -1,10 +1,21 @@
-## Description :clipboard:
+## PR Title :boom:
 
-Please include a summary of the change/issue here along with the JIRA card number
+Please title this PR with a summary of the change, preferably with the JIRA card number.
 
-## Motivation and Context :thought_balloon:
+Feel free to remove this section from PR description once done.
 
-Please include the __idea behind this change__ here, also docs if relevant
+## What does this PR change? :thought_balloon:
+
+Please include the __idea behind this change__ here.
+
+## Documentation update? :memo:
+
+- [ ] Yes
+- [ ] No
+
+## Security Checklist :lock:
+
+Prior to raising this PR please go through the [RedHatInsights/secure-coding-checklist](https://github.com/RedHatInsights/secure-coding-checklist)
 
 ## :guardsman: Checklist :dart:
 
@@ -18,4 +29,4 @@ Please include the __idea behind this change__ here, also docs if relevant
 
 ## Additional :mega:
 
-Feel free to add any other relevant details here
+Feel free to add any other relevant details such as links, notes here.
