@@ -68,7 +68,7 @@ jobs:
     #   echo "Run, Build Application using script"
     #   ./location_of_script_within_repo/buildscript.sh
     
-    - name: Cache pip dependencies
+    - name: Cache pip packages
       uses: actions/cache@v3.2.2
       with:
         path: ~/.cache/pip
