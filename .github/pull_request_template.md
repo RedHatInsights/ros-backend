@@ -31,4 +31,4 @@ Upon raising this PR please go through [RedHatInsights/secure-coding-checklist](
 
 ## Additional :mega:
 
-Feel free to add any other relevant details such as links, notes here.
+Feel free to add any other relevant details such as __links, notes, screenshots__, here.
