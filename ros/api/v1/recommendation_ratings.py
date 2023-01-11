@@ -28,20 +28,28 @@ class RecommendationRatingsApi(Resource):
 
         data = json.loads(request.data)
         inventory_id = data['inventory_id']
-        rating = int(data['rating'])
-        if rating not in [c.value for c in RatingChoicesEnum]:
-            abort(
-                422,
-                message=(
-                    "{} is not a valid value for rating".format(rating)))
+        allowed_choices = [c.value for c in RatingChoicesEnum]
+
+        def invalid_value_msg(val):
+            return (
+                f"'{val}' is invalid value for rating."
+                f'Possible values - { *allowed_choices, }'
+            )
+        rating = None
+        try:
+            rating = int(data['rating'])
+        except ValueError:
+            abort(400, message=(invalid_value_msg(data['rating'])))
+
+        if rating not in allowed_choices:
+            abort(422, message=(invalid_value_msg(data['rating'])))
 
         system = System.query.filter(
             System.inventory_id == inventory_id
         ).first()
 
         if system is None:
-            abort(404, message="System {} doesn't exist"
-                  .format(inventory_id))
+            abort(404, message=f"System {inventory_id} doesn't exist")
 
         rating_record = RecommendationRating.query.filter(
             RecommendationRating.system_id == system.id,
