@@ -108,7 +108,7 @@ objects:
       podSpec:
         image: ${IMAGE}:${IMAGE_TAG}
         command: ["bash"]
-        args: ["-c", "python -m ros.processor.insights_engine_result_consumer"]
+        args: ["-c", "python -m ros.processor.insights_engine_consumer"]
         resources:
           requests:
             cpu: ${CPU_REQUEST}

@@ -34,7 +34,7 @@ LOG = get_logger(__name__)
 producer = None
 
 
-class InsightsEngineResultConsumer:
+class InsightsEngineConsumer:
     def __init__(self):
         """Create Engine Consumer."""
         self.consumer = consume.init_consumer(ENGINE_RESULT_TOPIC)
@@ -243,5 +243,5 @@ class InsightsEngineResultConsumer:
 if __name__ == "__main__":
     start_http_server(int(METRICS_PORT))
     commence_cw_log_streaming('ros-processor-insights-engine')
-    processor = InsightsEngineResultConsumer()
+    processor = InsightsEngineConsumer()
     processor.run()

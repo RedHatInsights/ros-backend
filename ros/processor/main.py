@@ -2,7 +2,7 @@ from http.server import HTTPServer
 from ros.lib.utils import PROCESSOR_INSTANCES, MonitoringHandler
 from ros.lib.cw_logging import commence_cw_log_streaming
 from ros.processor.inventory_events_consumer import InventoryEventsConsumer
-from ros.processor.insights_engine_result_consumer import InsightsEngineResultConsumer
+from ros.processor.insights_engine_consumer import InsightsEngineConsumer
 from ros.processor.garbage_collector import GarbageCollector
 from prometheus_client import start_http_server
 import threading
@@ -10,7 +10,7 @@ from ros.lib.config import METRICS_PORT, ROS_PROCESSOR_PORT
 
 
 def process_engine_results():
-    processor = InsightsEngineResultConsumer()
+    processor = InsightsEngineConsumer()
     processor.processor_name = 'process-engine-results'
     PROCESSOR_INSTANCES.append(processor)
     processor.run()

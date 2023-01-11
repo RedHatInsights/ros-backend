@@ -4,7 +4,7 @@ import copy
 from pathlib import Path
 from ros.lib.app import app
 from ros.lib.models import db, PerformanceProfile, PerformanceProfileHistory
-from ros.processor.insights_engine_result_consumer import InsightsEngineResultConsumer, SYSTEM_STATES
+from ros.processor.insights_engine_consumer import InsightsEngineConsumer, SYSTEM_STATES
 from tests.helpers.db_helper import db_get_host, db_get_record
 from ros.processor.event_producer import notification_payload
 
@@ -46,13 +46,13 @@ def engine_result_message():
 
 @pytest.fixture
 def engine_consumer():
-    return InsightsEngineResultConsumer()
+    return InsightsEngineConsumer()
 
 
 def test_handle_msg(engine_result_message, engine_consumer, mocker, performance_record):
     engine_result_message = engine_result_message("insights-engine-result-idle.json")
     mocker.patch(
-        'ros.processor.insights_engine_result_consumer.get_performance_profile',
+        'ros.processor.insights_engine_consumer.get_performance_profile',
         return_value=performance_record,
         autospec=True
     )

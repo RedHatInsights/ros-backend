@@ -149,27 +149,27 @@ services:
       - kafka-create-topics
       - insights-inventory-mq
   # Allows us to run the application in the form it's going to be deployed, will be needed for tests
-  ros-processor: &ros
-    build:
-      context: ..
-    command: [ "python", "-m", "ros.processor.main" ]
-    depends_on:
-      - insights-inventory-web
-      - insights-engine
-      - kafka
-      - createbuckets
-    environment:
-      - INSIGHTS_KAFKA_HOST=kafka
-      - INSIGHTS_KAFKA_PORT=29092
-      - INVENTORY_HOST=insights-inventory-web
-      - INVENTORY_PORT=8000
-      - ROS_DB_HOST=db-ros
-      - ROS_DB_PORT=5432
-  ros-api:
-    <<: *ros
-    command: ["bash", "-c", "python -m manage db upgrade && python -m manage seed && python -m ros.api.main"]
-    ports:
-      - 8000:8000
+  # ros-processor: &ros
+  #   build:
+  #     context: ..
+  #   command: [ "python", "-m", "ros.processor.main" ]
+  #   depends_on:
+  #     - insights-inventory-web
+  #     - insights-engine
+  #     - kafka
+  #     - createbuckets
+  #   environment:
+  #     - INSIGHTS_KAFKA_HOST=kafka
+  #     - INSIGHTS_KAFKA_PORT=29092
+  #     - INVENTORY_HOST=insights-inventory-web
+  #     - INVENTORY_PORT=8000
+  #     - ROS_DB_HOST=db-ros
+  #     - ROS_DB_PORT=5432
+  # ros-api:
+  #   <<: *ros
+  #   command: ["bash", "-c", "python -m manage db upgrade && python -m manage seed && python -m ros.api.main"]
+  #   ports:
+  #     - 8000:8000
   # logging and Monitoring
   grafana:
       ports:
