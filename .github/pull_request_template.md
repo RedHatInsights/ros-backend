@@ -1,8 +1,11 @@
 ## PR Title :boom:
 
-Please title this PR with a summary of the change, preferably with the JIRA card number.
+Please title this PR with a summary of the change, along with the JIRA card number.
 
-Suggested format: __RHIROS-XXX | Title__
+Suggested formats: 
+
+1. Fixes/Refs #RHIROS-XXX - Title
+2. RHIROS-XXX Title 
 
 Feel free to remove this section from PR description once done.
 
