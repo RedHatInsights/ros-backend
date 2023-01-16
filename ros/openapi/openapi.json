@@ -251,7 +251,7 @@
                         }
                     },
                     "422": {
-                        "description": "Invalid input for rating",
+                        "description": "Invalid choice of input for rating",
                         "content": {
                             "application/json": {
                                 "schema": {
