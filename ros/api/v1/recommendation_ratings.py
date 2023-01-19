@@ -1,70 +1,6 @@
-import json
-from flask import request
-from flask_restful import Resource, abort, fields, marshal_with
-from ros.lib.models import RecommendationRating, System, db, RatingChoicesEnum
-from ros.lib.utils import identity, user_data_from_identity
-
-
-def validate_rating_post_api(func):
-    """Validate POST rating request."""
-    allowed_choices = [c.value for c in RatingChoicesEnum]
-
-    def error_msg(error_code, value):
-        errors = {
-            400: "is invalid value for rating.",
-            422: "is invalid choice of input for rating."
-        }
-        return (
-            f"'{value}' { errors.get(error_code, 'Invalid') }"
-            f"Possible values - { *allowed_choices, }"
-        )
-
-    def check_for_rating(data):
-        rating = None
-        try:
-            rating = int(data['rating'])
-        except ValueError:
-            abort(400, message=(error_msg(400, data['rating'])))
-
-        if rating not in allowed_choices:
-            abort(422, message=(error_msg(422, data['rating'])))
-
-        return rating
-
-    def check_for_user():
-        ident = identity(request)['identity']
-        user = user_data_from_identity(ident)
-        username = user['username'] if 'username' in user else None
-
-        if username is None:
-            abort(403, message="Username doesn't exist")
-
-        return username
-
-    def check_for_system(inventory_id):
-        system = System.query.filter(
-            System.inventory_id == inventory_id
-        ).first()
-
-        if system is None:
-            abort(404, message=f"System {inventory_id} doesn't exist")
-
-        return system.id
-
-    def validate_request(*args, **kwargs):
-        username = check_for_user()
-        data = json.loads(request.data)
-        inventory_id = data['inventory_id']
-        system_id = check_for_system(inventory_id)
-        rating = check_for_rating(data)
-        new_kwargs = {
-            'rating': rating, 'username': username,
-            'inventory_id': inventory_id, 'system_id': system_id
-        }
-        new_kwargs.update(kwargs)
-        return func(*args, **new_kwargs)
-
-    return validate_request
+from flask_restful import Resource, fields, marshal_with
+from ros.lib.models import RecommendationRating, db
+from ros.api.common.utils import validate_rating_post_api
 
 
 class RecommendationRatingsApi(Resource):
@@ -89,7 +25,8 @@ class RecommendationRatingsApi(Resource):
 
         rating_record = RecommendationRating.query.filter(
             RecommendationRating.system_id == system_id,
-            RecommendationRating.rated_by == username).first()
+            RecommendationRating.rated_by == username
+        ).first()
 
         if rating_record:
             rating_record.rating = rating
