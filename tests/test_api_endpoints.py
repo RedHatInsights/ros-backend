@@ -180,6 +180,83 @@ def test_system_rating(
         assert test_host_detail.json["rating"] == data_dict['rating']
 
 
+def test_system_rating_with_invalid_args(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        db_create_performance_profile
+):
+    with app.test_client() as client:
+        response = client.post(
+            '/api/ros/v1/rating',
+            headers={"x-rh-identity": auth_token},
+            data='inventory_id'
+        )
+        assert response.status_code == 400
+        assert response.json["message"] == 'Decoding JSON has failed.'
+
+
+def test_system_rating_with_invalid_rating_choice(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        db_create_performance_profile
+):
+    with app.test_client() as client:
+        data_dict = {
+            "inventory_id": "ee0b9978-fe1b-4191-8408-cbadbd47f7a3",
+            "rating": 4
+        }
+        response = client.post(
+            '/api/ros/v1/rating',
+            headers={"x-rh-identity": auth_token},
+            data=json.dumps(data_dict)
+        )
+        assert response.status_code == 422
+
+
+def test_system_rating_with_invalid_rating_value(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        db_create_performance_profile
+):
+    with app.test_client() as client:
+        data_dict = {
+            "inventory_id": "ee0b9978-fe1b-4191-8408-cbadbd47f7a3",
+            "rating": "-1;start-sleep -s 15 #"
+        }
+        response = client.post(
+            '/api/ros/v1/rating',
+            headers={"x-rh-identity": auth_token},
+            data=json.dumps(data_dict)
+        )
+        assert response.status_code == 400
+
+
+def test_system_rating_with_invalid_system(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        db_create_performance_profile
+):
+    with app.test_client() as client:
+        data_dict = {
+            "inventory_id": "cbadbd47f7a3",
+            "rating": 1
+        }
+        response = client.post(
+            '/api/ros/v1/rating',
+            headers={"x-rh-identity": auth_token},
+            data=json.dumps(data_dict)
+        )
+        assert response.status_code == 404
+
+
 def test_executive_report(
         auth_token,
         db_setup,
