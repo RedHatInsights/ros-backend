@@ -3,12 +3,13 @@ import logging
 from flask import request
 from flask_restful import abort
 from ros.lib.models import System, RatingChoicesEnum
-from ros.lib.utils import identity, user_data_from_identity
+from ros.lib.utils import identity, user_data_from_identity, is_valid_uuid
+
 
 LOG = logging.getLogger(__name__)
 
 
-def validate_rating_post_api(func):
+def validate_rating_data(func):
     """Validate POST rating request."""
     allowed_choices = [c.value for c in RatingChoicesEnum]
 
@@ -45,6 +46,9 @@ def validate_rating_post_api(func):
         return username
 
     def check_for_system(inventory_id):
+        if not is_valid_uuid(inventory_id):
+            abort(404, message='Invalid inventory_id, Id should be in form of UUID4')
+
         system = System.query.filter(
             System.inventory_id == inventory_id
         ).first()

@@ -260,8 +260,18 @@
                             }
                         }
                     },
+                    "403": {
+                        "description": "Forbidden",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Message"
+                                }
+                            }
+                        }
+                    },
                     "404": {
-                        "description": "System doesn't exist",
+                        "description": "Not found",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -271,7 +281,7 @@
                         }
                     },
                     "400": {
-                        "description": "Invalid input for rating",
+                        "description": "Bad request",
                         "content": {
                             "application/json": {
                                 "schema": {

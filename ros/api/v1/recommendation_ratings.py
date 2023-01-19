@@ -1,6 +1,6 @@
 from flask_restful import Resource, fields, marshal_with
 from ros.lib.models import RecommendationRating, db
-from ros.api.common.utils import validate_rating_post_api
+from ros.api.common.utils import validate_rating_data
 
 
 class RecommendationRatingsApi(Resource):
@@ -10,7 +10,7 @@ class RecommendationRatingsApi(Resource):
         'rating': fields.Integer
     }
 
-    @validate_rating_post_api
+    @validate_rating_data
     @marshal_with(rating_fields)
     def post(self, **kwargs):
         """
