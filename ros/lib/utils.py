@@ -8,6 +8,8 @@ import base64
 import json
 from flask import jsonify, make_response
 from flask_restful import abort
+from sqlalchemy import Integer
+
 from ros.lib.models import (
     RhAccount,
     System,
@@ -188,6 +190,13 @@ class MonitoringHandler(BaseHTTPRequestHandler):
             return
         else:
             super().log_request(code, size)
+
+
+def get_psi_count(queryset: db.Model, bool_flag: bool) -> int:
+    return queryset.filter(
+        PerformanceProfile.operating_system['major'].astext.cast(Integer) != 7,
+        PerformanceProfile.psi_enabled == bool_flag
+    ).count()
 
 
 def generate_highlight_description(instance_type, cloud_provider):
