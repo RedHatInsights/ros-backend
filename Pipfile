@@ -5,7 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 flake8 = "*"
-pytest = "*"
+pytest = "~=7.2.0"
 sqlalchemy-utils = "*"
 pytest-mock = "*"
 pytest-cov = "*"
