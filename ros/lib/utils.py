@@ -6,7 +6,9 @@ import threading
 import uuid
 import base64
 import json
-from flask import jsonify, make_response
+
+
+from flask import jsonify, make_response, request
 from flask_restful import abort
 from ros.lib.models import (
     RhAccount,
@@ -66,6 +68,10 @@ def identity(request):
         abort(response)
     else:
         return json.loads(base64.b64decode(ident))
+
+
+def api_cache_key(*args):
+    return f"{request.path} - {identity(request)['identity']['user']['email']}"
 
 
 def user_data_from_identity(identity):

@@ -51,6 +51,7 @@ if CLOWDER_ENABLED:
     REDIS_PASSWORD = LoadedConfig.inMemoryDb.password
     REDIS_HOST = LoadedConfig.inMemoryDb.hostname
     REDIS_PORT = LoadedConfig.inMemoryDb.port
+    API_CACHE_TIMEOUT = 3600
     METRICS_PORT = LoadedConfig.metricsPort
     KAFKA_BROKER = LoadedConfig.kafka.brokers[0]
     KAFKA_CACERT_LOCATION = None
@@ -83,6 +84,7 @@ else:
     REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", default="")
     REDIS_HOST = os.getenv("REDIS_HOST", default="localhost")
     REDIS_PORT = os.getenv("REDIS_PORT", default=6379)
+    API_CACHE_TIMEOUT = 1
     INSIGHTS_KAFKA_HOST = os.getenv("INSIGHTS_KAFKA_HOST", "localhost")
     INSIGHTS_KAFKA_PORT = os.getenv("INSIGHTS_KAFKA_PORT", "9092")
     INSIGHTS_KAFKA_ADDRESS = f"{INSIGHTS_KAFKA_HOST}:{INSIGHTS_KAFKA_PORT}"

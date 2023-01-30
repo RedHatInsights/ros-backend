@@ -1,12 +1,15 @@
 import logging
 from flask import request
 from sqlalchemy.types import Float
+
+from ros.lib.config import API_CACHE_TIMEOUT
 from ros.lib.constants import SubStates
 
 from datetime import datetime, timedelta, timezone
 from sqlalchemy import asc, desc, nullslast, nullsfirst, Integer
 from flask_restful import Resource, abort, fields, marshal_with
 
+from ros.lib.app import cache
 from ros.lib.models import (
     db,
     System,
@@ -26,6 +29,7 @@ from ros.lib.utils import (
     calculate_percentage,
     org_id_from_identity_header,
     highlights_instance_types,
+    api_cache_key,
 )
 from ros.api.common.pagination import (
     limit_value,
@@ -112,6 +116,12 @@ class HostsApi(Resource):
     }
 
     @marshal_with(output_fields)
+    @cache.cached(
+        timeout=API_CACHE_TIMEOUT,
+        query_string=True,
+        make_cache_key=api_cache_key,
+        source_check=True
+    )
     def get(self):
         limit = limit_value()
         offset = offset_value()
@@ -416,6 +426,12 @@ class ExecutiveReportAPI(Resource):
     }
 
     @marshal_with(report_fields)
+    @cache.cached(
+        timeout=API_CACHE_TIMEOUT,
+        query_string=True,
+        make_cache_key=api_cache_key,
+        source_check=True
+    )
     def get(self):
         org_id = org_id_from_identity_header(request)
         systems_with_performance_record_queryset = db.session.query(
