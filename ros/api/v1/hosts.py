@@ -4,7 +4,7 @@ from sqlalchemy.types import Float
 from ros.lib.constants import SubStates
 
 from datetime import datetime, timedelta, timezone
-from sqlalchemy import asc, desc, nullslast, nullsfirst, Integer
+from sqlalchemy import asc, desc, nullslast, nullsfirst
 from flask_restful import Resource, abort, fields, marshal_with
 
 from ros.lib.models import (
@@ -25,7 +25,7 @@ from ros.lib.utils import (
     count_per_state,
     calculate_percentage,
     org_id_from_identity_header,
-    highlights_instance_types,
+    highlights_instance_types, get_psi_count,
 )
 from ros.api.common.pagination import (
     limit_value,
@@ -515,12 +515,8 @@ class ExecutiveReportAPI(Resource):
             PerformanceProfile.report_date <= stale_date
         ).count()
 
-        non_psi_count = systems_with_performance_record_queryset.filter(
-            PerformanceProfile.operating_system['major'].astext.cast(Integer) != 7,
-            PerformanceProfile.psi_enabled == False  # noqa
-        ).count()
-
-        psi_enabled_count = systems_with_performance_record_queryset.filter_by(psi_enabled=True).count()
+        non_psi_count = get_psi_count(systems_with_performance_record_queryset, False)
+        psi_enabled_count = get_psi_count(systems_with_performance_record_queryset, True)
 
         response = {
             "systems_per_state": {
