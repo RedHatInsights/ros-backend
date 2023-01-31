@@ -431,8 +431,8 @@ class ExecutiveReportAPI(Resource):
             PerformanceProfile.psi_enabled,
             PerformanceProfile.operating_system
         ).select_from(System).join(PerformanceProfile).filter(
-            System.id == PerformanceProfile.system_id
-            and System.id.in_(system_ids_by_org_id(org_id))
+            System.id == PerformanceProfile.system_id,
+            System.id.in_(system_ids_by_org_id(org_id))
         )
 
         systems_with_performance_record_subquery = systems_with_performance_record_queryset.subquery()
