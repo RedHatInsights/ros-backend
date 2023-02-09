@@ -186,9 +186,6 @@ class HostsApi(Resource):
         if operating_systems := request.args.getlist('os'):
             modified_operating_systems = []
             for os in operating_systems:
-                # FIXME: remove `if` block after getting OS values as numeric from frontend
-                if "RHEL" in os:
-                    os = os.split(" ")[1]
                 if os.replace('.', '', 1).isdigit():
                     os_object = {"name": "RHEL"}
                     if len(os) == 1:
