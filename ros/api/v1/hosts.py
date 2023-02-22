@@ -92,7 +92,7 @@ class HostsApi(Resource):
         'instance_type': fields.String,
         'idling_time': fields.String,
         'os': fields.String,
-        'report_date': fields.String
+        'report_date': fields.DateTime(dt_format='iso8601')
     }
     meta_fields = {
         'count': fields.Integer,
@@ -266,7 +266,7 @@ class HostDetailsApi(Resource):
         'rating': fields.Integer,
         'number_of_suggestions': fields.Integer(attribute='number_of_recommendations'),
         'state': fields.String,
-        'report_date': fields.String,
+        'report_date': fields.DateTime(dt_format='iso8601'),
         'instance_type': fields.String,
         'cloud_provider': fields.String,
         'idling_time': fields.String,
@@ -317,7 +317,7 @@ class HostHistoryApi(Resource):
         'memory': fields.Integer,
         'io_all': fields.Raw,
         'max_io': fields.Float,
-        'report_date': fields.String
+        'report_date': fields.DateTime(dt_format='iso8601')
     }
     meta_fields = {
         'count': fields.Integer,
