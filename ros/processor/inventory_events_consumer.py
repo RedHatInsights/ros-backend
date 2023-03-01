@@ -64,7 +64,7 @@ class InventoryEventsConsumer:
                     handler(msg)
                 else:
                     LOG.info(
-                        '%s - Event Handling is not found for event %s',
+                        "%s - Event Handling is not found for event %s",
                         self.prefix,
                         event_type
                     )
@@ -80,8 +80,8 @@ class InventoryEventsConsumer:
                     reporter=self.reporter, org_id=org_id
                 ).inc()
                 LOG.error(
-                    '%s - An error occurred during message processing: %s in the system %s created \
-                    from account: %s and org_id: %s',
+                    "%s - An error occurred during message processing: %s in the system %s created \
+                    from account: %s and org_id: %s",
                     self.prefix,
                     repr(err),
                     host_id,
@@ -100,7 +100,7 @@ class InventoryEventsConsumer:
         insights_id = msg['insights_id']
         with app.app_context():
             LOG.debug(
-                '%s - Received a message for system with insights_id %s',
+                "%s - Received a message for system with insights_id %s",
                 self.prefix,
                 insights_id
             )
@@ -111,7 +111,7 @@ class InventoryEventsConsumer:
                     reporter=self.reporter, org_id=msg['org_id']
                 ).inc()
                 LOG.info(
-                    '%s - Deleted system with inventory id: %s',
+                    "%s - Deleted system with inventory id: %s",
                     self.prefix,
                     host_id
                 )
@@ -125,7 +125,7 @@ class InventoryEventsConsumer:
                 and msg['host']['system_profile']['cloud_provider']
         ) or 'is_ros' in msg['platform_metadata']:
             LOG.info(
-                '%s - Processing a message for system(%s) belonging to account: %s and org_id: %s',
+                "%s - Processing a message for system(%s) belonging to account: %s and org_id: %s",
                 self.prefix, msg['host']['id'], msg['host']['account'], msg['host'].get('org_id')
             )
             self.process_system_details(msg)

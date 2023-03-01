@@ -50,7 +50,7 @@ class InsightsEngineResultConsumer:
         return msg
 
     def run(self):
-        LOG.info(f"{self.prefix} - Processor is running. Awaiting msgs.")
+        LOG.info("%s - Processor is running. Awaiting msgs.", self.prefix)
 
         # initialize producer
         global producer
@@ -67,8 +67,8 @@ class InsightsEngineResultConsumer:
             except json.decoder.JSONDecodeError:
                 kafka_failures.labels(reporter=self.reporter).inc()
                 LOG.error(
-                    'Unable to decode kafka message: %s - %s',
-                    msg.value(), self.prefix
+                    '%s - Unable to decode kafka message: %s',
+                    self.prefix, msg.value()
                 )
             except Exception as err:
                 processor_requests_failures.labels(
@@ -76,9 +76,9 @@ class InsightsEngineResultConsumer:
                     org_id=msg["input"]["platform_metadata"].get('org_id')
                 ).inc()
                 LOG.error(
-                    'An error occurred during message processing: %s - %s',
-                    repr(err),
-                    self.prefix
+                    "%s - An error occurred during message processing: %s",
+                    self.prefix,
+                    repr(err)
                 )
             finally:
                 self.consumer.commit()
@@ -158,7 +158,7 @@ class InsightsEngineResultConsumer:
                 system = get_or_create(
                     db.session, System, 'inventory_id', **system_attrs)
                 LOG.info(
-                    f"{self.prefix} - System created/updated successfully: {host['id']}"
+                    "%s - System created/updated successfully: %s", self.prefix, host['id']
                 )
 
                 set_default_utilization = False
@@ -177,7 +177,7 @@ class InsightsEngineResultConsumer:
                        {'max_io': max(performance_utilization['io'].values())}
                     )
                 else:
-                    LOG.debug(f"{self.prefix} - Setting default utilization for performance profile")
+                    LOG.debug("%s - Setting default utilization for performance profile", self.prefix)
                     performance_utilization = {
                         'memory': -1,
                         'cpu': -1,
@@ -202,7 +202,7 @@ class InsightsEngineResultConsumer:
                 insert_performance_profiles(
                     db.session, system.id, pprofile_fields)
                 LOG.info(
-                    f"{self.prefix} - Performance profile created/updated successfully for the system: {host['id']}"
+                    "%s - Performance profile created/updated successfully for the system: %s", self.prefix, host['id']
                 )
                 db.session.commit()
 
