@@ -36,12 +36,22 @@ def kafka_auth_config(connection_object):
     return connection_object
 
 
+def build_endpoint_url(ep):
+    """check for TLS certs path."""
+    protocol = 'https' if LoadedConfig.tlsCAPath else 'http'
+    port = ep.tlsPort if LoadedConfig.tlsCAPath else ep.port
+    return f"{protocol}://{ep.hostname}:{port}"
+
+
 LOG = logging.getLogger(__name__)
 CLOWDER_ENABLED = True if os.getenv("CLOWDER_ENABLED", default="False").lower() in ["true", "t", "yes", "y"] else False
 
 if CLOWDER_ENABLED:
     LOG.info("Using Clowder Operator...")
     from app_common_python import LoadedConfig, KafkaTopics
+    if LoadedConfig.tlsCAPath:
+        os.environ["REQUESTS_CA_BUNDLE"] = LoadedConfig.tlsCAPath
+
     DB_NAME = LoadedConfig.database.name
     DB_USER = LoadedConfig.database.username
     DB_PASSWORD = LoadedConfig.database.password
@@ -62,7 +72,7 @@ if CLOWDER_ENABLED:
     NOTIFICATIONS_TOPIC = KafkaTopics["platform.notifications.ingress"].name
     for endpoint in LoadedConfig.endpoints:
         if endpoint.app == "rbac":
-            RBAC_SVC_URL = f"http://{endpoint.hostname}:{endpoint.port}"
+            RBAC_SVC_URL = f"{build_endpoint_url(endpoint)}"
             break
 
     CW_ENABLED = True if LoadedConfig.logging.cloudwatch else False  # CloudWatch/Kibana Logging
