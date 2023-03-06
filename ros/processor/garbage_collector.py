@@ -53,6 +53,6 @@ class GarbageCollector():
 
 if __name__ == "__main__":
     start_http_server(int(METRICS_PORT))
-    commence_cw_log_streaming('ros-processor-garbage-collector')
+    commence_cw_log_streaming('ros-garbage-collector')
     processor = GarbageCollector()
     processor.run()
