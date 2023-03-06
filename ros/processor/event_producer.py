@@ -47,22 +47,16 @@ def delivery_report(err, msg, request_id):
     try:
         if not err:
             logger.info(
-                "Message delivered to %s [%s] for request_id [%s]",
-                msg.topic(),
-                msg.partition(),
-                request_id,
+                f"Message delivered to {msg.topic()} [{msg.partition()}] for request_id [{request_id}]"
             )
             return
 
         logger.error(
-                "Message delivery for topic %s failed for request_id [%s]: %s",
-                msg.topic(),
-                err,
-                request_id,
+                f"Message delivery for topic {msg.topic()} failed for request_id [{err}]: {request_id}"
         )
     except KafkaError:
         logger.exception(
-            "Failed to produce message to [%s] topic: %s", NOTIFICATIONS_TOPIC, request_id
+            f"Failed to produce message to [{NOTIFICATIONS_TOPIC}] topic: {request_id}"
         )
 
 

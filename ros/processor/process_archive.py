@@ -62,37 +62,41 @@ def get_performance_profile(report_url, org_id, custom_prefix=prefix):
     with _download_and_extract_report(report_url, org_id, custom_prefix=custom_prefix) as archive:
         try:
             LOG.debug(
-                "%s - Extracting performance profile from the report present at %s.\n",
-                custom_prefix, report_url)
+                f"{custom_prefix} - Extracting performance profile from the report present at {report_url}\n"
+            )
             broker = run(performance_profile, root=archive.tmp_dir)
             result = broker[performance_profile]
             del result["type"]
             LOG.debug(
-                "%s - Extracted performance profile from the report successfully present at %s.\n",
-                custom_prefix, report_url)
+                f"{custom_prefix} - Extracted performance profile from the report "
+                f"successfully present at {report_url}\n"
+            )
             return result
         except Exception as e:
             processor_requests_failures.labels(
                 reporter='INSIGHTS ENGINE', org_id=org_id
             ).inc()
-            LOG.error("%s - Failed to extract performance_profile from the report present at %s. ERROR - %s\n",
-                      custom_prefix, report_url, e)
+            LOG.error(
+                f"{custom_prefix} - Failed to extract performance_profile from the report "
+                f"present at {report_url}. ERROR - {e}\n"
+            )
 
 
 @contextmanager
 def _download_and_extract_report(report_url, org_id, custom_prefix=prefix):
     download_response = requests.get(report_url)
-    LOG.info("%s - Downloading the report from %s.\n", custom_prefix, report_url)
+    LOG.info(f"{custom_prefix} - Downloading the report from {report_url}.\n")
 
     if download_response.status_code != HTTPStatus.OK:
         archive_failed_to_download.labels(org_id=org_id).inc()
-        LOG.error("%s - Unable to download the report from %s. ERROR - %s\n",
-                  custom_prefix, report_url, download_response.reason)
+        LOG.error(
+            f"{custom_prefix} - Unable to download the report from {report_url}. ERROR - {download_response.reason}\n",
+        )
     else:
         archive_downloaded_success.labels(org_id=org_id).inc()
         with NamedTemporaryFile() as tf:
             tf.write(download_response.content)
-            LOG.debug("%s - Downloaded the report successfully from %s.\n", custom_prefix, report_url)
+            LOG.debug(f"{custom_prefix} - Downloaded the report successfully from {report_url}.\n")
             tf.flush()
             with extract(tf.name) as ex:
                 yield ex
