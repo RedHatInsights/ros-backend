@@ -2,7 +2,8 @@ import datetime
 import json
 import os
 import pytest
-from ros.lib.app import app, db
+from ros.lib.app import app
+from ros.extensions import db
 from sqlalchemy_utils import database_exists, create_database, drop_database
 from ros.lib.models import RhAccount, System, PerformanceProfile, Rule, PerformanceProfileHistory
 

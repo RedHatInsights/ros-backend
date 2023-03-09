@@ -133,9 +133,10 @@ class HostsApi(Resource):
             db.session.query(PerformanceProfile, System, RhAccount)
             .join(System, System.id == PerformanceProfile.system_id)
             .join(RhAccount, RhAccount.id == System.tenant_id)
-            .filter(PerformanceProfile.system_id.in_(system_query.subquery()))
+            .filter(PerformanceProfile.system_id.in_(system_query))
             .order_by(*sort_expression)
         )
+
         count = query.count()
         # NOTE: Override limit value to get all the systems when it is -1
         if limit == -1:
@@ -283,7 +284,7 @@ class HostDetailsApi(Resource):
         username = user['username'] if 'username' in user else None
         org_id = org_id_from_identity_header(request)
 
-        system_query = system_ids_by_org_id(org_id).filter(System.inventory_id == host_id).subquery()
+        system_query = system_ids_by_org_id(org_id).filter(System.inventory_id == host_id)
 
         profile = PerformanceProfile.query.filter(
             PerformanceProfile.system_id.in_(system_query)).first()
@@ -293,7 +294,7 @@ class HostDetailsApi(Resource):
             RecommendationRating.rated_by == username
         ).first()
 
-        system = db.session.query(System).filter(System.inventory_id == host_id).first()
+        system = db.session.scalar(db.select(System).filter(System.inventory_id == host_id))
 
         record = None
         if profile:
@@ -347,7 +348,7 @@ class HostHistoryApi(Resource):
 
         org_id = org_id_from_identity_header(request)
 
-        system_query = system_ids_by_org_id(org_id).filter(System.inventory_id == host_id).subquery()
+        system_query = system_ids_by_org_id(org_id).filter(System.inventory_id == host_id)
 
         query = PerformanceProfileHistory.query.filter(
             PerformanceProfileHistory.system_id.in_(system_query)

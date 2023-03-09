@@ -41,8 +41,9 @@ README.md file in scripts directory.
 #### Initialize the database
 Run the following commands to excute the db migration scripts.
 ```bash
-python manage.py db upgrade
-python manage.py seed 
+export FLASK_APP=manage.py
+flask db upgrade
+flask seed
 ```
 
 #### Running the processor locally

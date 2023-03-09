@@ -1,9 +1,7 @@
-from flask_sqlalchemy import SQLAlchemy
+from ros.extensions import db
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 import datetime
 import enum
-
-db = SQLAlchemy()
 
 
 class PerformanceProfile(db.Model):

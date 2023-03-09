@@ -1,6 +1,7 @@
 import json
 from ros.lib import consume, produce
-from ros.lib.app import app, db
+from ros.lib.app import app
+from ros.extensions import db
 from datetime import datetime, timezone
 from confluent_kafka import KafkaException
 from ros.lib.models import RhAccount, System
@@ -93,10 +94,10 @@ class InsightsEngineConsumer:
                 host['id'],
                 custom_prefix=self.prefix
             )
-            reports = msg["results"]["reports"]  \
-                if msg["results"]["reports"] \
-                and type(msg["results"]["reports"]) == list \
-                else []
+            reports = []
+            if msg["results"]["reports"] \
+                    and type(msg["results"]["reports"]) == list:
+                reports = msg["results"]["reports"]
             ros_reports = [
                 report for report in reports
                 if 'ros_instance_evaluation' in report["rule_id"]
@@ -128,8 +129,8 @@ class InsightsEngineConsumer:
                     )
 
                 # get previous state of the system
-                system_previous_state = db.session.query(System.state) \
-                    .filter(System.inventory_id == host['id']).first()
+                system_previous_state = db.session.scalar(db.select(System.state)
+                                                          .filter(System.inventory_id == host['id']))
 
                 system_attrs = {
                     'tenant_id': account.id,
@@ -175,7 +176,7 @@ class InsightsEngineConsumer:
                     }
                     # max_io will be used to sort systems endpoint response instead of io
                     performance_utilization.update(
-                       {'max_io': max(performance_utilization['io'].values())}
+                        {'max_io': max(performance_utilization['io'].values())}
                     )
                 else:
                     LOG.debug(f"{self.prefix} - Setting default utilization for performance profile")
@@ -229,10 +230,10 @@ class InsightsEngineConsumer:
                 )
 
     def trigger_notification(
-        self, inventory_id, account, host, platform_metadata, system_previous_state, system_current_state
+            self, inventory_id, account, host, platform_metadata, system_previous_state, system_current_state
     ):
-        if system_previous_state[0] is not None:
-            if system_current_state not in (SYSTEM_STATES['OPTIMIZED'], system_previous_state[0]):
+        if system_previous_state is not None:
+            if system_current_state not in (SYSTEM_STATES['OPTIMIZED'], system_previous_state):
                 LOG.info(
                     f"{self.prefix} - Triggering a new suggestion event for the system: {inventory_id} belonging"
                     f" to account: {account.account} ({account.id}) and org_id: {account.org_id}"

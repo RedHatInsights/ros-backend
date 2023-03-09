@@ -9,7 +9,8 @@ from ros.lib.utils import (
     is_valid_uuid,
     system_ids_by_org_id
 )
-
+from ros.extensions import db
+from sqlalchemy import exc
 
 LOG = logging.getLogger(__name__)
 prefix = "VALIDATE REQUEST"
@@ -52,13 +53,13 @@ def validate_rating_data(func):
         return ident, username
 
     def check_for_system(ident, inventory_id):
+        system_id = None
         if not is_valid_uuid(inventory_id):
             abort(404, message='Invalid inventory_id, Id should be in form of UUID4')
-
-        system_id = system_ids_by_org_id(ident['org_id']).filter(
-            System.inventory_id == inventory_id).first()
-
-        if system_id is None:
+        systems = system_ids_by_org_id(ident['org_id']).filter(System.inventory_id == inventory_id)
+        try:
+            system_id = db.session.execute(systems).scalar_one()
+        except exc.NoResultFound:
             abort(404, message=f"System {inventory_id} doesn't exist.")
 
         return system_id
@@ -77,6 +78,7 @@ def validate_rating_data(func):
 
         inventory_id = data['inventory_id']
         system_id = check_for_system(ident, inventory_id)
+
         rating = check_for_rating(data)
         new_kwargs = {
             'rating': rating, 'username': username,

@@ -1,4 +1,5 @@
-from ros.lib.app import app, db
+from ros.lib.app import app
+from ros.extensions import db
 from ros.lib.models import PerformanceProfile, PerformanceProfileHistory
 from datetime import datetime, timedelta, timezone
 from ros.lib.config import GARBAGE_COLLECTION_INTERVAL, DAYS_UNTIL_STALE, METRICS_PORT, get_logger
@@ -23,22 +24,23 @@ class GarbageCollector():
             time_value = datetime.now(timezone.utc) - timedelta(
                         days=DAYS_UNTIL_STALE)
             with app.app_context():
-                deleted_history = db.session.query(
-                    PerformanceProfileHistory).filter(
+                deleted_history = db.session.execute(
+                    db.delete(PerformanceProfileHistory).filter(
                         PerformanceProfileHistory.report_date < time_value
-                    ).delete()
+                    )
+                )
 
-                if deleted_history:
+                if deleted_history.rowcount > 0:
                     LOG.info(
                         f"{self.prefix} - Deleted {deleted_history} outdated history record(s) "
                         f"older than {DAYS_UNTIL_STALE} days"
                     )
 
-                deleted_profiles = db.session.query(
-                    PerformanceProfile
-                ).filter(PerformanceProfile.report_date < time_value).delete()
+                deleted_profiles = db.session.execute(
+                    db.delete(PerformanceProfile).filter(PerformanceProfile.report_date < time_value)
+                )
 
-                if deleted_profiles:
+                if deleted_profiles.rowcount > 0:
                     LOG.info(
                         f"{self.prefix} - Deleted {deleted_profiles} outdated performance profile(s) "
                         f"older than {DAYS_UNTIL_STALE} days"
