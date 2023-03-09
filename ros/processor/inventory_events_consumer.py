@@ -1,6 +1,7 @@
 import json
 from ros.lib import consume
-from ros.lib.app import app, db
+from ros.lib.app import app
+from ros.extensions import db
 from ros.lib.utils import get_or_create, system_allowed_in_ros, update_system_record
 from confluent_kafka import KafkaException
 from ros.lib.models import RhAccount, System
@@ -95,9 +96,11 @@ class InventoryEventsConsumer:
             LOG.debug(
                 f"{self.prefix} - Received a message for system with inventory_id {host_id}"
             )
-            rows_deleted = db.session.query(System.id).filter(System.inventory_id == host_id).delete()
+
+            rows_deleted = db.session.execute(db.delete(System).filter(System.inventory_id == host_id))
             db.session.commit()
-            if rows_deleted == 1:
+
+            if rows_deleted.rowcount == 1:
                 processor_requests_success.labels(
                     reporter=self.reporter, org_id=msg['org_id']
                 ).inc()
@@ -135,7 +138,7 @@ class InventoryEventsConsumer:
                 system = update_system_record(db.session, **system_fields)
                 if system is not None:
                     db.session.commit()
-                    account = db.session.query(RhAccount).filter_by(id=system.tenant_id).first()
+                    account = db.session.scalar(db.select(RhAccount).filter_by(id=system.tenant_id))
                     processor_requests_success.labels(
                         reporter=self.reporter, org_id=account.org_id
                     ).inc()

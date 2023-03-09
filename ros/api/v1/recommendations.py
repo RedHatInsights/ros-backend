@@ -3,12 +3,12 @@ from ros.lib.utils import is_valid_uuid, identity, system_ids_by_org_id
 from ros.api.modules.recommendations import Recommendation
 from flask_restful import Resource, abort, fields, marshal_with
 from flask import request
+from sqlalchemy import exc
 
 
 class RecommendationsApi(Resource):
-
     recommendation_fields = {
-        'rule_id':  fields.String,
+        'rule_id': fields.String,
         'description': fields.String,
         'reason': fields.String,
         'resolution': fields.String,
@@ -31,6 +31,7 @@ class RecommendationsApi(Resource):
 
     @marshal_with(data_fields)
     def get(self, host_id):
+        system = None
         if not is_valid_uuid(host_id):
             abort(404, message='Invalid host_id, Id should be in form of UUID4')
 
@@ -38,11 +39,11 @@ class RecommendationsApi(Resource):
 
         filter_description = request.args.get('description')
 
-        system = system_ids_by_org_id(ident['org_id'], True).filter(System.inventory_id == host_id).first()
-
-        if not system:
-            abort(404, message="host with id {} doesn't exist"
-                  .format(host_id))
+        system_query = system_ids_by_org_id(ident['org_id'], True).filter(System.inventory_id == host_id)
+        try:
+            system = db.session.execute(system_query).scalar_one()
+        except exc.NoResultFound:
+            abort(404, message=f"System {host_id} doesn't exist.")
 
         profile = PerformanceProfile.query.filter_by(system_id=system.id).first()
         if not profile:
@@ -56,11 +57,10 @@ class RecommendationsApi(Resource):
         if rule_hits:
             for rule_hit in rule_hits:
                 if filter_description:
-                    rule_data = db.session.query(Rule).filter(Rule.rule_id == rule_hit['rule_id'])\
-                                .filter(Rule.description.ilike(f'%{filter_description}%')).first()
+                    rule_data = db.session.scalar(db.select(Rule).filter(Rule.rule_id == rule_hit['rule_id'])
+                                                  .filter(Rule.description.ilike(f'%{filter_description}%')))
                 else:
-                    rule_data = db.session.query(Rule).filter(
-                        Rule.rule_id == rule_hit['rule_id']).first()
+                    rule_data = db.session.scalar(db.select(Rule).filter(Rule.rule_id == rule_hit['rule_id']))
 
                 if rule_data:
                     recommendation = Recommendation(
@@ -68,7 +68,7 @@ class RecommendationsApi(Resource):
                     ).__dict__
                     recommendations_list.append(recommendation)
         return {
-                  'inventory_id': system.inventory_id,
-                  'data': recommendations_list,
-                  'meta': {'count': len(recommendations_list)}
-            }
+            'inventory_id': system.inventory_id,
+            'data': recommendations_list,
+            'meta': {'count': len(recommendations_list)}
+        }

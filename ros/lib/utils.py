@@ -6,8 +6,7 @@ import base64
 import json
 from flask import jsonify, make_response
 from flask_restful import abort
-from sqlalchemy import Integer
-
+from sqlalchemy import Integer, select
 from ros.lib.models import (
     RhAccount,
     System,
@@ -38,7 +37,7 @@ def get_or_create(session, model, keys, **kwargs):
         keys = [keys]
     if not isinstance(keys, list):
         raise TypeError('keys argument must be a list or string')
-    instance = session.query(model).filter_by(**{k: kwargs[k] for k in keys}).first()
+    instance = session.scalar(db.select(model).filter_by(**{k: kwargs[k] for k in keys}))
     if instance:
         for k, v in kwargs.items():
             setattr(instance, k, v)
@@ -53,7 +52,7 @@ def update_system_record(session, **kwargs):
     inventory_id = kwargs.get('inventory_id')
     if inventory_id is None:
         return
-    instance = session.query(System).filter_by(inventory_id=inventory_id).first()
+    instance = session.scalar(db.select(System).filter_by(inventory_id=inventory_id))
     if instance:
         for k, v in kwargs.items():
             setattr(instance, k, v)
@@ -63,7 +62,7 @@ def update_system_record(session, **kwargs):
 def delete_record(session, model, **kwargs):
     """ Deletes a record filtered by key(s) present in kwargs(contains model specific fields)."""
     keys = list(kwargs.keys())
-    instance = session.query(model).filter_by(**{k: kwargs[k] for k in keys}).first()
+    instance = session.scalar(db.select(model).filter_by(**{k: kwargs[k] for k in keys}))
     if instance:
         session.delete(instance)
         session.commit()
@@ -135,10 +134,11 @@ def sort_io_dict(performance_utilization: dict):
 
 
 def system_ids_by_org_id(org_id, fetch_records=False):
-    account_query = db.session.query(RhAccount.id).filter(RhAccount.org_id == org_id).subquery()
+    account_query = select(RhAccount.id).where(RhAccount.org_id == org_id)
+
     if fetch_records is True:
-        return db.session.query(System).filter(System.tenant_id.in_(account_query))
-    return db.session.query(System.id).filter(System.tenant_id.in_(account_query))
+        return select(System).filter(System.tenant_id.in_(account_query))
+    return select(System.id).filter(System.tenant_id.in_(account_query))
 
 
 def org_id_from_identity_header(request):
@@ -151,11 +151,8 @@ def insert_performance_profiles(session, system_id, fields):
        performance_profile_history table.
     """
     fields = {} if fields is None else fields
-    old_profile_record = session.query(PerformanceProfile).filter_by(
-        system_id=system_id).first()
-    if old_profile_record:
-        session.delete(old_profile_record)
-        session.commit()
+    session.execute(db.delete(PerformanceProfile).filter(PerformanceProfile.system_id == system_id))
+    session.commit()
 
     for model_class in [PerformanceProfile, PerformanceProfileHistory]:
         new_entry = model_class(**fields)

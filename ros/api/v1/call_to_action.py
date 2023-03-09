@@ -4,7 +4,7 @@ from ros.lib.utils import (
     org_id_from_identity_header, systems_ids_for_existing_profiles)
 from ros.lib.models import (
     PerformanceProfile)
-from ros.lib.app import cache
+from ros.extensions import cache
 
 
 class CallToActionApi(Resource):

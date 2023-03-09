@@ -102,7 +102,8 @@ def test_host_update_event_no_cp(inventory_event_consumer, inventory_event_messa
 def test_host_delete_event(inventory_event_consumer, db_setup):
     msg = {"type": "delete", "insights_id": "677fb960-e164-48a4-929f-59e2d917b444",
            "id": "ee0b9978-fe1b-4191-8408-cbadbd47f7a2",
-           "account": '0000001'}
+           "account": '0000001',
+           'org_id': '000001'}
     inventory_event_consumer.host_delete_event(msg)
     host = db_get_host(msg['id'])
     assert host is None
