@@ -174,7 +174,7 @@ class MonitoringHandler(BaseHTTPRequestHandler):
         active_threads_names = list(map(lambda i: i.name, threading.enumerate()))
         if not all(item in active_threads_names for item in total_processors_names):
             dead_processors = set(total_processors_names).difference(active_threads_names)
-            LOG.error('SERVICE STATUS - Dead processors - %s' % dead_processors)
+            LOG.error(f"SERVICE STATUS - Dead processors - {dead_processors}")
             self.send_response(500)
             self.send_header("Content-type", "text/html")
             self.end_headers()

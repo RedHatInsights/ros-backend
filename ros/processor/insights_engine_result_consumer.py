@@ -58,7 +58,7 @@ class InsightsEngineResultConsumer:
 
         for msg in iter(self):
             if msg.error():
-                LOG.error("%s - Consumer error: %s", self.prefix, msg.error())
+                LOG.error(f"{self.prefix} - Consumer error: {msg.error()}")
                 kafka_failures.labels(reporter=self.reporter).inc()
                 raise KafkaException(msg.error())
             try:
@@ -67,8 +67,7 @@ class InsightsEngineResultConsumer:
             except json.decoder.JSONDecodeError:
                 kafka_failures.labels(reporter=self.reporter).inc()
                 LOG.error(
-                    'Unable to decode kafka message: %s - %s',
-                    msg.value(), self.prefix
+                    f"{self.prefix} - Unable to decode kafka message: {msg.value()}"
                 )
             except Exception as err:
                 processor_requests_failures.labels(
@@ -76,9 +75,7 @@ class InsightsEngineResultConsumer:
                     org_id=msg["input"]["platform_metadata"].get('org_id')
                 ).inc()
                 LOG.error(
-                    'An error occurred during message processing: %s - %s',
-                    repr(err),
-                    self.prefix
+                    f"{self.prefix} - An error occurred during message processing: {repr(err)}"
                 )
             finally:
                 self.consumer.commit()
@@ -117,14 +114,16 @@ class InsightsEngineResultConsumer:
                     rec_count = len(reports)
                     state_key = OPTIMIZED_SYSTEM_KEY
                     LOG.info(
-                        "%s - No ROS rule hits found for system with inventory id: %s. Hence, marking the state as %s.",
-                        self.prefix, host['id'], SYSTEM_STATES[state_key])
+                        f"{self.prefix} - No ROS rule hits found for system with inventory id: {host['id']}. "
+                        f"Hence, marking the state as {SYSTEM_STATES[state_key]}."
+                    )
                 else:
                     state_key = reports[0].get('key')
                     rec_count = 0 if state_key == 'NO_PCP_DATA' else len(reports)
                     LOG.info(
-                        "%s - Marking the state of system with inventory id: %s as %s.",
-                        self.prefix, host['id'], SYSTEM_STATES[state_key])
+                        f"{self.prefix} - Marking the state of system with "
+                        f"inventory id: {host['id']} as {SYSTEM_STATES[state_key]}"
+                    )
 
                 # get previous state of the system
                 system_previous_state = db.session.query(System.state) \
@@ -214,14 +213,18 @@ class InsightsEngineResultConsumer:
                 processor_requests_success.labels(
                     reporter=self.reporter, org_id=account.org_id
                 ).inc()
-                LOG.info("%s - Refreshed system %s (%s) belonging to account: %s (%s) and org_id: %s.",
-                         self.prefix, system.inventory_id, system.id, account.account, account.id, account.org_id)
+                LOG.info(
+                    f"{self.prefix} - Refreshed system {system.inventory_id} ({system.id}) "
+                    f"belonging to account: {account.account} ({account.id}) and org_id: {account.org_id}"
+                )
             except Exception as err:
                 processor_requests_failures.labels(
                     reporter=self.reporter, org_id=account.org_id
                 ).inc()
-                LOG.error("%s - Unable to add system %s to DB belonging to account: %s and org_id: %s - %s",
-                          self.prefix, host['id'], account.account, account.org_id, err)
+                LOG.error(
+                    f"{self.prefix} - Unable to add system {host['id']} to DB "
+                    f"belonging to account: {account.account} and org_id: {account.org_id} - {err}"
+                )
 
     def trigger_notification(
         self, inventory_id, account, host, platform_metadata, system_previous_state, system_current_state
@@ -229,8 +232,7 @@ class InsightsEngineResultConsumer:
         if system_previous_state[0] is not None:
             if system_current_state not in (SYSTEM_STATES['OPTIMIZED'], system_previous_state[0]):
                 LOG.info(
-                    "%s - Triggering a new suggestion event for the system: %s belonging" +
-                    "to account: %s (%s) and org_id: %s",
-                    self.prefix, inventory_id, account.account, account.id, account.org_id
+                    f"{self.prefix} - Triggering a new suggestion event for the system: {inventory_id} belonging"
+                    f" to account: {account.account} ({account.id}) and org_id: {account.org_id}"
                 )
                 new_suggestion_event(host, platform_metadata, system_previous_state, system_current_state, producer)

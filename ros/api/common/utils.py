@@ -7,6 +7,7 @@ from ros.lib.utils import identity, user_data_from_identity, is_valid_uuid
 
 
 LOG = logging.getLogger(__name__)
+prefix = "VALIDATE REQUEST"
 
 
 def validate_rating_data(func):
@@ -64,10 +65,10 @@ def validate_rating_data(func):
         try:
             data = json.loads(request.data)
         except json.decoder.JSONDecodeError as err:
-            LOG.error('Decoding JSON has failed. %s', repr(err))
+            LOG.error(f"{prefix} - Decoding JSON has failed. {repr(err)}")
             abort(400, message="Decoding JSON has failed.")
         except TypeError as ex:
-            LOG.error('Invalid JSON format. %s', repr(ex))
+            LOG.error(f"{prefix} - Invalid JSON format. {repr(ex)}")
             abort(400, message="Invalid JSON format.")
 
         inventory_id = data['inventory_id']

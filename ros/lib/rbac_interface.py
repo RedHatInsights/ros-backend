@@ -29,12 +29,12 @@ def _validate_service_response(response, logger, auth_header):
     """
     if response.status_code in [requests.codes.forbidden, requests.codes.unauthorized]:
         logger.info(
-            "%s error received from service" % response.status_code
+            f"{response.status_code} error received from service"
         )
         # Log identity header if 401 (unauthorized)
         if response.status_code == requests.codes.unauthorized:
             if isinstance(auth_header, dict) and AUTH_HEADER_NAME in auth_header:
-                logger.info("Identity '%s'" % get_key_from_headers(auth_header))
+                logger.info(f"Identity {get_key_from_headers(auth_header)}")
             else:
                 logger.info("No identity or no key")
         abort(
@@ -42,12 +42,12 @@ def _validate_service_response(response, logger, auth_header):
         )
     else:
         if response.status_code == requests.codes.not_found:
-            logger.error("%s error received from service." % response.status_code)
+            logger.error(f"{response.status_code} error received from service.")
             abort(
                 response.status_code, message="The requested URL was not found."
             )
         if response.status_code != requests.codes.ok:
-            logger.error("%s error received from service." % response.status_code)
+            logger.error(f"{response.status_code} error received from service.")
             abort(
                 response.status_code, message="Error received from backend service"
             )

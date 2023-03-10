@@ -158,8 +158,7 @@ class HostsApi(Resource):
                 hosts.append(host)
             except Exception as err:
                 LOG.error(
-                    'An error occured while fetching the host. %s',
-                    repr(err)
+                    f"An error occured while fetching the host. {repr(err)}"
                 )
                 count -= 1
 

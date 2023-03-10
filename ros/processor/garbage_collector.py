@@ -28,9 +28,8 @@ class GarbageCollector():
 
                 if deleted_history:
                     LOG.info(
-                        "%s - Deleted %s outdated history record(s) "
-                        "older than %d days",
-                        self.prefix, deleted_history, DAYS_UNTIL_STALE
+                        f"{self.prefix} - Deleted {deleted_history} outdated history record(s) "
+                        f"older than {DAYS_UNTIL_STALE} days"
                     )
 
                 deleted_profiles = db.session.query(
@@ -39,14 +38,12 @@ class GarbageCollector():
 
                 if deleted_profiles:
                     LOG.info(
-                        "%s - Deleted %s outdated performance profile(s) "
-                        "older than %d days",
-                        self.prefix, deleted_profiles, DAYS_UNTIL_STALE
+                        f"{self.prefix} - Deleted {deleted_profiles} outdated performance profile(s) "
+                        f"older than {DAYS_UNTIL_STALE} days"
                     )
                 db.session.commit()
         except Exception as error:  # pylint: disable=broad-except
             LOG.error(
-                "%s - Could not remove outdated records "
-                "due to the following error %s.",
-                self.prefix, str(error)
+                f"{self.prefix} - Could not remove outdated records "
+                f"due to the following error {str(error)}."
             )
