@@ -161,6 +161,7 @@ class InventoryEventsConsumer:
                     f"belonging to account: {account.account} and org_id: {account.org_id} - {err}"
                 )
 
+
 if __name__ == "__main__":
     start_http_server(int(METRICS_PORT))
     commence_cw_log_streaming('ros-processor')
