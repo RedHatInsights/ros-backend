@@ -1,7 +1,7 @@
 from urllib.parse import urljoin
 from http import HTTPStatus
 from flask_restful import abort
-from .config import RBAC_SVC_URL, ENABLE_RBAC, PATH_PREFIX
+from .config import RBAC_SVC_URL, ENABLE_RBAC, PATH_PREFIX, TLS_CA_PATH
 import requests
 
 
@@ -18,7 +18,8 @@ def fetch_url(url, auth_header, logger, method="get"):
         abort(
             HTTPStatus.METHOD_NOT_ALLOWED, message="'%s' is not valid HTTP method." % method
         )
-    response = requests.request(method, url, headers=auth_header)
+    response = requests.request(
+        method, url, headers=auth_header, verify=TLS_CA_PATH)
     _validate_service_response(response, logger, auth_header)
     return response.json()
 
