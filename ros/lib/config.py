@@ -49,8 +49,7 @@ CLOWDER_ENABLED = True if os.getenv("CLOWDER_ENABLED", default="False").lower() 
 if CLOWDER_ENABLED:
     LOG.info("Using Clowder Operator...")
     from app_common_python import LoadedConfig, KafkaTopics
-    if LoadedConfig.tlsCAPath:
-        os.environ["REQUESTS_CA_BUNDLE"] = LoadedConfig.tlsCAPath
+    TLS_CA_PATH = getattr(LoadedConfig, "tlsCAPath", None)
 
     DB_NAME = LoadedConfig.database.name
     DB_USER = LoadedConfig.database.username
@@ -105,6 +104,7 @@ else:
     RBAC_PORT = os.getenv("RBAC_PORT", "8114")
     RBAC_SVC_URL = os.getenv("RBAC_SVC_URL", f"http://{RBAC_HOST}:{RBAC_PORT}/")
     NOTIFICATIONS_TOPIC = os.getenv("NOTIFICATIONS_TOPIC", "platform.notifications.ingress")
+    TLS_CA_PATH = os.getenv("TLS_CA_PATH", None)
 
     CW_ENABLED = str_to_bool(os.getenv('CW_ENABLED', 'False'))  # CloudWatch/Kibana Logging
     if CW_ENABLED is True:
