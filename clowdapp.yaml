@@ -63,12 +63,12 @@ objects:
             value: ${DB_POOL_SIZE}
           - name: DB_MAX_OVERFLOW
             value: ${DB_MAX_OVERFLOW}
-    - name: processor
+    - name: inventory-events-processor
       replicas: ${{PROCESSOR_REPLICA_COUNT}}
       podSpec:
         image: ${IMAGE}:${IMAGE_TAG}
         command: ["bash"]
-        args: ["-c", "python -m ros.processor.main"]
+        args: ["-c", "python -m ros.processor.inventory_events_consumer"]
         resources:
           requests:
             cpu: ${CPU_REQUEST}
@@ -80,19 +80,99 @@ objects:
           failureThreshold: 3
           httpGet:
             path: /
-            port: 8000
+            port: 9000
             scheme: HTTP
-          initialDelaySeconds: 30
-          periodSeconds: 10
+          initialDelaySeconds: 10
+          periodSeconds: 30
           successThreshold: 1
           timeoutSeconds: 3
         readinessProbe:
           httpGet:
             path: /
-            port: 8000
+            port: 9000
             scheme: HTTP
-          initialDelaySeconds: 3
-          periodSeconds: 10
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          successThreshold: 1
+          failureThreshold: 3
+          timeoutSeconds: 3
+        env:
+          - name: CLOWDER_ENABLED
+            value: ${CLOWDER_ENABLED}
+          - name: DB_POOL_SIZE
+            value: ${DB_POOL_SIZE}
+          - name: DB_MAX_OVERFLOW
+            value: ${DB_MAX_OVERFLOW}
+    - name: engine-result-processor
+      replicas: ${{PROCESSOR_REPLICA_COUNT}}
+      podSpec:
+        image: ${IMAGE}:${IMAGE_TAG}
+        command: ["bash"]
+        args: ["-c", "python -m ros.processor.insights_engine_consumer"]
+        resources:
+          requests:
+            cpu: ${CPU_REQUEST}
+            memory: ${MEMORY_REQUEST}
+          limits:
+            cpu: ${CPU_LIMIT}
+            memory: ${MEMORY_LIMIT}
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 9000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 9000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          successThreshold: 1
+          failureThreshold: 3
+          timeoutSeconds: 3
+        env:
+          - name: CLOWDER_ENABLED
+            value: ${CLOWDER_ENABLED}
+          - name: DB_POOL_SIZE
+            value: ${DB_POOL_SIZE}
+          - name: DB_MAX_OVERFLOW
+            value: ${DB_MAX_OVERFLOW}
+    - name: garbage-collector-processor
+      replicas: ${{PROCESSOR_REPLICA_COUNT}}
+      podSpec:
+        image: ${IMAGE}:${IMAGE_TAG}
+        command: ["bash"]
+        args: ["-c", "python -m ros.processor.garbage_collector"]
+        resources:
+          requests:
+            cpu: ${CPU_REQUEST}
+            memory: ${MEMORY_REQUEST}
+          limits:
+            cpu: ${CPU_LIMIT}
+            memory: ${MEMORY_LIMIT}
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 9000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 9000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 30
           successThreshold: 1
           failureThreshold: 3
           timeoutSeconds: 3

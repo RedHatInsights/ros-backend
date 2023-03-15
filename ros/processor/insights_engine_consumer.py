@@ -4,9 +4,11 @@ from ros.lib.app import app, db
 from datetime import datetime, timezone
 from confluent_kafka import KafkaException
 from ros.lib.models import RhAccount, System
-from ros.lib.config import ENGINE_RESULT_TOPIC, get_logger
+from ros.lib.config import ENGINE_RESULT_TOPIC, METRICS_PORT, get_logger
 from ros.processor.process_archive import get_performance_profile
 from ros.processor.event_producer import new_suggestion_event
+from ros.lib.cw_logging import commence_cw_log_streaming
+from prometheus_client import start_http_server
 from ros.lib.utils import (
     get_or_create,
     cast_iops_as_float,
@@ -32,7 +34,7 @@ LOG = get_logger(__name__)
 producer = None
 
 
-class InsightsEngineResultConsumer:
+class InsightsEngineConsumer:
     def __init__(self):
         """Create Engine Consumer."""
         self.consumer = consume.init_consumer(ENGINE_RESULT_TOPIC)
@@ -236,3 +238,10 @@ class InsightsEngineResultConsumer:
                     f" to account: {account.account} ({account.id}) and org_id: {account.org_id}"
                 )
                 new_suggestion_event(host, platform_metadata, system_previous_state, system_current_state, producer)
+
+
+if __name__ == "__main__":
+    start_http_server(int(METRICS_PORT))
+    commence_cw_log_streaming('ros-processor')
+    processor = InsightsEngineConsumer()
+    processor.run()
