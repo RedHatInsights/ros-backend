@@ -3,7 +3,12 @@ import logging
 from flask import request
 from flask_restful import abort
 from ros.lib.models import System, RatingChoicesEnum
-from ros.lib.utils import identity, user_data_from_identity, is_valid_uuid
+from ros.lib.utils import (
+    identity,
+    user_data_from_identity,
+    is_valid_uuid,
+    system_ids_by_org_id
+)
 
 
 LOG = logging.getLogger(__name__)
@@ -44,23 +49,22 @@ def validate_rating_data(func):
         if username is None:
             abort(403, message="Username doesn't exist")
 
-        return username
+        return ident, username
 
-    def check_for_system(inventory_id):
+    def check_for_system(ident, inventory_id):
         if not is_valid_uuid(inventory_id):
             abort(404, message='Invalid inventory_id, Id should be in form of UUID4')
 
-        system = System.query.filter(
-            System.inventory_id == inventory_id
-        ).first()
+        system_id = system_ids_by_org_id(ident['org_id']).filter(
+            System.inventory_id == inventory_id).first()
 
-        if system is None:
+        if system_id is None:
             abort(404, message=f"System {inventory_id} doesn't exist.")
 
-        return system.id
+        return system_id
 
     def validate_request(*args, **kwargs):
-        username = check_for_user()
+        ident, username = check_for_user()
         data = None
         try:
             data = json.loads(request.data)
@@ -72,7 +76,7 @@ def validate_rating_data(func):
             abort(400, message="Invalid JSON format.")
 
         inventory_id = data['inventory_id']
-        system_id = check_for_system(inventory_id)
+        system_id = check_for_system(ident, inventory_id)
         rating = check_for_rating(data)
         new_kwargs = {
             'rating': rating, 'username': username,
