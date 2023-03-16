@@ -91,10 +91,9 @@ class InventoryEventsConsumer:
         """Process delete message."""
         self.prefix = "INVENTORY DELETE EVENT"
         host_id = msg['id']
-        insights_id = msg['insights_id']
         with app.app_context():
             LOG.debug(
-                f"{self.prefix} - Received a message for system with insights_id {insights_id}"
+                f"{self.prefix} - Received a message for system with inventory_id {host_id}"
             )
             rows_deleted = db.session.query(System.id).filter(System.inventory_id == host_id).delete()
             db.session.commit()
@@ -157,7 +156,7 @@ class InventoryEventsConsumer:
                 ).inc()
 
                 LOG.error(
-                    f"{self.prefix} - Unable to add system {host['fqdn']} to DB "
+                    f"{self.prefix} - Unable to add system {host['id']} to DB "
                     f"belonging to account: {account.account} and org_id: {account.org_id} - {err}"
                 )
 
