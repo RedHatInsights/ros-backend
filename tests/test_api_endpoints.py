@@ -257,6 +257,41 @@ def test_system_rating_with_invalid_system(
         assert response.status_code == 404
 
 
+def test_should_check_authorization_for_rating_request(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        db_create_performance_profile
+):
+    identity = {
+        "identity": {
+            "account_number": "67890",
+            "type": "User",
+            "user": {
+                "username": "t1@redhat.com",
+                "email": "t1@redhat.com"
+            },
+            "org_id": "000002",
+            "internal": {
+                "org_id": "000002"
+            }
+        }
+    }
+    auth_token_for_t1 = b64encode(json.dumps(identity).encode('utf-8'))
+    with app.test_client() as client:
+        data_dict = {
+            "inventory_id": "ee0b9978-fe1b-4191-8408-cbadbd47f7a3",
+            "rating": "-1"
+        }
+        response = client.post(
+            '/api/ros/v1/rating',
+            headers={"x-rh-identity": auth_token_for_t1},
+            data=json.dumps(data_dict)
+        )
+        assert response.status_code == 404
+
+
 def test_executive_report(
         auth_token,
         db_setup,
