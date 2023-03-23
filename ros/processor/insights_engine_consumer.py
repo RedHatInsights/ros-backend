@@ -91,6 +91,7 @@ class InsightsEngineConsumer:
             performance_record = get_performance_profile(
                 platform_metadata['url'],
                 platform_metadata.get('org_id'),
+                host['id'],
                 custom_prefix=self.prefix
             )
             reports = msg["results"]["reports"]  \
@@ -159,7 +160,7 @@ class InsightsEngineConsumer:
                 system = get_or_create(
                     db.session, System, 'inventory_id', **system_attrs)
                 LOG.info(
-                    f"{self.prefix} - System created/updated successfully: {host['id']}"
+                    f"{self.prefix} - System {host['id']} created/updated successfully."
                 )
 
                 set_default_utilization = False
