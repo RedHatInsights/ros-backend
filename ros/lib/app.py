@@ -31,3 +31,10 @@ def ensure_rbac():
             request=request,
             logger=get_logger(__name__)
         )
+
+
+@app.after_request
+def add_headers(response):
+    response.headers['Content-Security-Policy'] = "script-src 'self';"
+    response.headers['Cache-Control'] = 'no-store'
+    return response
