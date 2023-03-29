@@ -111,6 +111,7 @@ services:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - PAYLOAD_TRACKER_ENABLED=false
       - XJOIN_GRAPHQL_URL=http://xjoin:4000/graphql
+      - prometheus_multiproc_dir=/tmp
     depends_on:
        - kafka-create-topics
        - db-host-inventory
