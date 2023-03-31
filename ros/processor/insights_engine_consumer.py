@@ -13,7 +13,7 @@ from ros.lib.utils import (
     get_or_create,
     cast_iops_as_float,
     insert_performance_profiles,
-    validate_type
+    validate_system
 )
 from ros.processor.metrics import (processor_requests_success,
                                    processor_requests_failures,
@@ -83,8 +83,8 @@ class InsightsEngineConsumer:
                 self.consumer.commit()
 
     def handle_msg(self, msg):
-        is_ros_flag = validate_type(msg["input"]["platform_metadata"]["is_ros"], bool)
-        if is_ros_flag is True:
+        is_valid = validate_system(self.reporter, msg)
+        if is_valid:
             host = msg["input"]["host"]
             platform_metadata = msg["input"]["platform_metadata"]
             system_metadata = msg["results"]["system"]["metadata"]

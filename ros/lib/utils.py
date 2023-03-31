@@ -1,5 +1,3 @@
-import ast as type_evaluation
-
 from collections import Counter
 from http.server import BaseHTTPRequestHandler
 import threading
@@ -80,20 +78,22 @@ def user_data_from_identity(identity):
     return identity['user']
 
 
-def validate_type(value, type_):
+def validate_system(reporter, msg):
     """
-    Validate the type of a value.
-    Currently available types: bool
-    :param value: Value to validate.
-    :param type_: Type to validate against.
-    :return: True if the value is of the specified type, False otherwise.
+    Validate msg from consumers.
+    :param reporter: consumer reporter
+    :param msg: msg to validate.
+    :return: True if the msg is from a cloud provider and is_ros flag is set to true, False otherwise.
     """
-    if type_ == bool:
-        # ast.literal_eval does not understand lowercase 'True' or 'False'
-        value = value.capitalize() if value in ['true', 'false'] else value
-    evaluated_value = type_evaluation.literal_eval(value) if value else None
-
-    return True if type(evaluated_value) == type_ else False
+    is_ros = False
+    cloud_provider = None
+    if reporter == 'INVENTORY EVENTS':
+        is_ros = msg["platform_metadata"].get("is_ros")
+        cloud_provider = msg['host']['system_profile'].get('cloud_provider')
+    else:
+        is_ros = msg["input"]["platform_metadata"].get("is_ros")
+        cloud_provider = msg["results"]["system"]["metadata"].get('cloud_provider')
+    return True if is_ros and cloud_provider is not None else False
 
 
 def cast_iops_as_float(iops_all_dict):
