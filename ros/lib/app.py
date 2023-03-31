@@ -37,4 +37,6 @@ def ensure_rbac():
 def add_headers(response):
     response.headers['Content-Security-Policy'] = "script-src 'self';"
     response.headers['Cache-Control'] = 'no-store'
+    response.headers['Content-Type'] = 'application/json; charset=UTF-8;'
+    response.headers['Referrer-Policy'] = 'no-referrer'
     return response
