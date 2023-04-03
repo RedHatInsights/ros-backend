@@ -78,21 +78,13 @@ def user_data_from_identity(identity):
     return identity['user']
 
 
-def validate_system(reporter, msg):
+def validate_ros_payload(is_ros, cloud_provider):
     """
-    Validate msg from consumers.
-    :param reporter: consumer reporter
-    :param msg: msg to validate.
-    :return: True if the msg is from a cloud provider and is_ros flag is set to true, False otherwise.
+    Validate ros payload.
+    :param is_ros: is_ros boolean flag
+    :param cloud_provider: cloud provider value
+    :return: True if cloud_provider is not none and is_ros flag is set to true, False otherwise.
     """
-    is_ros = False
-    cloud_provider = None
-    if reporter == 'INVENTORY EVENTS':
-        is_ros = msg["platform_metadata"].get("is_ros")
-        cloud_provider = msg['host']['system_profile'].get('cloud_provider')
-    else:
-        is_ros = msg["input"]["platform_metadata"].get("is_ros")
-        cloud_provider = msg["results"]["system"]["metadata"].get('cloud_provider')
     return True if is_ros and cloud_provider is not None else False
 
 
