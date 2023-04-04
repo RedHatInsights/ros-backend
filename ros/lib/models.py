@@ -14,7 +14,7 @@ class PerformanceProfile(db.Model):
         default=datetime.datetime.utcnow,
         nullable=False
     )
-    state = db.Column(db.String(25))
+    state = db.Column(db.String(25), index=True)
     operating_system = db.Column(JSONB)
     rule_hit_details = db.Column(JSONB)
     number_of_recommendations = db.Column(db.Integer)
@@ -26,6 +26,8 @@ class PerformanceProfile(db.Model):
             ['system_id'], ['systems.id'],
             name='performance_profile_system_id_fkey',
             ondelete='CASCADE'),
+        db.Index('non_optimized_system_profiles', number_of_recommendations, unique=False,
+                 postgresql_where=(number_of_recommendations > 0)),
     )
 
     @property
@@ -42,7 +44,8 @@ class PerformanceProfileHistory(db.Model):
     report_date = db.Column(
         db.DateTime(timezone=True),
         default=datetime.datetime.utcnow,
-        nullable=False
+        nullable=False,
+        index=True
     )
     state = db.Column(db.String(25))
     operating_system = db.Column(JSONB)
@@ -71,10 +74,11 @@ class System(db.Model):
     state = db.Column(db.String(25))
     stale_timestamp = db.Column(db.DateTime(timezone=True))
     region = db.Column(db.String(25))
-    operating_system = db.Column(JSONB)
+    operating_system = db.Column(JSONB, index=True)
     __table_args__ = (
         db.UniqueConstraint('inventory_id'),
         db.ForeignKeyConstraint(['tenant_id'], ['rh_accounts.id'], name='systems_tenant_id_fkey'),
+        db.Index('inventory_id_hash_index', inventory_id, postgresql_using='hash'),
     )
     cpu_states = db.Column(db.ARRAY(db.String))
     io_states = db.Column(db.ARRAY(db.String))
@@ -106,8 +110,8 @@ class RatingChoicesEnum(enum.IntEnum):
 class RecommendationRating(db.Model):
     __tablename__ = 'recommendation_rating'
     id = db.Column(db.Integer, primary_key=True)
-    system_id = db.Column(db.Integer)
-    rated_by = db.Column(db.Text, nullable=False)
+    system_id = db.Column(db.Integer, index=True)
+    rated_by = db.Column(db.Text, nullable=False, index=True)
     rating = db.Column(db.SmallInteger, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
