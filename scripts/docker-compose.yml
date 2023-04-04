@@ -70,7 +70,7 @@ services:
         # VALIDTOPICS is required. This is derived from content type. ex: vnd.redhat.advisor.thing+tgz
       - INGRESS_VALIDTOPICS=testareno,advisor,compliance,qpc
       - OPENSHIFT_BUILD_COMMIT=somestring
-      - INGRESS_MAXSIZE=104857600
+      - INGRESS_DEFAULTMAXSIZE=104857600
       - INGRESS_MINIODEV=true
       - INGRESS_MINIOACCESSKEY=$MINIO_ACCESS_KEY
       - INGRESS_MINIOSECRETKEY=$MINIO_SECRET_KEY
