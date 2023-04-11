@@ -69,6 +69,7 @@ services:
       - INGRESS_STAGEBUCKET=insights-upload-perma
         # VALIDTOPICS is required. This is derived from content type. ex: vnd.redhat.advisor.thing+tgz
       - INGRESS_VALIDTOPICS=testareno,advisor,compliance,qpc
+      - INGRESS_VALID_UPLOAD_TYPES=unit,announce,advisor
       - OPENSHIFT_BUILD_COMMIT=somestring
       - INGRESS_DEFAULTMAXSIZE=104857600
       - INGRESS_MINIODEV=true
