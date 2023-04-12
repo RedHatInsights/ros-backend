@@ -120,7 +120,8 @@ DB_MAX_OVERFLOW = int(os.getenv("DB_MAX_OVERFLOW", '10'))
 REDIS_AUTH = f"{REDIS_USERNAME or ''}:{REDIS_PASSWORD}@" if REDIS_PASSWORD else ""
 REDIS_URL = f"redis://{REDIS_AUTH}{REDIS_HOST}:{REDIS_PORT}"
 GROUP_ID = os.getenv('GROUP_ID', 'resource-optimization')
-PATH_PREFIX = os.getenv("PATH_PREFIX", "/api/")
+# The default value for PATH_PREFIX is same as under clowdapp file
+PATH_PREFIX = os.getenv("PATH_PREFIX", "/api")
 APP_NAME = os.getenv("APP_NAME", "ros")
 INSIGHTS_EXTRACT_LOGLEVEL = os.getenv("INSIGHTS_EXTRACT_LOGLEVEL", "ERROR")
 ENABLE_RBAC = str_to_bool(os.getenv("ENABLE_RBAC", "False"))
