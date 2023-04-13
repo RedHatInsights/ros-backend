@@ -489,6 +489,9 @@
                     },
                     "os": {
                         "type": "string"
+                    },
+                    "psi_enabled": {
+                        "type": "boolean"
                     }
                 }
             },
