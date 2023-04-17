@@ -270,6 +270,7 @@ class HostDetailsApi(Resource):
         'cloud_provider': fields.String,
         'idling_time': fields.String,
         'os': fields.String,
+        'psi_enabled': fields.Boolean
     }
 
     @marshal_with(profile_fields)
@@ -303,6 +304,7 @@ class HostDetailsApi(Resource):
             record['idling_time'] = profile.idling_time
             record['os'] = system.deserialize_host_os_data
             record['number_of_recommendations'] = profile.number_of_recommendations
+            record['psi_enabled'] = profile.psi_enabled
         else:
             abort(404, message="System {} doesn't exist"
                   .format(host_id))
