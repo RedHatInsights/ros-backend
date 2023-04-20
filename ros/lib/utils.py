@@ -1,5 +1,3 @@
-import ast as type_evaluation
-
 from collections import Counter
 from http.server import BaseHTTPRequestHandler
 import threading
@@ -80,20 +78,14 @@ def user_data_from_identity(identity):
     return identity['user']
 
 
-def validate_type(value, type_):
+def validate_ros_payload(is_ros, cloud_provider):
     """
-    Validate the type of a value.
-    Currently available types: bool
-    :param value: Value to validate.
-    :param type_: Type to validate against.
-    :return: True if the value is of the specified type, False otherwise.
+    Validate ros payload.
+    :param is_ros: is_ros boolean flag
+    :param cloud_provider: cloud provider value
+    :return: True if cloud_provider is not none and is_ros flag is set to true, False otherwise.
     """
-    if type_ == bool:
-        # ast.literal_eval does not understand lowercase 'True' or 'False'
-        value = value.capitalize() if value in ['true', 'false'] else value
-    evaluated_value = type_evaluation.literal_eval(value) if value else None
-
-    return True if type(evaluated_value) == type_ else False
+    return True if is_ros and cloud_provider is not None else False
 
 
 def cast_iops_as_float(iops_all_dict):

@@ -1,7 +1,7 @@
 import json
 from ros.lib import consume
 from ros.lib.app import app, db
-from ros.lib.utils import get_or_create
+from ros.lib.utils import get_or_create, validate_ros_payload
 from confluent_kafka import KafkaException
 from ros.lib.models import RhAccount, System
 from ros.lib.config import INVENTORY_EVENTS_TOPIC, METRICS_PORT, get_logger
@@ -108,11 +108,10 @@ class InventoryEventsConsumer:
     def host_create_update_events(self, msg):
         """ Process created/updated message ( create system record, store new report )"""
         self.prefix = "INVENTORY Update EVENT" if msg['type'] == 'updated' else "INVENTORY CREATE EVENT"
-        if (
-                msg['platform_metadata'] is None
-                and msg['type'] == 'updated'
-                and msg['host']['system_profile']['cloud_provider']
-        ) or 'is_ros' in msg['platform_metadata']:
+        is_ros = msg["platform_metadata"].get("is_ros")
+        cloud_provider = msg['host']['system_profile'].get('cloud_provider')
+        is_valid = validate_ros_payload(is_ros, cloud_provider)
+        if is_valid:
             LOG.info(
                 f"{self.prefix} - Processing a message for system({msg['host']['id']}) "
                 f"belonging to account: {msg['host']['account']} and org_id: {msg['host'].get('org_id')}"
