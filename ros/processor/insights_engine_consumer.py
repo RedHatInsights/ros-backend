@@ -9,11 +9,11 @@ from ros.processor.process_archive import get_performance_profile
 from ros.processor.event_producer import new_suggestion_event
 from ros.lib.cw_logging import commence_cw_log_streaming
 from prometheus_client import start_http_server
-from .system_allowed_in_ros import system_allowed_in_ros
 from ros.lib.utils import (
     get_or_create,
     cast_iops_as_float,
     insert_performance_profiles,
+    system_allowed_in_ros,
 )
 from ros.processor.metrics import (processor_requests_success,
                                    processor_requests_failures,

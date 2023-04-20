@@ -1,13 +1,12 @@
 import json
 from ros.lib import consume
 from ros.lib.app import app, db
-from ros.lib.utils import get_or_create
+from ros.lib.utils import get_or_create, system_allowed_in_ros
 from confluent_kafka import KafkaException
 from ros.lib.models import RhAccount, System
 from ros.lib.config import INVENTORY_EVENTS_TOPIC, METRICS_PORT, get_logger
 from ros.lib.cw_logging import commence_cw_log_streaming
 from prometheus_client import start_http_server
-from .system_allowed_in_ros import system_allowed_in_ros
 from ros.processor.metrics import (processor_requests_success,
                                    processor_requests_failures,
                                    kafka_failures)
