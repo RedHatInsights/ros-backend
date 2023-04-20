@@ -3,9 +3,8 @@ from ros.lib import consume, produce
 from ros.lib.app import app
 from ros.extensions import db
 from datetime import datetime, timezone
-from confluent_kafka import KafkaException
 from ros.lib.models import RhAccount, System
-from ros.lib.config import ENGINE_RESULT_TOPIC, METRICS_PORT, get_logger
+from ros.lib.config import ENGINE_RESULT_TOPIC, METRICS_PORT
 from ros.processor.process_archive import get_performance_profile
 from ros.processor.event_producer import new_suggestion_event
 from ros.lib.cw_logging import commence_cw_log_streaming
@@ -18,7 +17,8 @@ from ros.lib.utils import (
 )
 from ros.processor.metrics import (processor_requests_success,
                                    processor_requests_failures,
-                                   kafka_failures)
+                                   )
+from ros.processor.ros_consumer import RosConsumer
 
 SYSTEM_STATES = {
     "INSTANCE_OVERSIZED": "Oversized",
@@ -30,58 +30,30 @@ SYSTEM_STATES = {
     "NO_PCP_DATA": "Waiting for data"
 }
 OPTIMIZED_SYSTEM_KEY = "OPTIMIZED"
-LOG = get_logger(__name__)
-
 producer = None
 
 
-class InsightsEngineConsumer:
-    def __init__(self):
+def org_id(decoded_msg):
+    return decoded_msg["input"]["platform_metadata"].get('org_id')
+
+
+class InsightsEngineConsumer(RosConsumer):
+    def __init__(self, consumer_topic, prefix, reporter):
         """Create Engine Consumer."""
-        self.consumer = consume.init_consumer(ENGINE_RESULT_TOPIC)
-
-        self.prefix = 'PROCESSING ENGINE RESULTS'
-        self.reporter = 'INSIGHTS ENGINE'
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        msg = self.consumer.poll()
-        if msg is None:
-            raise StopIteration
-        return msg
+        super().__init__(consumer_topic, prefix, reporter)
 
     def run(self):
-        LOG.info(f"{self.prefix} - Processor is running. Awaiting msgs.")
+        self.LOG.info(f"{self.prefix} - Processor is running. Awaiting msgs.")
 
         # initialize producer
         global producer
         producer = produce.init_producer()
 
         for msg in iter(self):
-            if msg.error():
-                LOG.error(f"{self.prefix} - Consumer error: {msg.error()}")
-                kafka_failures.labels(reporter=self.reporter).inc()
-                raise KafkaException(msg.error())
-            try:
-                msg = json.loads(msg.value().decode("utf-8"))
-                self.handle_msg(msg)
-            except json.decoder.JSONDecodeError:
-                kafka_failures.labels(reporter=self.reporter).inc()
-                LOG.error(
-                    f"{self.prefix} - Unable to decode kafka message: {msg.value()}"
-                )
-            except Exception as err:
-                processor_requests_failures.labels(
-                    reporter=self.reporter,
-                    org_id=msg["input"]["platform_metadata"].get('org_id')
-                ).inc()
-                LOG.error(
-                    f"{self.prefix} - An error occurred during message processing: {repr(err)}"
-                )
-            finally:
-                self.consumer.commit()
+            self.check_msg_for_err(msg, self.prefix, self.reporter)
+            decoded_msg = self.decode_and_load_json(msg)
+            self.try_to_handle_msg(self.handle_msg(decoded_msg),
+                                   org_id(decoded_msg))
 
     def handle_msg(self, msg):
         if system_allowed_in_ros(msg, self.reporter):
@@ -94,10 +66,8 @@ class InsightsEngineConsumer:
                 host['id'],
                 custom_prefix=self.prefix
             )
-            reports = []
-            if msg["results"]["reports"] \
-                    and isinstance(msg["results"]["reports"], list):
-                reports = msg["results"]["reports"]
+            reports = msg["results"]["reports"] \
+                if msg["results"]["reports"] and isinstance(msg["results"]["reports"], list) else []
             ros_reports = [
                 report for report in reports
                 if 'ros_instance_evaluation' in report["rule_id"]
@@ -116,14 +86,14 @@ class InsightsEngineConsumer:
                 if len(reports) == 0:
                     rec_count = len(reports)
                     state_key = OPTIMIZED_SYSTEM_KEY
-                    LOG.info(
+                    self.LOG.info(
                         f"{self.prefix} - No ROS rule hits found for system with inventory id: {host['id']}. "
                         f"Hence, marking the state as {SYSTEM_STATES[state_key]}."
                     )
                 else:
                     state_key = reports[0].get('key')
                     rec_count = 0 if state_key == 'NO_PCP_DATA' else len(reports)
-                    LOG.info(
+                    self.LOG.info(
                         f"{self.prefix} - Marking the state of system with "
                         f"inventory id: {host['id']} as {SYSTEM_STATES[state_key]}"
                     )
@@ -160,7 +130,7 @@ class InsightsEngineConsumer:
 
                 system = get_or_create(
                     db.session, System, 'inventory_id', **system_attrs)
-                LOG.info(
+                self.LOG.info(
                     f"{self.prefix} - System {host['id']} created/updated successfully."
                 )
 
@@ -180,7 +150,7 @@ class InsightsEngineConsumer:
                         {'max_io': max(performance_utilization['io'].values())}
                     )
                 else:
-                    LOG.debug(f"{self.prefix} - Setting default utilization for performance profile")
+                    self.LOG.debug(f"{self.prefix} - Setting default utilization for performance profile")
                     performance_utilization = {
                         'memory': -1,
                         'cpu': -1,
@@ -204,28 +174,30 @@ class InsightsEngineConsumer:
                 }
                 insert_performance_profiles(
                     db.session, system.id, pprofile_fields)
-                LOG.info(
+                self.LOG.info(
                     f"{self.prefix} - Performance profile created/updated successfully for the system: {host['id']}"
                 )
                 db.session.commit()
 
                 # Trigger event for notification
                 self.trigger_notification(
-                    system.inventory_id, account, host, platform_metadata, system_previous_state, system_current_state
+                    system.inventory_id, account, host, platform_metadata, system_previous_state,
+                    system_current_state
                 )
 
                 processor_requests_success.labels(
                     reporter=self.reporter, org_id=account.org_id
                 ).inc()
-                LOG.info(
+                self.LOG.info(
                     f"{self.prefix} - Refreshed system {system.inventory_id} ({system.id}) "
                     f"belonging to account: {account.account} ({account.id}) and org_id: {account.org_id}"
                 )
+
             except Exception as err:
                 processor_requests_failures.labels(
                     reporter=self.reporter, org_id=account.org_id
                 ).inc()
-                LOG.error(
+                self.LOG.error(
                     f"{self.prefix} - Unable to add system {host['id']} to DB "
                     f"belonging to account: {account.account} and org_id: {account.org_id} - {err}"
                 )
@@ -245,5 +217,5 @@ class InsightsEngineConsumer:
 if __name__ == "__main__":
     start_http_server(int(METRICS_PORT))
     commence_cw_log_streaming('ros-processor')
-    processor = InsightsEngineConsumer()
+    processor = InsightsEngineConsumer(ENGINE_RESULT_TOPIC, 'PROCESSING ENGINE RESULTS', 'INSIGHTS ENGINE')
     processor.run()

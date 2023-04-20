@@ -7,6 +7,7 @@ from ros.lib.models import db, PerformanceProfile, PerformanceProfileHistory
 from ros.processor.insights_engine_consumer import InsightsEngineConsumer, SYSTEM_STATES
 from tests.helpers.db_helper import db_get_host, db_get_record
 from ros.processor.event_producer import notification_payload
+from ros.lib.config import ENGINE_RESULT_TOPIC
 
 
 @pytest.fixture(scope="function")
@@ -47,7 +48,7 @@ def engine_result_message():
 
 @pytest.fixture
 def engine_consumer():
-    return InsightsEngineConsumer()
+    return InsightsEngineConsumer(ENGINE_RESULT_TOPIC, 'PROCESSING ENGINE RESULTS', 'INSIGHTS ENGINE')
 
 
 def test_handle_msg(engine_result_message, engine_consumer, mocker, performance_record):

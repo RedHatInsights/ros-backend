@@ -7,17 +7,18 @@ from ros.processor.garbage_collector import GarbageCollector
 from prometheus_client import start_http_server
 import threading
 from ros.lib.config import METRICS_PORT, ROS_PROCESSOR_PORT
+from ros.lib.config import ENGINE_RESULT_TOPIC, INVENTORY_EVENTS_TOPIC
 
 
 def process_engine_results():
-    processor = InsightsEngineConsumer()
+    processor = InsightsEngineConsumer(ENGINE_RESULT_TOPIC, 'PROCESSING ENGINE RESULTS', 'INSIGHTS ENGINE')
     processor.processor_name = 'process-engine-results'
     PROCESSOR_INSTANCES.append(processor)
     processor.run()
 
 
 def events_processor():
-    processor = InventoryEventsConsumer()
+    processor = InventoryEventsConsumer(INVENTORY_EVENTS_TOPIC, 'INVENTORY EVENTS', 'INVENTORY EVENTS')
     processor.processor_name = 'events-processor'
     PROCESSOR_INSTANCES.append(processor)
     processor.run()
