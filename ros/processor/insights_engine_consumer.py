@@ -41,7 +41,6 @@ class InsightsEngineConsumer:
 
         self.prefix = 'PROCESSING ENGINE RESULTS'
         self.reporter = 'INSIGHTS ENGINE'
-        self.class_name = self.__class__.__name__
 
     def __iter__(self):
         return self
@@ -84,7 +83,7 @@ class InsightsEngineConsumer:
                 self.consumer.commit()
 
     def handle_msg(self, msg):
-        if system_allowed_in_ros(msg, self.class_name):
+        if system_allowed_in_ros(msg, self.reporter):
             host = msg["input"]["host"]
             platform_metadata = msg["input"]["platform_metadata"]
             system_metadata = msg["results"]["system"]["metadata"]

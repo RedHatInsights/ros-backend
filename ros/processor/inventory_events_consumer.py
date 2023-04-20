@@ -29,7 +29,6 @@ class InventoryEventsConsumer:
         }
         self.prefix = 'INVENTORY EVENTS'
         self.reporter = 'INVENTORY EVENTS'
-        self.class_name = self.__class__.__name__
 
     def __iter__(self):
         return self
@@ -110,7 +109,7 @@ class InventoryEventsConsumer:
     def host_create_update_events(self, msg):
         """ Process created/updated message ( create system record, store new report )"""
         self.prefix = "INVENTORY Update EVENT" if msg['type'] == 'updated' else "INVENTORY CREATE EVENT"
-        if system_allowed_in_ros(msg, self.class_name):
+        if system_allowed_in_ros(msg, self.reporter):
             LOG.info(
                 f"{self.prefix} - Processing a message for system({msg['host']['id']}) "
                 f"belonging to account: {msg['host']['account']} and org_id: {msg['host'].get('org_id')}"
