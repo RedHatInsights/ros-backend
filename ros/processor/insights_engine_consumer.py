@@ -9,11 +9,11 @@ from ros.processor.process_archive import get_performance_profile
 from ros.processor.event_producer import new_suggestion_event
 from ros.lib.cw_logging import commence_cw_log_streaming
 from prometheus_client import start_http_server
+from .system_allowed_in_ros import system_allowed_in_ros
 from ros.lib.utils import (
     get_or_create,
     cast_iops_as_float,
     insert_performance_profiles,
-    validate_ros_payload
 )
 from ros.processor.metrics import (processor_requests_success,
                                    processor_requests_failures,
@@ -41,6 +41,7 @@ class InsightsEngineConsumer:
 
         self.prefix = 'PROCESSING ENGINE RESULTS'
         self.reporter = 'INSIGHTS ENGINE'
+        self.class_name = self.__class__.__name__
 
     def __iter__(self):
         return self
@@ -83,10 +84,7 @@ class InsightsEngineConsumer:
                 self.consumer.commit()
 
     def handle_msg(self, msg):
-        is_ros = msg["input"]["platform_metadata"].get("is_ros")
-        cloud_provider = msg["results"]["system"]["metadata"].get('cloud_provider')
-        is_valid = validate_ros_payload(is_ros, cloud_provider)
-        if is_valid:
+        if system_allowed_in_ros(msg, self.class_name):
             host = msg["input"]["host"]
             platform_metadata = msg["input"]["platform_metadata"]
             system_metadata = msg["results"]["system"]["metadata"]

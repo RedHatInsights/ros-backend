@@ -1,12 +1,13 @@
 import json
 from ros.lib import consume
 from ros.lib.app import app, db
-from ros.lib.utils import get_or_create, validate_ros_payload
+from ros.lib.utils import get_or_create
 from confluent_kafka import KafkaException
 from ros.lib.models import RhAccount, System
 from ros.lib.config import INVENTORY_EVENTS_TOPIC, METRICS_PORT, get_logger
 from ros.lib.cw_logging import commence_cw_log_streaming
 from prometheus_client import start_http_server
+from .system_allowed_in_ros import system_allowed_in_ros
 from ros.processor.metrics import (processor_requests_success,
                                    processor_requests_failures,
                                    kafka_failures)
@@ -28,6 +29,7 @@ class InventoryEventsConsumer:
         }
         self.prefix = 'INVENTORY EVENTS'
         self.reporter = 'INVENTORY EVENTS'
+        self.class_name = self.__class__.__name__
 
     def __iter__(self):
         return self
@@ -108,10 +110,7 @@ class InventoryEventsConsumer:
     def host_create_update_events(self, msg):
         """ Process created/updated message ( create system record, store new report )"""
         self.prefix = "INVENTORY Update EVENT" if msg['type'] == 'updated' else "INVENTORY CREATE EVENT"
-        is_ros = msg["platform_metadata"].get("is_ros")
-        cloud_provider = msg['host']['system_profile'].get('cloud_provider')
-        is_valid = validate_ros_payload(is_ros, cloud_provider)
-        if is_valid:
+        if system_allowed_in_ros(msg, self.class_name):
             LOG.info(
                 f"{self.prefix} - Processing a message for system({msg['host']['id']}) "
                 f"belonging to account: {msg['host']['account']} and org_id: {msg['host'].get('org_id')}"
