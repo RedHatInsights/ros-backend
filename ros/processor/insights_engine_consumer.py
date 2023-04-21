@@ -13,7 +13,7 @@ from ros.lib.utils import (
     get_or_create,
     cast_iops_as_float,
     insert_performance_profiles,
-    validate_ros_payload
+    system_allowed_in_ros,
 )
 from ros.processor.metrics import (processor_requests_success,
                                    processor_requests_failures,
@@ -83,10 +83,7 @@ class InsightsEngineConsumer:
                 self.consumer.commit()
 
     def handle_msg(self, msg):
-        is_ros = msg["input"]["platform_metadata"].get("is_ros")
-        cloud_provider = msg["results"]["system"]["metadata"].get('cloud_provider')
-        is_valid = validate_ros_payload(is_ros, cloud_provider)
-        if is_valid:
+        if system_allowed_in_ros(msg, self.reporter):
             host = msg["input"]["host"]
             platform_metadata = msg["input"]["platform_metadata"]
             system_metadata = msg["results"]["system"]["metadata"]
