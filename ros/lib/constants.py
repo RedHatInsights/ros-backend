@@ -22,3 +22,6 @@ class SubStates(Enum):
 BUNDLE = "rhel"
 APPLICATION = "resource-optimization"
 EVENT_TYPE = "new-suggestion"
+
+# cloud providers supported by ROS
+CLOUD_PROVIDERS = ['aws', ]

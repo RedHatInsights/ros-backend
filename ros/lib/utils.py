@@ -17,6 +17,7 @@ from ros.lib.models import (
 from ros.lib.config import get_logger
 from ros.lib import aws_instance_types
 from ros.processor.metrics import ec2_instance_lookup_failures
+from ros.lib.constants import CLOUD_PROVIDERS
 
 LOG = get_logger(__name__)
 PROCESSOR_INSTANCES = []
@@ -85,7 +86,7 @@ def validate_ros_payload(is_ros, cloud_provider):
     :param cloud_provider: cloud provider value
     :return: True if cloud_provider is not none and is_ros flag is set to true, False otherwise.
     """
-    return True if is_ros and cloud_provider is not None else False
+    return True if is_ros and cloud_provider in CLOUD_PROVIDERS else False
 
 
 def cast_iops_as_float(iops_all_dict):
