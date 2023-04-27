@@ -23,7 +23,13 @@ docker --config="$DOCKER_CONF" login -u="$RH_REGISTRY_USER" -p="$RH_REGISTRY_TOK
 docker --config="$DOCKER_CONF" build -t "${IMAGE_NAME}:${IMAGE_TAG}" .
 docker --config="$DOCKER_CONF" push "${IMAGE_NAME}:${IMAGE_TAG}"
 
-for ADDITIONAL_TAG in $ADDITIONAL_TAGS; do
-    docker --config="$DOCKER_CONF" tag "${IMAGE_NAME}:${IMAGE_TAG}" "${IMAGE_NAME}:${ADDITIONAL_TAG}"
-    docker --config="$DOCKER_CONF" push "${IMAGE_NAME}:${ADDITIONAL_TAG}"
-done
+
+if [[ $GIT_BRANCH == *"security-compliance"* ]]; then
+    docker --config="$DOCKER_CONF" tag "${IMAGE_NAME}:${IMAGE_TAG}" "${IMAGE_NAME}:security-compliance"
+    docker --config="$DOCKER_CONF" push "${IMAGE_NAME}:security-compliance"
+else
+    for ADDITIONAL_TAG in $ADDITIONAL_TAGS; do
+        docker --config="$DOCKER_CONF" tag "${IMAGE_NAME}:${IMAGE_TAG}" "${IMAGE_NAME}:${ADDITIONAL_TAG}"
+        docker --config="$DOCKER_CONF" push "${IMAGE_NAME}:${ADDITIONAL_TAG}"
+    done
+fi
