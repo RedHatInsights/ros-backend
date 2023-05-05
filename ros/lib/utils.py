@@ -17,6 +17,7 @@ from ros.lib.models import (
 from ros.lib.config import get_logger
 from ros.lib import aws_instance_types
 from ros.processor.metrics import ec2_instance_lookup_failures
+from ros.lib.constants import CloudProvider
 
 LOG = get_logger(__name__)
 PROCESSOR_INSTANCES = []
@@ -45,6 +46,17 @@ def get_or_create(session, model, keys, **kwargs):
         instance = model(**kwargs)
         session.add(instance)
         session.flush()
+    return instance
+
+
+def update_system_record(session, **kwargs):
+    inventory_id = kwargs.get('inventory_id')
+    if inventory_id is None:
+        return
+    instance = session.query(System).filter_by(inventory_id=inventory_id).first()
+    if instance:
+        for k, v in kwargs.items():
+            setattr(instance, k, v)
     return instance
 
 
@@ -255,6 +267,18 @@ def system_allowed_in_ros(msg, reporter):
         is_ros = msg["input"]["platform_metadata"].get("is_ros")
         cloud_provider = msg["results"]["system"]["metadata"].get('cloud_provider')
     elif reporter == 'INVENTORY EVENTS':
-        is_ros = msg["platform_metadata"].get("is_ros")
         cloud_provider = msg['host']['system_profile'].get('cloud_provider')
+        if msg.get('type') == 'updated':
+            updated_event = True
+        else:
+            updated_event = False
+        if updated_event:
+            return is_valid_cloud_provider(cloud_provider)
+        is_ros = msg["platform_metadata"].get("is_ros")
     return validate_ros_payload(is_ros, cloud_provider)
+
+
+def is_valid_cloud_provider(cloud_provider):
+    if cloud_provider in [provider.value for provider in CloudProvider]:
+        return True
+    return False
