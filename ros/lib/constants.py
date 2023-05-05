@@ -22,3 +22,10 @@ class SubStates(Enum):
 BUNDLE = "rhel"
 APPLICATION = "resource-optimization"
 EVENT_TYPE = "new-suggestion"
+
+
+class CloudProvider(Enum):
+    """
+    Supported cloud providers
+    """
+    AWS = 'aws'

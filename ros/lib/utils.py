@@ -8,6 +8,7 @@ from flask import jsonify, make_response
 from flask_restful import abort
 from sqlalchemy import Integer
 
+from ros.lib.constants import CloudProvider
 from ros.lib.models import (
     RhAccount,
     System,
@@ -48,6 +49,17 @@ def get_or_create(session, model, keys, **kwargs):
     return instance
 
 
+def update_system_record(session, model, **kwargs):
+    inventory_id = kwargs.get('inventory_id')
+    if inventory_id is None:
+        return
+    instance = session.query(model).filter_by(inventory_id=inventory_id).first()
+    if instance:
+        for k, v in kwargs.items():
+            setattr(instance, k, v)
+    return instance
+
+
 def delete_record(session, model, **kwargs):
     """ Deletes a record filtered by key(s) present in kwargs(contains model specific fields)."""
     keys = list(kwargs.keys())
@@ -78,19 +90,58 @@ def user_data_from_identity(identity):
     return identity['user']
 
 
-def validate_ros_payload(is_ros, cloud_provider):
-    """
-    Validate ros payload.
-    :param is_ros: is_ros boolean flag
-    :param cloud_provider: cloud provider value
-    :return: True if cloud_provider is not none and is_ros flag is set to true, False otherwise.
-    """
-    return True if is_ros and cloud_provider is not None else False
+def get_payload_metadata(payload_data):
+    caller_prefix = payload_data[0].prefix  # Fetching prefix from class instance
+    msg = payload_data[1]
+    try:
+        if caller_prefix == 'ENGINE RESULTS':
+            inventory_id = msg["input"]["host"]["id"]
+            is_ros = msg["input"]["platform_metadata"].get("is_ros")
+            cloud_provider = msg["results"]["system"]["metadata"].get('cloud_provider')
+            account = msg['input']['host']['account']
+            org_id = msg['input']['platform_metadata']['org_id']
+        else:
+            inventory_id = msg['host']['id']
+            event_type = msg.get('type')
+            # exception for inventory update events
+            # is_ros flag is unexpected for the same
+            if event_type == 'updated':
+                is_ros = True
+            else:
+                is_ros = msg.get('platform_metadata').get('is_ros')
+            cloud_provider = msg['host']['system_profile'].get('cloud_provider')
+            account, org_id = msg['host']['account'], msg['host']['org_id']
+    except Exception as e:
+        LOG.error(e)
+        is_ros = False
+        cloud_provider, inventory_id, account, org_id = None, None, None, None
+
+    return is_ros, cloud_provider, inventory_id, caller_prefix, account, org_id
+
+
+def validate_ros_payload(func):
+    def payload_validator(*args, **kwargs):
+        is_ros, cloud_provider, inventory_id, caller_prefix, account, org_id = get_payload_metadata(args)
+        is_ros_flag = True if is_ros in [True, "true"] else False
+        cloud_provider_flag = cloud_provider in [provider.value for provider in CloudProvider]
+
+        if (
+                is_ros_flag is True
+                and cloud_provider_flag is True
+        ):
+            return func(*args, **kwargs)
+        else:
+            LOG.warning(
+                f"{caller_prefix} - Validation failed for System: {inventory_id}, "
+                f"is_ros: {is_ros}, cloud_provider: {cloud_provider}, "
+                f"belonging to account: {account} and org_id: {org_id}"
+            )
+    return payload_validator
 
 
 def cast_iops_as_float(iops_all_dict):
     """
-    Convert IOPS  values from str to float
+    Convert IOPS values from str to float
     :param iops_all_dict: IOPS dict to convert.
     :return: IOPS values as float
     """
@@ -246,15 +297,3 @@ def highlights_instance_types(queryset, highlight_type):
         item_count += 1
 
     return highlights_list
-
-
-def system_allowed_in_ros(msg, reporter):
-    is_ros = None
-    cloud_provider = ''
-    if reporter == 'INSIGHTS ENGINE':
-        is_ros = msg["input"]["platform_metadata"].get("is_ros")
-        cloud_provider = msg["results"]["system"]["metadata"].get('cloud_provider')
-    elif reporter == 'INVENTORY EVENTS':
-        is_ros = msg["platform_metadata"].get("is_ros")
-        cloud_provider = msg['host']['system_profile'].get('cloud_provider')
-    return validate_ros_payload(is_ros, cloud_provider)

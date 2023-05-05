@@ -1,15 +1,22 @@
 import json
 from ros.lib import consume
 from ros.lib.app import app, db
-from ros.lib.utils import get_or_create, system_allowed_in_ros
 from confluent_kafka import KafkaException
 from ros.lib.models import RhAccount, System
 from ros.lib.config import INVENTORY_EVENTS_TOPIC, METRICS_PORT, get_logger
 from ros.lib.cw_logging import commence_cw_log_streaming
 from prometheus_client import start_http_server
-from ros.processor.metrics import (processor_requests_success,
-                                   processor_requests_failures,
-                                   kafka_failures)
+from ros.processor.metrics import (
+    processor_requests_success,
+    processor_requests_failures,
+    kafka_failures,
+)
+from ros.lib.utils import (
+    get_or_create,
+    validate_ros_payload,
+    update_system_record,
+)
+
 
 LOG = get_logger(__name__)
 
@@ -105,15 +112,15 @@ class InventoryEventsConsumer:
                     f"{self.prefix} - Deleted system with inventory id: {host_id}"
                 )
 
+    @validate_ros_payload
     def host_create_update_events(self, msg):
         """ Process created/updated message ( create system record, store new report )"""
-        self.prefix = "INVENTORY Update EVENT" if msg['type'] == 'updated' else "INVENTORY CREATE EVENT"
-        if system_allowed_in_ros(msg, self.reporter):
-            LOG.info(
-                f"{self.prefix} - Processing a message for system({msg['host']['id']}) "
-                f"belonging to account: {msg['host']['account']} and org_id: {msg['host'].get('org_id')}"
-            )
-            self.process_system_details(msg)
+        self.prefix = "INVENTORY UPDATE EVENT" if msg['type'] == 'updated' else "INVENTORY CREATE EVENT"
+        LOG.info(
+            f"{self.prefix} - Processing a message for system({msg['host']['id']}) "
+            f"belonging to account: {msg['host']['account']} and org_id: {msg['host'].get('org_id')}"
+        )
+        self.process_system_details(msg)
 
     def process_system_details(self, msg):
         """ Store new system information (stale, stale_warning timestamp) and return internal DB id"""
@@ -135,17 +142,26 @@ class InventoryEventsConsumer:
                     "stale_timestamp": host['stale_timestamp'],
                     "operating_system": host['system_profile']['operating_system'],
                 }
-                system = get_or_create(db.session, System, 'inventory_id', **system_fields)
+                if msg['type'] == 'updated':
+                    system = update_system_record(db.session, System, **system_fields)
+                else:
+                    system = get_or_create(db.session, System, 'inventory_id', **system_fields)
 
-                # Commit changes
-                db.session.commit()
-                processor_requests_success.labels(
-                    reporter=self.reporter, org_id=account.org_id
-                ).inc()
-                LOG.info(
-                    f"{self.prefix} - Refreshed system {system.inventory_id} ({system.id}) "
-                    f"belonging to account: {account.account} ({account.id}) and org_id: {account.org_id}"
-                )
+                if system is not None:
+                    # Commit changes
+                    db.session.commit()
+                    processor_requests_success.labels(
+                        reporter=self.reporter, org_id=account.org_id
+                    ).inc()
+                    LOG.info(
+                        f"{self.prefix} - Refreshed system {system.inventory_id} ({system.id}) "
+                        f"belonging to account: {account.account} ({account.id}) and org_id: {account.org_id}"
+                    )
+                else:
+                    LOG.info(
+                        f"{self.prefix} - System {system_fields.get('inventory_id')} does not exist in the database, "
+                        f"belonging to account: {account.account} ({account.id}) and org_id: {account.org_id}"
+                    )
             except Exception as err:
                 processor_requests_failures.labels(
                     reporter=self.reporter, org_id=account.org_id

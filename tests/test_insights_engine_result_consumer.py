@@ -239,3 +239,16 @@ def test_notification(engine_result_message, engine_consumer, db_setup, performa
     assert response["bundle"] == "rhel"
     assert response["application"] == "resource-optimization"
     assert response["event_type"] == "new-suggestion"
+
+
+def test_payload_validator_engine_invalid(engine_result_message, engine_consumer, mocker, performance_record):
+    engine_result_msg = engine_result_message("insights-engine-result-under-pressure.json")
+    engine_result_msg["input"]["platform_metadata"]["is_ros"] = False
+    mocker.patch(
+        'ros.processor.insights_engine_consumer.get_performance_profile',
+        return_value=performance_record,
+        autospec=True
+    )
+    mocker.patch.object(engine_consumer, 'process_report', return_value=True, autospec=True)
+    engine_consumer.handle_msg(engine_result_msg)
+    engine_consumer.process_report.assert_not_called()

@@ -26,6 +26,7 @@ def inventory_event_consumer():
 
 
 def test_process_system_details(inventory_event_consumer, inventory_event_message, db_setup):
+    inventory_event_message['type'] = 'created'
     inventory_event_consumer.process_system_details(inventory_event_message)
     with app.app_context():
         host = db_get_host(inventory_event_message['host']['id'])
@@ -98,6 +99,21 @@ def test_host_update_event_no_cp(inventory_event_consumer, inventory_event_messa
         assert updated_system.display_name != updated_display_name
 
 
+def test_host_update_events_non_ros(inventory_event_consumer, db_setup, mocker):
+    mocker.patch.object(
+        inventory_event_consumer,
+        'process_system_details',
+        side_effect=inventory_event_consumer.process_system_details,
+        autospec=True
+    )
+    with open(f"{Path(__file__).parent}/data_files/non-ros-events-message.json", "r") as file:
+        non_ros_events_msg = json.loads(file.read())
+    inventory_event_consumer.process_system_details(msg=non_ros_events_msg)
+    with app.app_context():
+        updated_system = db_get_host(non_ros_events_msg['host']['id'])
+        assert updated_system is None
+
+
 def test_host_delete_event(inventory_event_consumer, db_setup):
     msg = {"type": "delete", "insights_id": "677fb960-e164-48a4-929f-59e2d917b444",
            "id": "ee0b9978-fe1b-4191-8408-cbadbd47f7a2",
@@ -105,3 +121,15 @@ def test_host_delete_event(inventory_event_consumer, db_setup):
     inventory_event_consumer.host_delete_event(msg)
     host = db_get_host(msg['id'])
     assert host is None
+
+
+def test_payload_validator_events_invalid(inventory_event_consumer, inventory_event_message, db_setup):
+    inventory_event_message['type'] = 'created'
+    inventory_event_consumer.host_create_update_events(inventory_event_message)  # creating system for test
+    inventory_event_message['type'] = 'updated'
+    inventory_event_message['host']['system_profile']['cloud_provider'] = 'azure'
+    updated_display_name = 'Test - Display Name Update'
+    inventory_event_message['host']['display_name'] = updated_display_name
+    inventory_event_consumer.host_create_update_events(inventory_event_message)
+    host = db_get_host(inventory_event_message['host']['id'])
+    assert host.display_name != updated_display_name

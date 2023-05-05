@@ -13,11 +13,13 @@ from ros.lib.utils import (
     get_or_create,
     cast_iops_as_float,
     insert_performance_profiles,
-    system_allowed_in_ros,
+    validate_ros_payload,
 )
-from ros.processor.metrics import (processor_requests_success,
-                                   processor_requests_failures,
-                                   kafka_failures)
+from ros.processor.metrics import (
+    processor_requests_success,
+    processor_requests_failures,
+    kafka_failures,
+)
 
 SYSTEM_STATES = {
     "INSTANCE_OVERSIZED": "Oversized",
@@ -39,7 +41,7 @@ class InsightsEngineConsumer:
         """Create Engine Consumer."""
         self.consumer = consume.init_consumer(ENGINE_RESULT_TOPIC)
 
-        self.prefix = 'PROCESSING ENGINE RESULTS'
+        self.prefix = 'ENGINE RESULTS'
         self.reporter = 'INSIGHTS ENGINE'
 
     def __iter__(self):
@@ -82,26 +84,26 @@ class InsightsEngineConsumer:
             finally:
                 self.consumer.commit()
 
+    @validate_ros_payload
     def handle_msg(self, msg):
-        if system_allowed_in_ros(msg, self.reporter):
-            host = msg["input"]["host"]
-            platform_metadata = msg["input"]["platform_metadata"]
-            system_metadata = msg["results"]["system"]["metadata"]
-            performance_record = get_performance_profile(
-                platform_metadata['url'],
-                platform_metadata.get('org_id'),
-                host['id'],
-                custom_prefix=self.prefix
-            )
-            reports = msg["results"]["reports"]  \
-                if msg["results"]["reports"] \
-                and type(msg["results"]["reports"]) == list \
-                else []
-            ros_reports = [
-                report for report in reports
-                if 'ros_instance_evaluation' in report["rule_id"]
-            ]
-            self.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
+        host = msg["input"]["host"]
+        platform_metadata = msg["input"]["platform_metadata"]
+        system_metadata = msg["results"]["system"]["metadata"]
+        performance_record = get_performance_profile(
+            platform_metadata['url'],
+            platform_metadata.get('org_id'),
+            host['id'],
+            custom_prefix=self.prefix
+        )
+        reports = msg["results"]["reports"]  \
+            if msg["results"]["reports"] \
+            and type(msg["results"]["reports"]) == list \
+            else []
+        ros_reports = [
+            report for report in reports
+            if 'ros_instance_evaluation' in report["rule_id"]
+        ]
+        self.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
 
     def process_report(self, host, platform_metadata, reports, system_metadata, performance_record):
         """create/update system and performance_profile based on reports data."""
