@@ -1,7 +1,7 @@
 import json
 from ros.lib import consume
 from ros.lib.app import app, db
-from ros.lib.utils import get_or_create, system_allowed_in_ros
+from ros.lib.utils import get_or_create, system_allowed_in_ros, update_system_record
 from confluent_kafka import KafkaException
 from ros.lib.models import RhAccount, System
 from ros.lib.config import INVENTORY_EVENTS_TOPIC, METRICS_PORT, get_logger
@@ -119,15 +119,8 @@ class InventoryEventsConsumer:
         """ Store new system information (stale, stale_warning timestamp) and return internal DB id"""
         host = msg['host']
         with app.app_context():
-            try:
-                account = get_or_create(
-                    db.session, RhAccount, 'account',
-                    account=host['account'],
-                    org_id=host.get('org_id')
-                )
-
+            if msg.get('type') == 'updated':
                 system_fields = {
-                    "tenant_id": account.id,
                     "inventory_id": host['id'],
                     "display_name": host['display_name'],
                     "fqdn": host['fqdn'],
@@ -135,26 +128,58 @@ class InventoryEventsConsumer:
                     "stale_timestamp": host['stale_timestamp'],
                     "operating_system": host['system_profile']['operating_system'],
                 }
-                system = get_or_create(db.session, System, 'inventory_id', **system_fields)
+                system = update_system_record(db.session, **system_fields)
+                if system is not None:
+                    db.session.commit()
+                    account = db.session.query(RhAccount).filter_by(id=system.tenant_id).first()
+                    processor_requests_success.labels(
+                        reporter=self.reporter, org_id=account.org_id
+                    ).inc()
+                    LOG.info(
+                        f"{self.prefix} - Refreshed system {system.inventory_id} ({system.id}) "
+                        f"belonging to account: {account.account} ({account.id}) and org_id: {account.org_id}"
+                    )
+                else:
+                    LOG.info(
+                        f"{self.prefix} - System {system_fields.get('inventory_id')} does not exist in the database"
+                    )
+            else:
+                try:
+                    account = get_or_create(
+                        db.session, RhAccount, 'account',
+                        account=host['account'],
+                        org_id=host.get('org_id')
+                    )
 
-                # Commit changes
-                db.session.commit()
-                processor_requests_success.labels(
-                    reporter=self.reporter, org_id=account.org_id
-                ).inc()
-                LOG.info(
-                    f"{self.prefix} - Refreshed system {system.inventory_id} ({system.id}) "
-                    f"belonging to account: {account.account} ({account.id}) and org_id: {account.org_id}"
-                )
-            except Exception as err:
-                processor_requests_failures.labels(
-                    reporter=self.reporter, org_id=account.org_id
-                ).inc()
+                    system_fields = {
+                        "tenant_id": account.id,
+                        "inventory_id": host['id'],
+                        "display_name": host['display_name'],
+                        "fqdn": host['fqdn'],
+                        "cloud_provider": host['system_profile']['cloud_provider'],
+                        "stale_timestamp": host['stale_timestamp'],
+                        "operating_system": host['system_profile']['operating_system'],
+                    }
+                    system = get_or_create(db.session, System, 'inventory_id', **system_fields)
 
-                LOG.error(
-                    f"{self.prefix} - Unable to add system {host['id']} to DB "
-                    f"belonging to account: {account.account} and org_id: {account.org_id} - {err}"
-                )
+                    # Commit changes
+                    db.session.commit()
+                    processor_requests_success.labels(
+                        reporter=self.reporter, org_id=account.org_id
+                    ).inc()
+                    LOG.info(
+                        f"{self.prefix} - Refreshed system {system.inventory_id} ({system.id}) "
+                        f"belonging to account: {account.account} ({account.id}) and org_id: {account.org_id}"
+                    )
+                except Exception as err:
+                    processor_requests_failures.labels(
+                        reporter=self.reporter, org_id=account.org_id
+                    ).inc()
+
+                    LOG.error(
+                        f"{self.prefix} - Unable to add system {host['id']} to DB "
+                        f"belonging to account: {account.account} and org_id: {account.org_id} - {err}"
+                    )
 
 
 if __name__ == "__main__":

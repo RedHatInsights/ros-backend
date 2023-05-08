@@ -26,6 +26,7 @@ def inventory_event_consumer():
 
 
 def test_process_system_details(inventory_event_consumer, inventory_event_message, db_setup):
+    inventory_event_message['type'] = 'created'
     inventory_event_consumer.process_system_details(inventory_event_message)
     with app.app_context():
         host = db_get_host(inventory_event_message['host']['id'])
