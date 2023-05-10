@@ -119,7 +119,11 @@ class InventoryEventsConsumer:
         """ Store new system information (stale, stale_warning timestamp) and return internal DB id"""
         host = msg['host']
         with app.app_context():
-            if msg.get('type') == 'updated':
+            # 'platform_metadata' field not included when the host is updated via the API.
+            if (
+                    msg.get('type') == 'updated'
+                    and msg.get("platform_metadata") is None
+            ):
                 system_fields = {
                     "inventory_id": host['id'],
                     "display_name": host['display_name'],

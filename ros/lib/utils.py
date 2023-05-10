@@ -90,14 +90,21 @@ def user_data_from_identity(identity):
     return identity['user']
 
 
+def is_valid_cloud_provider(cloud_provider):
+    """
+    Validates cloud_provider value.
+    """
+    return cloud_provider in [provider.value for provider in CloudProvider]
+
+
 def validate_ros_payload(is_ros, cloud_provider):
     """
     Validate ros payload.
     :param is_ros: is_ros boolean flag
     :param cloud_provider: cloud provider value
-    :return: True if cloud_provider is not none and is_ros flag is set to true, False otherwise.
+    :return: True if cloud_provider is supported & is_ros is true else False.
     """
-    return True if is_ros and cloud_provider is not None else False
+    return is_ros and is_valid_cloud_provider(cloud_provider)
 
 
 def cast_iops_as_float(iops_all_dict):
@@ -268,17 +275,14 @@ def system_allowed_in_ros(msg, reporter):
         cloud_provider = msg["results"]["system"]["metadata"].get('cloud_provider')
     elif reporter == 'INVENTORY EVENTS':
         cloud_provider = msg['host']['system_profile'].get('cloud_provider')
-        if msg.get('type') == 'updated':
-            updated_event = True
-        else:
-            updated_event = False
-        if updated_event:
+        # Note that 'is_ros' ONLY available when payload uploaded
+        # via insights-client. 'platform_metadata' field not included
+        # when the host is updated via the API.
+        # https://consoledot.pages.redhat.com/docs/dev/services/inventory.html#_updated_event
+        if (
+                msg.get('type') == 'updated'
+                and msg.get('platform_metadata') is None
+        ):
             return is_valid_cloud_provider(cloud_provider)
         is_ros = msg["platform_metadata"].get("is_ros")
     return validate_ros_payload(is_ros, cloud_provider)
-
-
-def is_valid_cloud_provider(cloud_provider):
-    if cloud_provider in [provider.value for provider in CloudProvider]:
-        return True
-    return False
