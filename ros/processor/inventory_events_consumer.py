@@ -119,7 +119,7 @@ class InventoryEventsConsumer:
         """ Store new system information (stale, stale_warning timestamp) and return internal DB id"""
         host = msg['host']
         with app.app_context():
-            if msg.get('type') == 'updated':
+            if msg.get("platform_metadata") is None:  # Handles valid update for a ROS system
                 system_fields = {
                     "inventory_id": host['id'],
                     "display_name": host['display_name'],
