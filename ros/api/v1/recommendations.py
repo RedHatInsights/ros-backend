@@ -29,7 +29,8 @@ class RecommendationsApi(Resource):
         'condition': fields.String,
         'detected_issues': fields.String,
         'suggested_instances': fields.String,
-        'current_instance': fields.String
+        'current_instance': fields.String,
+        'psi_enabled': fields.Boolean
     }
 
     meta_fields = {
@@ -64,6 +65,7 @@ class RecommendationsApi(Resource):
                 message="No records for host with id {} doesn't exist".format(host_id))
 
         rule_hits = profile.rule_hit_details
+        psi_enabled = profile.psi_enabled
         recommendations_list = []
         rules_columns = ['rule_id', 'description', 'reason', 'resolution', 'condition']
         if rule_hits:
@@ -74,13 +76,18 @@ class RecommendationsApi(Resource):
                 else:
                     rule_data = db.session.query(Rule).filter(Rule.rule_id == rule_hit['rule_id']).first()
                 if rule_data:
+                    recommendation = {}
+                    formatted_candidates = []
+                    newline = '\n'
                     rule_dict = rule_data.__dict__
+
                     if system.cloud_provider is None:
                         rule_dict['reason'] = rule_dict['reason'].replace("cloud_provider.upper()", "cloud_provider")
-                    recommendation = {}
+
                     rule_hit_details = rule_hit.get('details')
                     candidates = rule_hit_details.get('candidates')
                     states = rule_hit_details.get('states')
+
                     summaries = [
                         ROSSUMMARY[state] for substates in states.values()
                         for state in substates
@@ -88,17 +95,20 @@ class RecommendationsApi(Resource):
                     ]
                     if rule_hit.get("key") == 'INSTANCE_IDLE':
                         summaries = None
+                    if summaries is not None:
+                        recommendation['detected_issues'] = newline.join(summaries)
+
                     current_instance = f'{rule_hit_details.get("instance_type")} ' + \
                         f'({rule_hit_details.get("price")} {INSTANCE_PRICE_UNIT})'
-                    newline = '\n'
+
+                    for candidate in candidates[0:3]:
+                        formatted_candidates.append(f'{candidate[0]} ({candidate[1]} {INSTANCE_PRICE_UNIT})')
+
+                    recommendation['suggested_instances'] = newline.join(formatted_candidates)
+                    recommendation['current_instance'] = current_instance
+                    recommendation['psi_enabled'] = psi_enabled
+
                     for skey in rules_columns:
-                        formatted_candidates = []
-                        if summaries is not None:
-                            recommendation['detected_issues'] = newline.join(summaries)
-                        for candidate in candidates[0:3]:
-                            formatted_candidates.append(f'{candidate[0]} ({candidate[1]} {INSTANCE_PRICE_UNIT})')
-                        recommendation['suggested_instances'] = newline.join(formatted_candidates)
-                        recommendation['current_instance'] = current_instance
                         recommendation[skey] = eval("f'{}'".format(rule_dict[skey]))
                     recommendations_list.append(recommendation)
         return {
