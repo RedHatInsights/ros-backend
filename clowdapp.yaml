@@ -24,7 +24,7 @@ objects:
       podSpec:
         image: ${IMAGE}:${IMAGE_TAG}
         command: ["sh"]
-        args: ["-c", "export FLASK_APP=manage.py && flask db upgrade && flask seed && gunicorn ros.api.main:app"]
+        args: ["-c", "export FLASK_APP=manage.py && poetry run flask db upgrade && poetry run flask seed && poetry run gunicorn ros.api.main:app"]
         resources:
           requests:
             cpu: ${CPU_REQUEST}

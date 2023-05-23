@@ -5,16 +5,16 @@ Backend for Resource Optimization Service
 
 ## Getting Started
 
-This project uses pipenv to manage the development and production environments.
+This project uses poetry to manage the development and production environments.
 
-Once you have pipenv installed, do the following:
+Once you have poetry installed, do the following:
 
 ```bash
-pipenv install
+poetry install
 ```
 Afterwards you can activate the virtual environment by running:
 ```bash
-pipenv shell
+poetry shell
 ```
 
 A list of configurable environment variables is present inside `.env.example` file.
@@ -39,7 +39,7 @@ In order to properly run the application from the host machine, you need to have
 README.md file in scripts directory.
 
 #### Initialize the database
-Run the following commands to excute the db migration scripts.
+Run the following commands to execute the db migration scripts.
 ```bash
 export FLASK_APP=manage.py
 flask db upgrade
@@ -61,8 +61,8 @@ python -m ros.api.main
 #### Running the Tests
 It is possible to run the tests using pytest:
 ```bash
-pipenv install --dev
-pytest --cov=ros tests
+poetry install
+poetry run pytest --cov=ros tests
 ```
 
 ## Running Inventory API with xjoin pipeline
