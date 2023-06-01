@@ -28,10 +28,6 @@ class Recommendation:
         rule_hit_key = rule_hit.get("key")
 
         rule_dict = rule_data.__dict__
-        if system.cloud_provider is None:
-            rule_dict['reason'] = rule_dict['reason'].replace(
-                "cloud_provider.upper()", "cloud_provider")
-
         self.rule_hit_details = rule_hit.get('details')
         self.detected_issues = self.detected_issues_by_states(rule_hit_key)
         self.suggested_instances = self.candidates_str()
@@ -58,17 +54,13 @@ class Recommendation:
 
     def detected_issues_by_states(self, rule_hit_key):
         """Get string of issues descriptions per state."""
-        states = self.rule_hit_details.get('states')
+        if rule_hit_key == 'INSTANCE_IDLE':
+            return None
 
+        states = self.rule_hit_details.get('states')
         summaries = [
             ROSSUMMARY[state] for substates in states.values()
             for state in substates
             if ROSSUMMARY.get(state) is not None
         ]
-        if rule_hit_key == 'INSTANCE_IDLE':
-            summaries = None
-
-        if summaries is None:
-            return None
-
         return NEWLINE_SEPARATOR.join(summaries)
