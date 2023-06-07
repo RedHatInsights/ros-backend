@@ -1,6 +1,6 @@
 from ros.lib.models import Rule, System, db, PerformanceProfile
 from ros.lib.utils import is_valid_uuid, identity, system_ids_by_org_id
-from ros.api.common.recommendation_model import Recommendation
+from ros.api.modules.recommendations import Recommendation
 from flask_restful import Resource, abort, fields, marshal_with
 from flask import request
 

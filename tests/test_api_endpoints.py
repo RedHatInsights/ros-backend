@@ -149,6 +149,28 @@ def test_system_suggestions(
         assert response.json["inventory_id"] == 'ee0b9978-fe1b-4191-8408-cbadbd47f7a3'
         assert response.json["meta"]["count"] == 1
         assert response.json["data"][0]["rule_id"] == "ros_instance_evaluation|INSTANCE_IDLE"
+        assert not response.json["data"][0]['psi_enabled']
+
+
+def test_system_under_pressure_suggestions(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        db_create_performance_profile_for_under_pressure,
+        db_instantiate_rules
+):
+    rule_id = 'ros_instance_evaluation|INSTANCE_OPTIMIZED_UNDER_PRESSURE'
+    with app.test_client() as client:
+        response = client.get(
+            '/api/ros/v1/systems/ee0b9978-fe1b-4191-8408-cbadbd47f7a3/suggestions',
+            headers={"x-rh-identity": auth_token}
+        )
+        assert response.status_code == 200
+        assert response.json["inventory_id"] == 'ee0b9978-fe1b-4191-8408-cbadbd47f7a3'
+        assert response.json["meta"]["count"] == 1
+        assert response.json["data"][0]['rule_id'] == rule_id
+        assert response.json["data"][0]['psi_enabled']
 
 
 def test_system_rating(
