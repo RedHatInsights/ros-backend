@@ -10,6 +10,7 @@ from .v1.hosts import (
     IsROSConfiguredApi,
     ExecutiveReportAPI,
 )
+from ros.lib.app import app
 from .v1.deployment_status import DeploymentStatus
 
 
@@ -25,4 +26,7 @@ def initialize_routes(api):
     api.add_resource(OpenAPISpec, '/api/ros/v1/openapi.json')
     api.add_resource(CallToActionApi, '/api/ros/v1/call_to_action')
     api.add_resource(ExecutiveReportAPI, '/api/ros/v1/executive_report')
-    api.add_url_rule(DeploymentStatus(), '/api/ros/v1/deployment_status')
+
+    @app.route('/api/ros/v1/deployment_status', methods=['GET'])
+    def deployment_status():
+        return DeploymentStatus()

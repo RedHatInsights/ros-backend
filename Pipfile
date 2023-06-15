@@ -33,6 +33,8 @@ boto3 = ">=1.16.13"
 botocore = ">=1.19.13"
 markupsafe = "==2.0.1"  # Necessary locking, issue: https://github.com/aws/aws-sam-cli/issues/3661
 flask-caching = "*"
+kubernetes = "==26.1.0"
+
 
 [requires]
 python_version = "3.8"

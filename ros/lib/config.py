@@ -135,3 +135,11 @@ INSTANCE_PRICE_UNIT = 'USD/hour'
 CW_LOGGING_FORMAT = '%(asctime)s - %(levelname)s  - %(funcName)s - %(message)s'
 ROS_PROCESSOR_PORT = int(os.getenv("ROS_PROCESSOR_PORT", "8000"))
 ROS_API_PORT = int(os.getenv("ROS_API_PORT", "8000"))
+
+GITHUB_API_URL = "https://api.github.com"
+GITHUB_OWNER = os.getenv("GITHUB_OWNER")
+GITHUB_REPO = os.getenv("GITHUB_REPO")
+GITHUB_DEPLOYMENT_BRANCH = os.getenv("GITHUB_DEPLOYMENT_BRANCH", "main")
+GITHUB_API_PAGE_SIZE = os.getenv("GITHUB_API_PAGE_SIZE", "5")
+GITHUB_API_MAXIMUM_RETRIES = os.getenv("GITHUB_API_MAXIMUM_RETRIES", "3")
+COMMITS_API_URL = f"{GITHUB_API_URL}/repos/{GITHUB_OWNER}/{GITHUB_REPO}/commits"

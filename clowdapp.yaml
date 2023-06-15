@@ -63,6 +63,16 @@ objects:
             value: ${DB_POOL_SIZE}
           - name: DB_MAX_OVERFLOW
             value: ${DB_MAX_OVERFLOW}
+          - name: GITHUB_OWNER
+            value: "RedHatInsights"
+          - name: GITHUB_REPO
+            value: "ros-backend"
+          - name: GITHUB_DEPLOYMENT_BRANCH
+            value: "main"
+          - name: GITHUB_API_PAGE_SIZE
+            value: "5"
+          - name: GITHUB_API_MAXIMUM_RETRIES
+            value: "3"
     - name: inventory-events-processor
       replicas: ${{PROCESSOR_REPLICA_COUNT}}
       podSpec:

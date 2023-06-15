@@ -5,7 +5,7 @@ import json
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from kubernetes import config, client
-from config import (
+from ros.lib.config import (
     COMMITS_API_URL,
     GITHUB_API_MAXIMUM_RETRIES,
     GITHUB_DEPLOYMENT_BRANCH,
@@ -60,6 +60,7 @@ class DeploymentStatus:
     """
 
     def __init__(self):
+        self.__name__ = "DeploymentStatus"
         self.github_commits_api_url = COMMITS_API_URL
         pod_start_time, pod_sha = get_k8s_data()
         self.pod_start_time = str(pod_start_time)
