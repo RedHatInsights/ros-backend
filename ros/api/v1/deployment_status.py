@@ -1,7 +1,6 @@
 
 import os
 import requests
-import json
 
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -67,9 +66,6 @@ class DeploymentStatus:
         self.pod_start_time = str(pod_start_time)
         self.pod_sha = pod_sha
 
-    def __call__(self):
-        return self.get()
-
     def make_api_request(self):
         headers = {"Accept": "application/vnd.github+json"}
         params = {
@@ -120,5 +116,4 @@ class DeploymentStatus:
     def get(self):
         data1 = self.get_deployment_data()
         LOG.info(f"This is deployment status from package: {data1} - {type(data1)}")
-        deployment_status_json = json.dumps(self.get_deployment_data())
-        return deployment_status_json
+        return data1
