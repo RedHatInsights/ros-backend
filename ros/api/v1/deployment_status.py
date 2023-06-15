@@ -67,8 +67,7 @@ class DeploymentStatus:
         self.pod_sha = pod_sha
 
     def __call__(self, request, *args, **kwargs):
-        if request.method == 'GET':
-            return self.get()
+        return self.get()
 
     def make_api_request(self):
         headers = {"Accept": "application/vnd.github+json"}
