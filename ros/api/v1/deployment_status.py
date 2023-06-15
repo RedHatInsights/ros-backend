@@ -1,3 +1,4 @@
+import logging
 import os
 import requests
 import json
@@ -9,7 +10,7 @@ from ros.lib.config import (
     COMMITS_API_URL,
     GITHUB_API_MAXIMUM_RETRIES,
     GITHUB_DEPLOYMENT_BRANCH,
-    GITHUB_API_PAGE_SIZE,
+    GITHUB_API_PAGE_SIZE, LOG,
 )
 
 
@@ -116,6 +117,7 @@ class DeploymentStatus:
         return deployment_json
 
     def get(self):
+        data1 = self.get_deployment_data()
+        LOG.info(f"This is deployment status from package: {data1} - {type(data1)}")
         deployment_status_json = json.dumps(self.get_deployment_data())
-        logging.info(f"This is deployment status from package: {DeploymentStatus()}")
         return deployment_status_json
