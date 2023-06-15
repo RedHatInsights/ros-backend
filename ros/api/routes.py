@@ -17,6 +17,7 @@ from .v1.hosts import (
 )
 from ros.lib.app import app
 from .v1.deployment_status import DeploymentStatus
+from ..lib.utils import LOG
 
 
 # Initialize Routes
@@ -34,5 +35,5 @@ def initialize_routes(api):
 
     @app.route('/api/ros/v1/deployment_status', methods=['GET'])
     def deployment_status():
-        logging.info(f"This is deployment status: {DeploymentStatus()}")
+        LOG.info(f"This is deployment status: {DeploymentStatus()}")
         return jsonify(DeploymentStatus())

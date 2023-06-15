@@ -1,4 +1,4 @@
-import logging
+
 import os
 import requests
 import json
@@ -10,8 +10,9 @@ from ros.lib.config import (
     COMMITS_API_URL,
     GITHUB_API_MAXIMUM_RETRIES,
     GITHUB_DEPLOYMENT_BRANCH,
-    GITHUB_API_PAGE_SIZE, LOG,
+    GITHUB_API_PAGE_SIZE
 )
+from ros.lib.utils import LOG
 
 
 def get_k8s_data():
