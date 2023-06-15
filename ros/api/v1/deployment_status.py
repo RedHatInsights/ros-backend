@@ -66,7 +66,7 @@ class DeploymentStatus:
         self.pod_start_time = str(pod_start_time)
         self.pod_sha = pod_sha
 
-    def __call__(self, request, *args, **kwargs):
+    def __call__(self):
         return self.get()
 
     def make_api_request(self):

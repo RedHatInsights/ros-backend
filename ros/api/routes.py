@@ -1,3 +1,5 @@
+from flask import jsonify
+
 from .v1.recommendation_ratings import RecommendationRatingsApi
 from .v1.recommendations import RecommendationsApi
 from .v1.openapi_spec import OpenAPISpec
@@ -29,4 +31,4 @@ def initialize_routes(api):
 
     @app.route('/api/ros/v1/deployment_status', methods=['GET'])
     def deployment_status():
-        return DeploymentStatus()
+        return jsonify(DeploymentStatus())
