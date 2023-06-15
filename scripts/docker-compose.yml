@@ -137,6 +137,7 @@ services:
       - KAFKA_ALLOW_CREATE_TOPICS=True
       - DISABLE_PROMETHEUS=True
     depends_on:
+      - redis
       - kafka
       - ingress
     # Not yet used, we are not running clowder ATM
