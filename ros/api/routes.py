@@ -1,3 +1,5 @@
+from pprint import pprint
+
 from flask import jsonify
 
 from .v1.recommendation_ratings import RecommendationRatingsApi
@@ -31,4 +33,5 @@ def initialize_routes(api):
 
     @app.route('/api/ros/v1/deployment_status', methods=['GET'])
     def deployment_status():
+        pprint(DeploymentStatus())
         return jsonify(DeploymentStatus())
