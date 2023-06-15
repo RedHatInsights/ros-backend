@@ -65,6 +65,8 @@ class DeploymentStatus:
         pod_start_time, pod_sha = get_k8s_data()
         self.pod_start_time = str(pod_start_time)
         self.pod_sha = pod_sha
+        LOG.info(f"This is pod_sha: {self.pod_sha}, pod_start_time: {self.pod_start_time}")
+
 
     def make_api_request(self):
         headers = {"Accept": "application/vnd.github+json"}
@@ -95,6 +97,7 @@ class DeploymentStatus:
     def get_deployment_data(self):
         deployment_json = {"status": "Request failed, try again later."}
         commits_json = self.make_api_request()
+        LOG.info(commits_json)
         if "status" in commits_json[0].keys():
             deployment_json = commits_json[0]
         else:
