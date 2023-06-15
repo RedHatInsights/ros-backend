@@ -117,4 +117,5 @@ class DeploymentStatus:
 
     def get(self):
         deployment_status_json = json.dumps(self.get_deployment_data())
+        logging.info(f"This is deployment status from package: {DeploymentStatus()}")
         return deployment_status_json
