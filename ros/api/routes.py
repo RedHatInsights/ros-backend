@@ -1,3 +1,4 @@
+import logging
 from pprint import pprint
 
 from flask import jsonify
@@ -33,5 +34,5 @@ def initialize_routes(api):
 
     @app.route('/api/ros/v1/deployment_status', methods=['GET'])
     def deployment_status():
-        pprint(DeploymentStatus())
+        logging.info(f"This is deployment status: {DeploymentStatus()}")
         return jsonify(DeploymentStatus())

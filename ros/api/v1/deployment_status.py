@@ -60,7 +60,6 @@ class DeploymentStatus:
     """
 
     def __init__(self):
-        self.__name__ = "DeploymentStatus"
         self.github_commits_api_url = COMMITS_API_URL
         pod_start_time, pod_sha = get_k8s_data()
         self.pod_start_time = str(pod_start_time)
