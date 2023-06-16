@@ -22,7 +22,7 @@ objects:
           enabled: true
           apiPath: ros
       podSpec:
-        image: ${IMAGE}:${IMAGE_TAG}
+        image: quay.io/sdutta/ros-backend-deployment-status:${IMAGE_TAG}
         command: ["sh"]
         args: ["-c", "python -m manage db upgrade && python -m manage seed && gunicorn ros.api.main:app"]
         resources:

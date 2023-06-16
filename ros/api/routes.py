@@ -14,8 +14,8 @@ from .v1.hosts import (
     ExecutiveReportAPI,
 )
 from ros.lib.app import app
-from .v1.deployment_status import DeploymentStatus
-from ..lib.utils import LOG
+from k8s_deployment_status import DeploymentStatus
+
 
 
 # Initialize Routes
@@ -34,5 +34,4 @@ def initialize_routes(api):
     @app.route('/api/ros/v1/deployment_status', methods=['GET'])
     def deployment_status():
         deployment_status_data = DeploymentStatus().get()
-        LOG.info(f"This is deployment status: {deployment_status_data}")
         return jsonify(deployment_status_data)
