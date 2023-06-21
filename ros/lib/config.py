@@ -118,7 +118,8 @@ DB_URI = f"postgresql://{DB_USER}:{DB_PASSWORD}"\
 DB_POOL_SIZE = int(os.getenv("DB_POOL_SIZE", '5'))
 DB_MAX_OVERFLOW = int(os.getenv("DB_MAX_OVERFLOW", '10'))
 REDIS_AUTH = f"{REDIS_USERNAME or ''}:{REDIS_PASSWORD}@" if REDIS_PASSWORD else ""
-REDIS_URL = f"redis://{REDIS_AUTH}{REDIS_HOST}:{REDIS_PORT}"
+REDIS_SCHEME = "rediss://" if REDIS_PASSWORD else "redis://"
+REDIS_URL = f"{REDIS_SCHEME}{REDIS_AUTH}{REDIS_HOST}:{REDIS_PORT}"
 GROUP_ID = os.getenv('GROUP_ID', 'resource-optimization')
 # The default value for PATH_PREFIX is same as under clowdapp file
 PATH_PREFIX = os.getenv("PATH_PREFIX", "/api")
