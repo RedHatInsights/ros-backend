@@ -131,6 +131,7 @@ class InventoryEventsConsumer:
                     "cloud_provider": host['system_profile']['cloud_provider'],
                     "stale_timestamp": host['stale_timestamp'],
                     "operating_system": host['system_profile']['operating_system'],
+                    "groups": host['groups']
                 }
                 system = update_system_record(db.session, **system_fields)
                 if system is not None:

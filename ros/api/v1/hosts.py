@@ -80,6 +80,16 @@ class HostsApi(Resource):
         'max_io': fields.Float,
         'io_all': fields.Raw
     }
+
+    groups_fields = {
+        'id': fields.String,
+        'account': fields.String,
+        'name': fields.String,
+        'org_id': fields.String,
+        'created': fields.String,
+        'updated': fields.String
+    }
+
     hosts_fields = {
         'fqdn': fields.String,
         'display_name': fields.String,
@@ -92,7 +102,8 @@ class HostsApi(Resource):
         'instance_type': fields.String,
         'idling_time': fields.String,
         'os': fields.String,
-        'report_date': fields.DateTime(dt_format='iso8601')
+        'report_date': fields.DateTime(dt_format='iso8601'),
+        'groups': fields.List(fields.Nested(groups_fields))
     }
     meta_fields = {
         'count': fields.Integer,
@@ -155,6 +166,7 @@ class HostsApi(Resource):
                 host['os'] = row.System.deserialize_host_os_data
                 host['report_date'] = row.PerformanceProfile.report_date
                 host['number_of_recommendations'] = row.PerformanceProfile.number_of_recommendations
+                host['groups'] = row.System.groups if row.System.groups else []
                 hosts.append(host)
             except Exception as err:
                 LOG.error(
