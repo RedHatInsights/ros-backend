@@ -18,6 +18,8 @@ class PerformanceProfile(db.Model):
     number_of_recommendations = db.Column(db.Integer)
     system_id = db.Column(db.Integer)
     psi_enabled = db.Column(db.Boolean)
+    top_candidate = db.Column(db.String(25), nullable=True)
+    top_candidate_price = db.Column(db.Float)
     __table_args__ = (
         db.PrimaryKeyConstraint('system_id', name='performance_profile_pkey'),
         db.ForeignKeyConstraint(
@@ -26,6 +28,7 @@ class PerformanceProfile(db.Model):
             ondelete='CASCADE'),
         db.Index('non_optimized_system_profiles', number_of_recommendations, unique=False,
                  postgresql_where=(number_of_recommendations > 0)),
+        db.Index('top_candidate_idx', top_candidate)
     )
 
     @property

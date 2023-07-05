@@ -35,6 +35,13 @@ LOG = get_logger(__name__)
 producer = None
 
 
+def topmost_candidate_from_rule_hit(reports, state_key):
+    if state_key in ["OPTIMIZED", "NO_PCP_DATA"]:
+        return [None, None]
+    all_instances = reports[0]['details']['candidates']
+    return all_instances[0]
+
+
 class InsightsEngineConsumer:
     def __init__(self):
         """Create Engine Consumer."""
@@ -94,6 +101,7 @@ class InsightsEngineConsumer:
                 host['id'],
                 custom_prefix=self.prefix
             )
+
             reports = []
             if msg["results"]["reports"] \
                     and isinstance(msg["results"]["reports"], list):
@@ -191,6 +199,7 @@ class InsightsEngineConsumer:
                 del performance_record['instance_type']
                 del performance_record['region']
 
+                top_candidate, top_candidate_price = topmost_candidate_from_rule_hit(reports, state_key)
                 pprofile_fields = {
                     "system_id": system.id,
                     "performance_record": performance_record,
@@ -201,7 +210,10 @@ class InsightsEngineConsumer:
                     "state": SYSTEM_STATES[state_key],
                     "operating_system": system.operating_system,
                     'psi_enabled': system_metadata.get('psi_enabled'),
+                    'top_candidate': top_candidate,
+                    'top_candidate_price': top_candidate_price,
                 }
+
                 insert_performance_profiles(
                     db.session, system.id, pprofile_fields)
                 LOG.info(

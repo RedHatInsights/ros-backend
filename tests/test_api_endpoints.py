@@ -1,4 +1,5 @@
 import datetime
+import pytest
 from dateutil import parser
 import json
 from base64 import b64encode
@@ -659,3 +660,71 @@ def test_access_of_all_systems(
             assert response.json["data"][1]["groups"][0]["name"] == "test-group"
             assert response.json["data"][2]["groups"][0]["name"] == "example-group"
             assert response.json["data"][3]["groups"] == []
+
+
+@pytest.mark.no_suggestions
+def test_no_suggestions_when_system_is_optimized(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_optimized_system,
+        db_create_performance_profile_for_optimized):
+    with app.test_client() as client:
+        response = client.get('/api/ros/v1/suggested_instance_types', headers={"x-rh-identity": auth_token})
+        assert response.status_code == 200
+        assert response.json["meta"]["count"] == 0
+
+
+@pytest.mark.no_suggestions
+def test_no_suggestions_when_system_missing_pcp_data(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_no_pcp_system,
+        db_create_performance_profile_for_no_pcp):
+    with app.test_client() as client:
+        response = client.get('/api/ros/v1/suggested_instance_types', headers={"x-rh-identity": auth_token})
+        assert response.status_code == 200
+        assert response.json["meta"]["count"] == 0
+
+
+@pytest.mark.generate_suggestions
+def test_generate_suggestions_for_idle_system(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_idle_system,
+        db_create_performance_profile_for_idle):
+    with app.test_client() as client:
+        response = client.get('/api/ros/v1/suggested_instance_types', headers={"x-rh-identity": auth_token})
+        assert response.status_code == 200
+        assert response.json["meta"]["count"] == 1
+        assert response.json["data"][0]["instance_type"] == "t2.nano"
+
+
+@pytest.mark.generate_suggestions
+def test_generate_suggestions_for_under_pressure_system(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_underpressure_system,
+        db_create_performance_profile_for_underpressure):
+    with app.test_client() as client:
+        response = client.get('/api/ros/v1/suggested_instance_types', headers={"x-rh-identity": auth_token})
+        assert response.status_code == 200
+        assert response.json["meta"]["count"] == 1
+        assert response.json["data"][0]["instance_type"] == "t2.small"
+
+
+@pytest.mark.generate_suggestions
+def test_generate_suggestions_for_undersized_system(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_undersized_system,
+        db_create_performance_profile_for_undersized):
+    with app.test_client() as client:
+        response = client.get('/api/ros/v1/suggested_instance_types', headers={"x-rh-identity": auth_token})
+        assert response.status_code == 200
+        assert response.json["meta"]["count"] == 1
+        assert response.json["data"][0]["instance_type"] == "t2.medium"

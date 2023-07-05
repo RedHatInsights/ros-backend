@@ -158,13 +158,35 @@ def insert_performance_profiles(session, system_id, fields):
        performance_profile_history table.
     """
     fields = {} if fields is None else fields
-    session.execute(db.delete(PerformanceProfile).filter(PerformanceProfile.system_id == system_id))
-    session.commit()
+    fields_for_perf_profile_history = redact_instance_type_and_price(fields)
 
-    for model_class in [PerformanceProfile, PerformanceProfileHistory]:
-        new_entry = model_class(**fields)
+    old_profile_record = session.query(PerformanceProfile).filter_by(
+        system_id=system_id).first()
+    if old_profile_record:
+        session.delete(old_profile_record)
+        session.commit()
+
+    model_fields_map = {PerformanceProfile: fields,
+                        PerformanceProfileHistory: fields_for_perf_profile_history}
+
+    for model_class, model_fields in model_fields_map.items():
+        new_entry = model_class(**model_fields)
         session.add(new_entry)
         session.flush()
+
+
+def redact_instance_type_and_price(fields):
+    """Remove unwanted attributes for performance profile history.
+        Such as - top_candidate & top_candidate_price.
+    """
+    fields_for_perf_profile_history = {}
+    try:
+        fields_for_perf_profile_history = fields.copy()
+        del fields_for_perf_profile_history['top_candidate']
+        del fields_for_perf_profile_history['top_candidate_price']
+    except KeyError as err:
+        LOG.debug(f'Key(s) not found in fields: {err}')
+    return fields_for_perf_profile_history
 
 
 def count_per_state(queryset, custom_filters: dict):
