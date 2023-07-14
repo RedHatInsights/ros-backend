@@ -83,11 +83,7 @@ class HostsApi(Resource):
 
     groups_fields = {
         'id': fields.String,
-        'account': fields.String,
-        'name': fields.String,
-        'org_id': fields.String,
-        'created': fields.String,
-        'updated': fields.String
+        'name': fields.String
     }
 
     hosts_fields = {
