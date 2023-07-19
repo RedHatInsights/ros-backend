@@ -11,7 +11,7 @@ pytest-mock = "*"
 pytest-cov = "*"
 
 [packages]
-Flask = "~=2.2.3"
+Flask = "~=2.2.5"
 gunicorn = "~=20.0.4"
 flask-restful = "~=0.3.8"
 Flask-SQLAlchemy = "~=3.0.3"
