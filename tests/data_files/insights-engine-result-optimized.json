@@ -47,6 +47,7 @@
                 "satellite_managed": false
             },
             "ip_addresses": ["10.0.60.207"],
+            "groups": [],
             "created": "2021-12-17T18:54:25.116236+00:00",
             "updated": "2021-12-29T06:52:54.146814+00:00",
             "reporter": "puptoo",

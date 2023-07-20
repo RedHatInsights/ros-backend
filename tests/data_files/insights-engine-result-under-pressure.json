@@ -62,6 +62,7 @@
       "ip_addresses": [
         "172.31.28.69"
       ],
+      "groups": [],
       "subscription_manager_id": "4b1efbbe-a447-48d0-98c3-3594aae1d2c5",
       "ansible_host": null,
       "fqdn": "ip-172-31-28-69.ec2.internal",

@@ -67,6 +67,7 @@ def test_systems(auth_token, db_setup, db_create_account, db_create_system, db_c
         assert response.status_code == 200
         assert response.json["meta"]["count"] == 1
         assert response.json["data"][0]["os"] == "RHEL 8.4"
+        assert response.json["data"][0]["groups"] == []
 
 
 def test_system_detail(auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile):

@@ -47,6 +47,7 @@ SYSTEM_COLUMNS = [
     'state',
     'fqdn',
     'operating_system',
+    'groups'
 ]
 
 
@@ -162,7 +163,6 @@ class HostsApi(Resource):
                 host['os'] = row.System.deserialize_host_os_data
                 host['report_date'] = row.PerformanceProfile.report_date
                 host['number_of_recommendations'] = row.PerformanceProfile.number_of_recommendations
-                host['groups'] = row.System.groups if row.System.groups else []
                 hosts.append(host)
             except Exception as err:
                 LOG.error(

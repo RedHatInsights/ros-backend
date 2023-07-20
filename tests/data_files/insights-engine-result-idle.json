@@ -51,6 +51,7 @@
         "ip_addresses": [
           "172.31.28.69"
         ],
+        "groups": [{"id": "6a08b593-f9c0-4145-a873-ba6d61a78e37", "name": "ros-group-1"}],
         "ansible_host": null,
         "subscription_manager_id": "4b1efbbe-a447-48d0-98c3-3594aae1d2c5",
         "reporter": "puptoo",
