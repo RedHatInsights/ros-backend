@@ -140,7 +140,7 @@ class InsightsEngineConsumer:
                     'instance_type': performance_record.get('instance_type'),
                     'region': performance_record.get('region'),
                     'cloud_provider': system_metadata.get('cloud_provider'),
-                    'groups': host['groups']
+                    'groups': host.get('groups', [])
                 }
 
                 # get current state of the system
