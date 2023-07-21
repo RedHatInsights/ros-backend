@@ -58,8 +58,7 @@ def db_create_system(db_create_account):
         operating_system={"name": "RHEL", "major": 8, "minor": 4},
         cpu_states=['CPU_UNDERSIZED', 'CPU_UNDERSIZED_BY_PRESSURE'],
         io_states=['IO_UNDERSIZED_BY_PRESSURE'],
-        memory_states=['MEMORY_UNDERSIZED', 'MEMORY_UNDERSIZED_BY_PRESSURE'],
-        groups=[]
+        memory_states=['MEMORY_UNDERSIZED', 'MEMORY_UNDERSIZED_BY_PRESSURE']
     )
 
     db.session.add(system)
