@@ -240,38 +240,55 @@ def generate_highlight_description(instance_type, cloud_provider, regions):
     return 'NA'
 
 
+def is_current_section(section):
+    """
+        Returns true when section is current
+        otherwise false for rest sections.
+    """
+    return section == 'current'
+
+
+def find_instance_type(section, record):
+    """Get instance type by current, suggested & historical section."""
+    instance_type = None
+    try:
+        if is_current_section(section):
+            instance_type = record.rule_hit_details[0]['details']['instance_type']
+        else:
+            instance_type = record.rule_hit_details[0]['details']['candidates'][0][0]
+    except (IndexError, KeyError):
+        instance_type = None
+
+    if is_current_section(section):
+        return (instance_type if instance_type else record.instance_type)
+
+    return instance_type
+
+
+def find_candidates_and_regions(highlight_type, dataset):
+    """Find candidates by highlight_type & regions per candidate ."""
+    instance_candidates, regions = [], {}
+    for record in dataset:
+        instance_type = find_instance_type(highlight_type, record)
+        if instance_type is None:
+            continue
+        instance_candidates.append(instance_type)
+        if instance_type not in regions:
+            regions[instance_type] = []
+        if record.region not in regions[instance_type]:
+            regions[instance_type].append(record.region)
+
+    return instance_candidates, regions
+
+
 def highlights_instance_types(queryset, highlight_type):
-    instance_candidates, values_dict, highlights_list = [], {}, []
-    regions_by_type = {}
-    if highlight_type == 'current':
-        for record in queryset:
-            try:
-                _instance_type = record.rule_hit_details[0]['details']['instance_type']
-            except (IndexError, KeyError):
-                _instance_type = None
-            curr_instance_type = _instance_type if _instance_type else record.instance_type
-            instance_candidates.append(curr_instance_type)
-            if curr_instance_type not in regions_by_type:
-                regions_by_type[curr_instance_type] = []
-            if record.region not in regions_by_type[curr_instance_type]:
-                regions_by_type[curr_instance_type].append(record.region)
+    values_dict, highlights_list = {}, []
+    candidates, regions_by_type = find_candidates_and_regions(
+        highlight_type, queryset)
 
-    elif highlight_type in ['suggested', 'historical']:
-        for _record in queryset:
-            try:
-                instance_type = _record.rule_hit_details[0]['details']['candidates'][0][0]
-                instance_candidates.append(instance_type)
-                if instance_type not in regions_by_type:
-                    regions_by_type[instance_type] = []
-                if _record.region not in regions_by_type[instance_type]:
-                    regions_by_type[instance_type].append(_record.region)
-
-            except (IndexError, KeyError):
-                continue
-
-    if instance_candidates:
+    if candidates:
         # Creates a dict with {value: count} values sorts the same, DESC order
-        values_dict = dict(sorted(Counter(instance_candidates).items(), key=lambda x: x[1], reverse=True))
+        values_dict = dict(sorted(Counter(candidates).items(), key=lambda x: x[1], reverse=True))
 
     item_count = 1
     for key, value in values_dict.items():
