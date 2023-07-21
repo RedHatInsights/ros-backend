@@ -333,6 +333,30 @@ def test_executive_report(
         assert response.json['conditions']['memory']['count'] == 2
 
 
+def test_candidates_region_info_in_executive_report(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        db_create_performance_profile
+):
+    region_info = 'ap-south-1'
+    candidate_type = 't2.micro'
+    with app.test_client() as client:
+        response = client.get(
+            '/api/ros/v1/executive_report',
+            headers={"x-rh-identity": auth_token}
+        )
+        assert response.json
+        assert response.status_code == 200
+        current_section = response.json['instance_types_highlights']['current']
+        first_candidate_from_current = current_section[0]
+
+        assert current_section
+        assert first_candidate_from_current['type'] == candidate_type
+        assert region_info in first_candidate_from_current['desc']
+
+
 def test_psi_enabled(
         auth_token,
         db_setup,
