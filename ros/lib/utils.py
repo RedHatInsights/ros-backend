@@ -265,7 +265,7 @@ def highlights_instance_types(queryset, highlight_type):
 
 
 def system_allowed_in_ros(msg, reporter):
-    is_ros = None
+    is_ros = False
     cloud_provider = ''
     if reporter == 'INSIGHTS ENGINE':
         is_ros = msg["input"]["platform_metadata"].get("is_ros")

@@ -23,7 +23,7 @@
 			"url": "http://minio:9000/insights-upload-perma/f77010e80955/miYkbDetAo-000007?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=BQA2GEXO711FVBVXDWKM%2F20211229%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20211229T081304Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&X-Amz-Signature=1cfb9076ed2597424033e9ad1dad73b5d75397c672ab9fd98f14316a250f84a6",
 			"validation": null,
 			"test": null,
-			"is_ros": "true"
+			"is_ros": true
 		},
 		"metadata": {
 			"request_id": "f77010e80955/miYkbDetAo-000007"
