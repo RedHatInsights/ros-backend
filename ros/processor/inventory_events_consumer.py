@@ -134,6 +134,7 @@ class InventoryEventsConsumer:
                     "cloud_provider": host['system_profile']['cloud_provider'],
                     "stale_timestamp": host['stale_timestamp'],
                     "operating_system": host['system_profile']['operating_system'],
+                    "groups": host.get('groups', [])
                 }
                 system = update_system_record(db.session, **system_fields)
                 if system is not None:
@@ -166,6 +167,7 @@ class InventoryEventsConsumer:
                         "cloud_provider": host['system_profile']['cloud_provider'],
                         "stale_timestamp": host['stale_timestamp'],
                         "operating_system": host['system_profile']['operating_system'],
+                        "groups": host.get('groups', [])
                     }
                     system = get_or_create(db.session, System, 'inventory_id', **system_fields)
 

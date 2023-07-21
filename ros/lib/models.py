@@ -81,6 +81,7 @@ class System(db.Model):
     cpu_states = db.Column(db.ARRAY(db.String))
     io_states = db.Column(db.ARRAY(db.String))
     memory_states = db.Column(db.ARRAY(db.String))
+    groups = db.Column(JSONB)
 
     @property
     def deserialize_host_os_data(self):

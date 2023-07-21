@@ -47,6 +47,7 @@
 				"satellite_managed": false
 			},
 			"ip_addresses": ["172.31.28.69"],
+			"groups": [{"id": "fa7013e4-3b05-4e13-9179-0725a5d4fbbf", "name": "ros-test-final"}],
 			"created": "2021-12-17T18:55:36.339120+00:00",
 			"updated": "2021-12-29T08:35:11.655412+00:00",
 			"reporter": "puptoo",

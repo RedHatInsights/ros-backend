@@ -72,6 +72,7 @@ def test_process_report_idle(engine_result_message, engine_consumer, db_setup, p
     engine_consumer.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
     system_record = db_get_host(host['id'])
     assert str(system_record.inventory_id) == host['id']
+    assert system_record.groups == host['groups']
     with app.app_context():
         assert system_record.instance_type == _performance_record['instance_type']
         assert system_record.region == _performance_record['region']
@@ -90,6 +91,7 @@ def test_process_report_under_pressure(engine_result_message, engine_consumer, d
     engine_consumer.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
     system_record = db_get_host(host['id'])
     assert str(system_record.inventory_id) == host['id']
+    assert system_record.groups == host['groups']
     with app.app_context():
         assert system_record.instance_type == _performance_record['instance_type']
         assert system_record.region == _performance_record['region']
@@ -111,6 +113,7 @@ def test_process_report_no_pcp(engine_result_message, engine_consumer, db_setup,
                                                 .filter_by(system_id=system_record.id)).performance_utilization
     sample_performance_util_no_pcp = {'cpu': -1, 'memory': -1, 'max_io': -1.0, 'io': {}}
     assert str(system_record.inventory_id) == host['id']
+    assert system_record.groups == host['groups']
     with app.app_context():
         assert system_record.instance_type == _performance_record['instance_type']
         assert system_record.region == _performance_record['region']
@@ -128,6 +131,7 @@ def test_process_report_undersized(engine_result_message, engine_consumer, db_se
     engine_consumer.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
     system_record = db_get_host(host['id'])
     assert str(system_record.inventory_id) == host['id']
+    assert system_record.groups == host['groups']
     with app.app_context():
         assert system_record.instance_type == _performance_record['instance_type']
         assert system_record.region == _performance_record['region']
@@ -147,6 +151,7 @@ def test_process_report_optimized(engine_result_message, engine_consumer, db_set
     system_record = db_get_host(host['id'])
     profile_record = db_get_record(PerformanceProfile, system_id=system_record.id)
     assert str(system_record.inventory_id) == host['id']
+    assert system_record.groups == host['groups']
     with app.app_context():
         assert profile_record.rule_hit_details == ros_reports
         assert system_record.instance_type == _performance_record['instance_type']
@@ -165,6 +170,7 @@ def test_system_properties(engine_result_message, engine_consumer, db_setup, per
     engine_consumer.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
     data = db_get_host(host['id'])
     assert str(data.inventory_id) == host['id']
+    assert data.groups == host['groups']
 
 
 def test_history_record_creation(engine_result_message, engine_consumer, db_setup, performance_record):

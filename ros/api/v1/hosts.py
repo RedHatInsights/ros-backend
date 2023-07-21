@@ -47,6 +47,7 @@ SYSTEM_COLUMNS = [
     'state',
     'fqdn',
     'operating_system',
+    'groups'
 ]
 
 
@@ -80,6 +81,12 @@ class HostsApi(Resource):
         'max_io': fields.Float,
         'io_all': fields.Raw
     }
+
+    groups_fields = {
+        'id': fields.String,
+        'name': fields.String
+    }
+
     hosts_fields = {
         'fqdn': fields.String,
         'display_name': fields.String,
@@ -92,7 +99,8 @@ class HostsApi(Resource):
         'instance_type': fields.String,
         'idling_time': fields.String,
         'os': fields.String,
-        'report_date': fields.DateTime(dt_format='iso8601')
+        'report_date': fields.DateTime(dt_format='iso8601'),
+        'groups': fields.List(fields.Nested(groups_fields))
     }
     meta_fields = {
         'count': fields.Integer,

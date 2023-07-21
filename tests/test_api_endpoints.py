@@ -6,7 +6,7 @@ from base64 import b64encode
 import pytest
 
 from ros.api.main import app
-from ros.lib.models import db, PerformanceProfile
+from ros.lib.models import db, PerformanceProfile, System
 from tests.helpers.db_helper import db_get_host, db_get_record
 
 
@@ -67,6 +67,7 @@ def test_systems(auth_token, db_setup, db_create_account, db_create_system, db_c
         assert response.status_code == 200
         assert response.json["meta"]["count"] == 1
         assert response.json["data"][0]["os"] == "RHEL 8.4"
+        assert response.json["data"][0]["groups"] == []
 
 
 def test_system_detail(auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile):
@@ -130,6 +131,34 @@ def test_system_os_filter(auth_token, db_setup, db_create_account, db_create_sys
         assert response.status_code == 200
         assert response.json["meta"]["count"] == 1
         assert response.json["data"][0]["os"] == "RHEL 8.4"
+
+
+def test_system_groups(auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile):
+    with app.test_client() as client:
+        response_all_systems = client.get(
+            '/api/ros/v1/systems',
+            headers={"x-rh-identity": auth_token}
+        )
+    assert response_all_systems.status_code == 200
+    assert response_all_systems.json["data"][0]["groups"] == []
+
+    system = db_get_record(System)
+    system.groups = [{
+        "id": "fd11209a-1ca7-49b4-ae27-0f8a365b95b8",
+        "name": "ros-test-3"
+    }]
+    db.session.commit()
+
+    with app.test_client() as client:
+        response_all_systems = client.get(
+            '/api/ros/v1/systems',
+            headers={"x-rh-identity": auth_token}
+        )
+    assert response_all_systems.status_code == 200
+    assert response_all_systems.json["data"][0]["groups"] == [{
+        "id": "fd11209a-1ca7-49b4-ae27-0f8a365b95b8",
+        "name": "ros-test-3"
+    }]
 
 
 def test_system_suggestions(
