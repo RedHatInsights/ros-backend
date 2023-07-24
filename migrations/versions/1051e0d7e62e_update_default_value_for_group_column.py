@@ -18,6 +18,7 @@ depends_on = None
 
 def upgrade():
     op.alter_column('systems', 'groups', server_default=sa.text("'[]'"))
+    op.execute("UPDATE systems SET groups= '[]' WHERE groups IS NULL")
 
 
 def downgrade():
