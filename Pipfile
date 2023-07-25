@@ -31,7 +31,6 @@ pyyaml = "==6.0"
 watchtower = "==3.0.1"
 boto3 = "==1.26.77"
 botocore = "==1.29.77"
-markupsafe = "==2.0.1"  # Necessary locking, issue: https://github.com/aws/aws-sam-cli/issues/3661
 flask-caching = "==2.0.2"
 
 [requires]
