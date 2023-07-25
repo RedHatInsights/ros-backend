@@ -45,6 +45,8 @@ def build_endpoint_url(ep):
 
 LOG = logging.getLogger(__name__)
 CLOWDER_ENABLED = True if os.getenv("CLOWDER_ENABLED", default="False").lower() in ["true", "t", "yes", "y"] else False
+DB_SSL_MODE = "verify-full"
+DB_SSL_CERTPATH = None
 
 if CLOWDER_ENABLED:
     LOG.info("Using Clowder Operator...")
@@ -56,6 +58,8 @@ if CLOWDER_ENABLED:
     DB_PASSWORD = LoadedConfig.database.password
     DB_HOST = LoadedConfig.database.hostname
     DB_PORT = LoadedConfig.database.port
+    if LoadedConfig.database.rdsCa:
+        DB_SSL_CERTPATH = LoadedConfig.rds_ca()
     REDIS_USERNAME = LoadedConfig.inMemoryDb.username
     REDIS_PASSWORD = LoadedConfig.inMemoryDb.password
     REDIS_HOST = LoadedConfig.inMemoryDb.hostname
@@ -115,12 +119,17 @@ else:
 
 DB_URI = f"postgresql://{DB_USER}:{DB_PASSWORD}"\
                 f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+if DB_SSL_CERTPATH:
+    DB_URI += f"?ssl_mode={DB_SSL_MODE}&sslrootcert={DB_SSL_CERTPATH}"
+
 DB_POOL_SIZE = int(os.getenv("DB_POOL_SIZE", '5'))
 DB_MAX_OVERFLOW = int(os.getenv("DB_MAX_OVERFLOW", '10'))
 REDIS_AUTH = f"{REDIS_USERNAME or ''}:{REDIS_PASSWORD}@" if REDIS_PASSWORD else ""
-REDIS_URL = f"redis://{REDIS_AUTH}{REDIS_HOST}:{REDIS_PORT}"
+REDIS_SCHEME = "rediss://" if REDIS_PASSWORD else "redis://"
+REDIS_URL = f"{REDIS_SCHEME}{REDIS_AUTH}{REDIS_HOST}:{REDIS_PORT}"
 GROUP_ID = os.getenv('GROUP_ID', 'resource-optimization')
-PATH_PREFIX = os.getenv("PATH_PREFIX", "/api/")
+# The default value for PATH_PREFIX is same as under clowdapp file
+PATH_PREFIX = os.getenv("PATH_PREFIX", "/api")
 APP_NAME = os.getenv("APP_NAME", "ros")
 INSIGHTS_EXTRACT_LOGLEVEL = os.getenv("INSIGHTS_EXTRACT_LOGLEVEL", "ERROR")
 ENABLE_RBAC = str_to_bool(os.getenv("ENABLE_RBAC", "False"))

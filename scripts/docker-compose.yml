@@ -69,8 +69,9 @@ services:
       - INGRESS_STAGEBUCKET=insights-upload-perma
         # VALIDTOPICS is required. This is derived from content type. ex: vnd.redhat.advisor.thing+tgz
       - INGRESS_VALIDTOPICS=testareno,advisor,compliance,qpc
+      - INGRESS_VALID_UPLOAD_TYPES=unit,announce,advisor
       - OPENSHIFT_BUILD_COMMIT=somestring
-      - INGRESS_MAXSIZE=104857600
+      - INGRESS_DEFAULTMAXSIZE=104857600
       - INGRESS_MINIODEV=true
       - INGRESS_MINIOACCESSKEY=$MINIO_ACCESS_KEY
       - INGRESS_MINIOSECRETKEY=$MINIO_SECRET_KEY
@@ -111,6 +112,7 @@ services:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - PAYLOAD_TRACKER_ENABLED=false
       - XJOIN_GRAPHQL_URL=http://xjoin:4000/graphql
+      - prometheus_multiproc_dir=/tmp
     depends_on:
        - kafka-create-topics
        - db-host-inventory
@@ -135,6 +137,7 @@ services:
       - KAFKA_ALLOW_CREATE_TOPICS=True
       - DISABLE_PROMETHEUS=True
     depends_on:
+      - redis
       - kafka
       - ingress
     # Not yet used, we are not running clowder ATM
@@ -149,27 +152,27 @@ services:
       - kafka-create-topics
       - insights-inventory-mq
   # Allows us to run the application in the form it's going to be deployed, will be needed for tests
-  ros-processor: &ros
-    build:
-      context: ..
-    command: [ "python", "-m", "ros.processor.main" ]
-    depends_on:
-      - insights-inventory-web
-      - insights-engine
-      - kafka
-      - createbuckets
-    environment:
-      - INSIGHTS_KAFKA_HOST=kafka
-      - INSIGHTS_KAFKA_PORT=29092
-      - INVENTORY_HOST=insights-inventory-web
-      - INVENTORY_PORT=8000
-      - ROS_DB_HOST=db-ros
-      - ROS_DB_PORT=5432
-  ros-api:
-    <<: *ros
-    command: ["bash", "-c", "python -m manage db upgrade && python -m manage seed && python -m ros.api.main"]
-    ports:
-      - 8000:8000
+  # ros-processor: &ros
+  #   build:
+  #     context: ..
+  #   command: [ "python", "-m", "ros.processor.main" ]
+  #   depends_on:
+  #     - insights-inventory-web
+  #     - insights-engine
+  #     - kafka
+  #     - createbuckets
+  #   environment:
+  #     - INSIGHTS_KAFKA_HOST=kafka
+  #     - INSIGHTS_KAFKA_PORT=29092
+  #     - INVENTORY_HOST=insights-inventory-web
+  #     - INVENTORY_PORT=8000
+  #     - ROS_DB_HOST=db-ros
+  #     - ROS_DB_PORT=5432
+  # ros-api:
+  #   <<: *ros
+  #   command: ["bash", "-c", "python -m manage db upgrade && python -m manage seed && python -m ros.api.main"]
+  #   ports:
+  #     - 8000:8000
   # logging and Monitoring
   grafana:
       ports:
@@ -228,7 +231,7 @@ services:
       - bootstrap.memory_lock=true
       - cluster.routing.allocation.disk.threshold_enabled=false
   xjoin:
-    image: quay.io/cloudservices/xjoin-search:3c3f8b0
+    image: quay.io/cloudservices/xjoin-search:latest
     restart: always
     environment:
       - LOG_LEVEL=debug

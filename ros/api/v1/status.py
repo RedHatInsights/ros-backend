@@ -1,5 +1,5 @@
 from flask_restful import Resource
-from ros.lib.app import metrics
+from ros.extensions import metrics
 
 
 class Status(Resource):

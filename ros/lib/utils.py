@@ -1,5 +1,3 @@
-import ast as type_evaluation
-
 from collections import Counter
 from http.server import BaseHTTPRequestHandler
 import threading
@@ -8,8 +6,7 @@ import base64
 import json
 from flask import jsonify, make_response
 from flask_restful import abort
-from sqlalchemy import Integer
-
+from sqlalchemy import Integer, select
 from ros.lib.models import (
     RhAccount,
     System,
@@ -19,6 +16,7 @@ from ros.lib.models import (
 from ros.lib.config import get_logger
 from ros.lib import aws_instance_types
 from ros.processor.metrics import ec2_instance_lookup_failures
+from ros.lib.constants import CloudProvider
 
 LOG = get_logger(__name__)
 PROCESSOR_INSTANCES = []
@@ -39,7 +37,7 @@ def get_or_create(session, model, keys, **kwargs):
         keys = [keys]
     if not isinstance(keys, list):
         raise TypeError('keys argument must be a list or string')
-    instance = session.query(model).filter_by(**{k: kwargs[k] for k in keys}).first()
+    instance = session.scalar(db.select(model).filter_by(**{k: kwargs[k] for k in keys}))
     if instance:
         for k, v in kwargs.items():
             setattr(instance, k, v)
@@ -50,10 +48,21 @@ def get_or_create(session, model, keys, **kwargs):
     return instance
 
 
+def update_system_record(session, **kwargs):
+    inventory_id = kwargs.get('inventory_id')
+    if inventory_id is None:
+        return
+    instance = session.scalar(db.select(System).filter_by(inventory_id=inventory_id))
+    if instance:
+        for k, v in kwargs.items():
+            setattr(instance, k, v)
+    return instance
+
+
 def delete_record(session, model, **kwargs):
     """ Deletes a record filtered by key(s) present in kwargs(contains model specific fields)."""
     keys = list(kwargs.keys())
-    instance = session.query(model).filter_by(**{k: kwargs[k] for k in keys}).first()
+    instance = session.scalar(db.select(model).filter_by(**{k: kwargs[k] for k in keys}))
     if instance:
         session.delete(instance)
         session.commit()
@@ -80,20 +89,21 @@ def user_data_from_identity(identity):
     return identity['user']
 
 
-def validate_type(value, type_):
+def is_valid_cloud_provider(cloud_provider):
     """
-    Validate the type of a value.
-    Currently available types: bool
-    :param value: Value to validate.
-    :param type_: Type to validate against.
-    :return: True if the value is of the specified type, False otherwise.
+    Validates cloud_provider value.
     """
-    if type_ == bool:
-        # ast.literal_eval does not understand lowercase 'True' or 'False'
-        value = value.capitalize() if value in ['true', 'false'] else value
-    evaluated_value = type_evaluation.literal_eval(value) if value else None
+    return cloud_provider in [provider.value for provider in CloudProvider]
 
-    return True if type(evaluated_value) == type_ else False
+
+def validate_ros_payload(is_ros, cloud_provider):
+    """
+    Validate ros payload.
+    :param is_ros: is_ros boolean flag
+    :param cloud_provider: cloud provider value
+    :return: True if cloud_provider is supported & is_ros is true else False.
+    """
+    return is_ros and is_valid_cloud_provider(cloud_provider)
 
 
 def cast_iops_as_float(iops_all_dict):
@@ -124,10 +134,11 @@ def sort_io_dict(performance_utilization: dict):
 
 
 def system_ids_by_org_id(org_id, fetch_records=False):
-    account_query = db.session.query(RhAccount.id).filter(RhAccount.org_id == org_id).subquery()
+    account_query = select(RhAccount.id).where(RhAccount.org_id == org_id)
+
     if fetch_records is True:
-        return db.session.query(System).filter(System.tenant_id.in_(account_query))
-    return db.session.query(System.id).filter(System.tenant_id.in_(account_query))
+        return select(System).filter(System.tenant_id.in_(account_query))
+    return select(System.id).filter(System.tenant_id.in_(account_query))
 
 
 def org_id_from_identity_header(request):
@@ -140,11 +151,8 @@ def insert_performance_profiles(session, system_id, fields):
        performance_profile_history table.
     """
     fields = {} if fields is None else fields
-    old_profile_record = session.query(PerformanceProfile).filter_by(
-        system_id=system_id).first()
-    if old_profile_record:
-        session.delete(old_profile_record)
-        session.commit()
+    session.execute(db.delete(PerformanceProfile).filter(PerformanceProfile.system_id == system_id))
+    session.commit()
 
     for model_class in [PerformanceProfile, PerformanceProfileHistory]:
         new_entry = model_class(**fields)
@@ -254,3 +262,24 @@ def highlights_instance_types(queryset, highlight_type):
         item_count += 1
 
     return highlights_list
+
+
+def system_allowed_in_ros(msg, reporter):
+    is_ros = False
+    cloud_provider = ''
+    if reporter == 'INSIGHTS ENGINE':
+        is_ros = msg["input"]["platform_metadata"].get("is_ros")
+        cloud_provider = msg["results"]["system"]["metadata"].get('cloud_provider')
+    elif reporter == 'INVENTORY EVENTS':
+        cloud_provider = msg['host']['system_profile'].get('cloud_provider')
+        # Note that 'is_ros' ONLY available when payload uploaded
+        # via insights-client. 'platform_metadata' field not included
+        # when the host is updated via the API.
+        # https://consoledot.pages.redhat.com/docs/dev/services/inventory.html#_updated_event
+        if (
+                msg.get('type') == 'updated'
+                and msg.get('platform_metadata') is None
+        ):
+            return is_valid_cloud_provider(cloud_provider)
+        is_ros = msg["platform_metadata"].get("is_ros")
+    return validate_ros_payload(is_ros, cloud_provider)

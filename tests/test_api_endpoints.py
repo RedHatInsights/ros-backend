@@ -6,7 +6,7 @@ from base64 import b64encode
 import pytest
 
 from ros.api.main import app
-from ros.lib.models import db, PerformanceProfile
+from ros.lib.models import db, PerformanceProfile, System
 from tests.helpers.db_helper import db_get_host, db_get_record
 
 
@@ -67,6 +67,7 @@ def test_systems(auth_token, db_setup, db_create_account, db_create_system, db_c
         assert response.status_code == 200
         assert response.json["meta"]["count"] == 1
         assert response.json["data"][0]["os"] == "RHEL 8.4"
+        assert response.json["data"][0]["groups"] == []
 
 
 def test_system_detail(auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile):
@@ -132,6 +133,52 @@ def test_system_os_filter(auth_token, db_setup, db_create_account, db_create_sys
         assert response.json["data"][0]["os"] == "RHEL 8.4"
 
 
+def test_system_groups(auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile):
+    with app.test_client() as client:
+        response_all_systems = client.get(
+            '/api/ros/v1/systems',
+            headers={"x-rh-identity": auth_token}
+        )
+    assert response_all_systems.status_code == 200
+    assert response_all_systems.json["data"][0]["groups"] == []
+
+    system = db_get_record(System)
+    system.groups = [{
+        "id": "fd11209a-1ca7-49b4-ae27-0f8a365b95b8",
+        "name": "ros-test-3"
+    }]
+    db.session.commit()
+
+    with app.test_client() as client:
+        response_all_systems = client.get(
+            '/api/ros/v1/systems',
+            headers={"x-rh-identity": auth_token}
+        )
+    assert response_all_systems.status_code == 200
+    assert response_all_systems.json["data"][0]["groups"] == [{
+        "id": "fd11209a-1ca7-49b4-ae27-0f8a365b95b8",
+        "name": "ros-test-3"
+    }]
+
+
+def test_system_group_filter(auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile):
+    system = db_get_record(System)
+    system.groups = [{
+        "id": "fd11209a-1ca7-49b4-ae27-0f8a365b95b8",
+        "name": "ros-group-test"
+    }]
+    db.session.commit()
+
+    with app.test_client() as client:
+        response = client.get(
+            '/api/ros/v1/systems?group_name=ros-group-test',
+            headers={"x-rh-identity": auth_token}
+        )
+        assert response.status_code == 200
+        assert response.json["meta"]["count"] == 1
+        assert response.json["data"][0]["groups"][0]["name"] == "ros-group-test"
+
+
 def test_system_suggestions(
         auth_token,
         db_setup,
@@ -149,6 +196,28 @@ def test_system_suggestions(
         assert response.json["inventory_id"] == 'ee0b9978-fe1b-4191-8408-cbadbd47f7a3'
         assert response.json["meta"]["count"] == 1
         assert response.json["data"][0]["rule_id"] == "ros_instance_evaluation|INSTANCE_IDLE"
+        assert not response.json["data"][0]['psi_enabled']
+
+
+def test_system_under_pressure_suggestions(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        db_create_performance_profile_for_under_pressure,
+        db_instantiate_rules
+):
+    rule_id = 'ros_instance_evaluation|INSTANCE_OPTIMIZED_UNDER_PRESSURE'
+    with app.test_client() as client:
+        response = client.get(
+            '/api/ros/v1/systems/ee0b9978-fe1b-4191-8408-cbadbd47f7a3/suggestions',
+            headers={"x-rh-identity": auth_token}
+        )
+        assert response.status_code == 200
+        assert response.json["inventory_id"] == 'ee0b9978-fe1b-4191-8408-cbadbd47f7a3'
+        assert response.json["meta"]["count"] == 1
+        assert response.json["data"][0]['rule_id'] == rule_id
+        assert response.json["data"][0]['psi_enabled']
 
 
 def test_system_rating(
@@ -252,6 +321,41 @@ def test_system_rating_with_invalid_system(
         response = client.post(
             '/api/ros/v1/rating',
             headers={"x-rh-identity": auth_token},
+            data=json.dumps(data_dict)
+        )
+        assert response.status_code == 404
+
+
+def test_should_check_authorization_for_rating_request(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        db_create_performance_profile
+):
+    identity = {
+        "identity": {
+            "account_number": "67890",
+            "type": "User",
+            "user": {
+                "username": "t1@redhat.com",
+                "email": "t1@redhat.com"
+            },
+            "org_id": "000002",
+            "internal": {
+                "org_id": "000002"
+            }
+        }
+    }
+    auth_token_for_t1 = b64encode(json.dumps(identity).encode('utf-8'))
+    with app.test_client() as client:
+        data_dict = {
+            "inventory_id": "ee0b9978-fe1b-4191-8408-cbadbd47f7a3",
+            "rating": "-1"
+        }
+        response = client.post(
+            '/api/ros/v1/rating',
+            headers={"x-rh-identity": auth_token_for_t1},
             data=json.dumps(data_dict)
         )
         assert response.status_code == 404

@@ -23,7 +23,7 @@
             "url": "http://minio:9000/insights-upload-perma/f77010e80955/miYkbDetAo-000004?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=BQA2GEXO711FVBVXDWKM%2F20211229%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20211229T065252Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&X-Amz-Signature=9d0f37a4d72eb5f54ad17ceff31275783332b63e52853bc00c224ba838d27a75",
             "validation": null,
             "test": null,
-            "is_ros": "true"
+            "is_ros": true
         },
         "metadata": {
             "request_id": "f77010e80955/miYkbDetAo-000004"
@@ -47,6 +47,7 @@
                 "satellite_managed": false
             },
             "ip_addresses": ["10.0.60.207"],
+            "groups": [],
             "created": "2021-12-17T18:54:25.116236+00:00",
             "updated": "2021-12-29T06:52:54.146814+00:00",
             "reporter": "puptoo",

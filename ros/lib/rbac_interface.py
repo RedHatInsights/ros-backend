@@ -1,7 +1,7 @@
 from urllib.parse import urljoin
 from http import HTTPStatus
 from flask_restful import abort
-from .config import RBAC_SVC_URL, ENABLE_RBAC, PATH_PREFIX, TLS_CA_PATH
+from .config import RBAC_SVC_URL, ENABLE_RBAC, TLS_CA_PATH
 import requests
 
 
@@ -89,7 +89,7 @@ def ensure_has_permission(**kwargs):
     if not ENABLE_RBAC:
         return
 
-    if _is_mgmt_url(request.path) or _is_openapi_url(request.path, kwargs["app_name"]):
+    if _is_mgmt_url(request.path):
         return  # allow request
     if auth_key:
         perms = get_perms(
@@ -118,10 +118,3 @@ def _is_mgmt_url(path):
     Small helper to test if URL is for management API.
     """
     return path.startswith("/mgmt/")
-
-
-def _is_openapi_url(path, app_name):
-    """
-    Small helper to test if URL is the openapi spec
-    """
-    return path == "%s%s/v1/openapi.json" % (PATH_PREFIX, app_name)

@@ -1,7 +1,7 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: (Blocking) Test without updating any packages
+name: (Non blocking) Test on latest indirect Python dependencies
 
 on:
   push:
@@ -60,10 +60,15 @@ jobs:
     - run: |
         pip --version
 
-    - name: Install pipenv
+    - name: Install pipenv and update packages
       run: |
         pip install pipenv
-        pipenv install --dev
+        rm -rf Pipfile.lock
+        pipenv update --dev
+
+    - name: Show all installed packages
+      run: |
+        pipenv run pip list
 
     - name: Lint with flake8
       run: |

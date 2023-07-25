@@ -58,8 +58,8 @@ def performance_profile(lscpu, aws_instance_id, azure_instance_type, pmlog_summa
     return metadata_response
 
 
-def get_performance_profile(report_url, org_id, custom_prefix=prefix):
-    with _download_and_extract_report(report_url, org_id, custom_prefix=custom_prefix) as archive:
+def get_performance_profile(report_url, org_id, host_id, custom_prefix=prefix):
+    with _download_and_extract_report(report_url, org_id, host_id, custom_prefix=custom_prefix) as archive:
         try:
             LOG.debug(
                 f"{custom_prefix} - Extracting performance profile from the report present at {report_url}\n"
@@ -83,14 +83,15 @@ def get_performance_profile(report_url, org_id, custom_prefix=prefix):
 
 
 @contextmanager
-def _download_and_extract_report(report_url, org_id, custom_prefix=prefix):
+def _download_and_extract_report(report_url, org_id, host_id, custom_prefix=prefix):
     download_response = requests.get(report_url)
-    LOG.info(f"{custom_prefix} - Downloading the report from {report_url}.\n")
+    LOG.info(f"{custom_prefix} - Downloading the report for system {host_id} from {report_url}.\n")
 
     if download_response.status_code != HTTPStatus.OK:
         archive_failed_to_download.labels(org_id=org_id).inc()
         LOG.error(
-            f"{custom_prefix} - Unable to download the report from {report_url}. ERROR - {download_response.reason}\n",
+            f"{custom_prefix} - Unable to download the report for system {host_id} from {report_url}. "
+            f"ERROR - {download_response.reason}\n"
         )
     else:
         archive_downloaded_success.labels(org_id=org_id).inc()

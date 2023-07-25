@@ -2,7 +2,8 @@ import datetime
 import json
 import os
 import pytest
-from ros.lib.app import app, db
+from ros.lib.app import app
+from ros.extensions import db
 from sqlalchemy_utils import database_exists, create_database, drop_database
 from ros.lib.models import RhAccount, System, PerformanceProfile, Rule, PerformanceProfileHistory
 
@@ -57,7 +58,8 @@ def db_create_system(db_create_account):
         operating_system={"name": "RHEL", "major": 8, "minor": 4},
         cpu_states=['CPU_UNDERSIZED', 'CPU_UNDERSIZED_BY_PRESSURE'],
         io_states=['IO_UNDERSIZED_BY_PRESSURE'],
-        memory_states=['MEMORY_UNDERSIZED', 'MEMORY_UNDERSIZED_BY_PRESSURE']
+        memory_states=['MEMORY_UNDERSIZED', 'MEMORY_UNDERSIZED_BY_PRESSURE'],
+        groups=[]
     )
 
     db.session.add(system)
@@ -261,6 +263,100 @@ def db_instantiate_rules(db_setup):
             )
             db.session.add(rule)
         db.session.commit()
+
+
+@pytest.fixture(scope="function")
+def db_create_performance_profile_for_under_pressure():
+    # dummy record values
+    performance_record = {
+      "hinv.ncpu": 2.0,
+      "total_cpus": 1,
+      "mem.physmem": 825740.0,
+      "disk.dev.total": {
+        "xvda": {"val": 0.314, "units": "count / sec"}
+      },
+      "mem.util.available": 725040.0,
+      "kernel.all.cpu.idle": 1.797,
+      "kernel.all.pressure.io.full.avg": {
+        "1 minute": {"val": 21.0, "units": "none"}
+      },
+      "kernel.all.pressure.io.some.avg": {
+        "1 minute": {"val": 210.0, "units": "none"}
+      },
+      "kernel.all.pressure.cpu.some.avg": {
+        "1 minute": {"val": 21.06, "units": "none"}
+      },
+      "kernel.all.pressure.memory.full.avg": {
+        "1 minute": {"val": 21.0, "units": "none"}
+      },
+      "kernel.all.pressure.memory.some.avg": {
+        "1 minute": {"val": 21.0, "units": "none"}
+      }
+    }
+    performance_utilization = {
+      "io": {"xvda": 0.314},
+      "cpu": 10,
+      "max_io": 0.314,
+      "memory": 12
+    }
+    performance_profile = PerformanceProfile(
+        system_id=1,
+        state='Idling',
+        operating_system={"name": "RHEL", "major": 8, "minor": 4},
+        performance_record=performance_record,
+        performance_utilization=performance_utilization,
+        report_date=datetime.datetime.utcnow(),
+        number_of_recommendations=1,
+        psi_enabled=True,
+        rule_hit_details=[{
+          "rule_id": "ros_instance_evaluation|INSTANCE_OPTIMIZED_UNDER_PRESSURE",
+          "component": "telemetry.rules.plugins.ros.ros_instance_evaluation.report",
+          "key": "INSTANCE_OPTIMIZED_UNDER_PRESSURE",
+          "type": "rule",
+          "details": {
+            "rhel": "8.4",
+            "cloud_provider": "aws",
+            "instance_type": "t2.micro",
+            "region": "us-east-1",
+            "price": 0.0116,
+            "states": {
+                "cpu": [
+                    "CPU_OVERSIZED",
+                    "CPU_UNDERSIZED_BY_PRESSURE"
+                ],
+                "io": [
+                    "IO_UNDERSIZED_BY_PRESSURE"
+                ],
+                "memory": [
+                    "MEMORY_OVERSIZED",
+                    "MEMORY_UNDERSIZED_BY_PRESSURE"
+                ]
+            },
+            "type": "rule",
+            "error_key": "INSTANCE_OPTIMIZED_UNDER_PRESSURE",
+            "candidates": [
+              [
+                "t2.small",
+                0.023
+              ],
+              [
+                "m1.small",
+                0.044
+              ]
+            ]
+          },
+          "tags": [],
+          "links": {
+            "jira": [
+              "https://issues.redhat.com/browse/CEECBA-5875"
+            ],
+            "kcs": []
+          },
+          "system_id": "ee0b9978-fe1b-4191-8408-cbadbd47f7a3"
+        }]
+    )
+    db.session.add(performance_profile)
+    db.session.commit()
 
 
 def clean_tables():

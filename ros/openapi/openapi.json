@@ -75,6 +75,9 @@
                     },
                     {
                         "$ref": "#/components/parameters/filterOSParam"
+                    },
+                    {
+                        "$ref": "#/components/parameters/filterGroupParam"
                     }
                 ],
                 "responses": {
@@ -423,6 +426,20 @@
                     },
                     "report_date": {
                         "type": "string"
+                    },
+                    "groups": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -489,6 +506,9 @@
                     },
                     "os": {
                         "type": "string"
+                    },
+                    "psi_enabled": {
+                        "type": "boolean"
                     }
                 }
             },
@@ -780,6 +800,9 @@
                     },
                     "current_instance": {
                         "type": "string"
+                    },
+                    "psi_enabled": {
+                        "type": "boolean"
                     }
                 }
             },
@@ -894,6 +917,18 @@
                 "in": "query",
                 "required": false,
                 "description": "Filter system with the given RHEL OS version. Eg, 8.4",
+                "schema": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "filterGroupParam": {
+                "name": "group_name",
+                "in": "query",
+                "required": false,
+                "description": "Filter systems by given group name",
                 "schema": {
                     "type": "array",
                     "items": {

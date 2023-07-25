@@ -47,6 +47,7 @@ SYSTEM_COLUMNS = [
     'state',
     'fqdn',
     'operating_system',
+    'groups'
 ]
 
 
@@ -80,6 +81,12 @@ class HostsApi(Resource):
         'max_io': fields.Float,
         'io_all': fields.Raw
     }
+
+    groups_fields = {
+        'id': fields.String,
+        'name': fields.String
+    }
+
     hosts_fields = {
         'fqdn': fields.String,
         'display_name': fields.String,
@@ -92,7 +99,8 @@ class HostsApi(Resource):
         'instance_type': fields.String,
         'idling_time': fields.String,
         'os': fields.String,
-        'report_date': fields.DateTime(dt_format='iso8601')
+        'report_date': fields.DateTime(dt_format='iso8601'),
+        'groups': fields.List(fields.Nested(groups_fields))
     }
     meta_fields = {
         'count': fields.Integer,
@@ -133,9 +141,10 @@ class HostsApi(Resource):
             db.session.query(PerformanceProfile, System, RhAccount)
             .join(System, System.id == PerformanceProfile.system_id)
             .join(RhAccount, RhAccount.id == System.tenant_id)
-            .filter(PerformanceProfile.system_id.in_(system_query.subquery()))
+            .filter(PerformanceProfile.system_id.in_(system_query))
             .order_by(*sort_expression)
         )
+
         count = query.count()
         # NOTE: Override limit value to get all the systems when it is -1
         if limit == -1:
@@ -195,6 +204,8 @@ class HostsApi(Resource):
                 else:
                     abort(400, message='Not a valid RHEL version')
             filters.append(System.operating_system.in_(modified_operating_systems))
+        if group_names := request.args.getlist('group_name'):
+            filters.append(System.groups[0]['name'].astext.in_(group_names))
         return filters
 
     @staticmethod
@@ -270,6 +281,7 @@ class HostDetailsApi(Resource):
         'cloud_provider': fields.String,
         'idling_time': fields.String,
         'os': fields.String,
+        'psi_enabled': fields.Boolean
     }
 
     @marshal_with(profile_fields)
@@ -282,7 +294,7 @@ class HostDetailsApi(Resource):
         username = user['username'] if 'username' in user else None
         org_id = org_id_from_identity_header(request)
 
-        system_query = system_ids_by_org_id(org_id).filter(System.inventory_id == host_id).subquery()
+        system_query = system_ids_by_org_id(org_id).filter(System.inventory_id == host_id)
 
         profile = PerformanceProfile.query.filter(
             PerformanceProfile.system_id.in_(system_query)).first()
@@ -292,7 +304,7 @@ class HostDetailsApi(Resource):
             RecommendationRating.rated_by == username
         ).first()
 
-        system = db.session.query(System).filter(System.inventory_id == host_id).first()
+        system = db.session.scalar(db.select(System).filter(System.inventory_id == host_id))
 
         record = None
         if profile:
@@ -303,6 +315,7 @@ class HostDetailsApi(Resource):
             record['idling_time'] = profile.idling_time
             record['os'] = system.deserialize_host_os_data
             record['number_of_recommendations'] = profile.number_of_recommendations
+            record['psi_enabled'] = profile.psi_enabled
         else:
             abort(404, message="System {} doesn't exist"
                   .format(host_id))
@@ -345,7 +358,7 @@ class HostHistoryApi(Resource):
 
         org_id = org_id_from_identity_header(request)
 
-        system_query = system_ids_by_org_id(org_id).filter(System.inventory_id == host_id).subquery()
+        system_query = system_ids_by_org_id(org_id).filter(System.inventory_id == host_id)
 
         query = PerformanceProfileHistory.query.filter(
             PerformanceProfileHistory.system_id.in_(system_query)

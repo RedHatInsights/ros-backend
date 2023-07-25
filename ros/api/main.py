@@ -1,7 +1,9 @@
 from flask_restful import Api
 from flask_cors import CORS
+from ros.lib.app import app
 from ros.api.routes import initialize_routes
-from ros.lib.app import app, metrics, cache
+from ros.extensions import metrics
+from ros.extensions import cache
 from ros.lib.cw_logging import commence_cw_log_streaming
 from ros.lib.config import ROS_API_PORT
 

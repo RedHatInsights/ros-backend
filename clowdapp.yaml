@@ -24,7 +24,7 @@ objects:
       podSpec:
         image: ${IMAGE}:${IMAGE_TAG}
         command: ["sh"]
-        args: ["-c", "python -m manage db upgrade && python -m manage seed && gunicorn ros.api.main:app"]
+        args: ["-c", "export FLASK_APP=manage.py && flask db upgrade && flask seed && gunicorn ros.api.main:app"]
         resources:
           requests:
             cpu: ${CPU_REQUEST}
@@ -63,12 +63,12 @@ objects:
             value: ${DB_POOL_SIZE}
           - name: DB_MAX_OVERFLOW
             value: ${DB_MAX_OVERFLOW}
-    - name: processor
-      replicas: ${{PROCESSOR_REPLICA_COUNT}}
+    - name: inventory-events-processor
+      replicas: ${{INVENTORY_PROCESSOR_REPLICA_COUNT}}
       podSpec:
         image: ${IMAGE}:${IMAGE_TAG}
         command: ["bash"]
-        args: ["-c", "python -m ros.processor.main"]
+        args: ["-c", "python -m ros.processor.inventory_events_consumer"]
         resources:
           requests:
             cpu: ${CPU_REQUEST}
@@ -80,19 +80,99 @@ objects:
           failureThreshold: 3
           httpGet:
             path: /
-            port: 8000
+            port: 9000
             scheme: HTTP
-          initialDelaySeconds: 30
-          periodSeconds: 10
+          initialDelaySeconds: 10
+          periodSeconds: 30
           successThreshold: 1
           timeoutSeconds: 3
         readinessProbe:
           httpGet:
             path: /
-            port: 8000
+            port: 9000
             scheme: HTTP
-          initialDelaySeconds: 3
-          periodSeconds: 10
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          successThreshold: 1
+          failureThreshold: 3
+          timeoutSeconds: 3
+        env:
+          - name: CLOWDER_ENABLED
+            value: ${CLOWDER_ENABLED}
+          - name: DB_POOL_SIZE
+            value: ${DB_POOL_SIZE}
+          - name: DB_MAX_OVERFLOW
+            value: ${DB_MAX_OVERFLOW}
+    - name: engine-result-processor
+      replicas: ${{ENGINE_PROCESSOR_REPLICA_COUNT}}
+      podSpec:
+        image: ${IMAGE}:${IMAGE_TAG}
+        command: ["bash"]
+        args: ["-c", "python -m ros.processor.insights_engine_consumer"]
+        resources:
+          requests:
+            cpu: ${CPU_REQUEST}
+            memory: ${MEMORY_REQUEST}
+          limits:
+            cpu: ${CPU_LIMIT}
+            memory: ${MEMORY_LIMIT}
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 9000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 9000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          successThreshold: 1
+          failureThreshold: 3
+          timeoutSeconds: 3
+        env:
+          - name: CLOWDER_ENABLED
+            value: ${CLOWDER_ENABLED}
+          - name: DB_POOL_SIZE
+            value: ${DB_POOL_SIZE}
+          - name: DB_MAX_OVERFLOW
+            value: ${DB_MAX_OVERFLOW}
+    - name: garbage-collector-processor
+      replicas: ${{GARBAGE_COLLECTOR_REPLICA_COUNT}}
+      podSpec:
+        image: ${IMAGE}:${IMAGE_TAG}
+        command: ["bash"]
+        args: ["-c", "python -m ros.processor.garbage_collector"]
+        resources:
+          requests:
+            cpu: ${CPU_REQUEST}
+            memory: ${MEMORY_REQUEST}
+          limits:
+            cpu: ${CPU_LIMIT}
+            memory: ${MEMORY_LIMIT}
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 9000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 9000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 30
           successThreshold: 1
           failureThreshold: 3
           timeoutSeconds: 3
@@ -165,8 +245,14 @@ parameters:
 - description: Replica count for api pod
   name: API_REPLICA_COUNT
   value: "1"
-- description: Replica count for processor pod
-  name: PROCESSOR_REPLICA_COUNT
+- description: Replica count for inventory processor pod
+  name: INVENTORY_PROCESSOR_REPLICA_COUNT
+  value: "1"
+- description: Replica count for engine processor pod
+  name: ENGINE_PROCESSOR_REPLICA_COUNT
+  value: "1"
+- description: Replica count for garbage collector pod
+  name: GARBAGE_COLLECTOR_REPLICA_COUNT
   value: "1"
 - description: Image NAME
   name: IMAGE

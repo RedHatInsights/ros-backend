@@ -4,7 +4,7 @@ import copy
 from pathlib import Path
 from ros.lib.app import app
 from ros.lib.models import db, PerformanceProfile, PerformanceProfileHistory
-from ros.processor.insights_engine_result_consumer import InsightsEngineResultConsumer, SYSTEM_STATES
+from ros.processor.insights_engine_consumer import InsightsEngineConsumer, SYSTEM_STATES
 from tests.helpers.db_helper import db_get_host, db_get_record
 from ros.processor.event_producer import notification_payload
 
@@ -41,18 +41,19 @@ def engine_result_message():
         msg_data = json.loads(f.read())
         f.close()
         return msg_data
+
     return _return_engine_msg_json
 
 
 @pytest.fixture
 def engine_consumer():
-    return InsightsEngineResultConsumer()
+    return InsightsEngineConsumer()
 
 
 def test_handle_msg(engine_result_message, engine_consumer, mocker, performance_record):
     engine_result_message = engine_result_message("insights-engine-result-idle.json")
     mocker.patch(
-        'ros.processor.insights_engine_result_consumer.get_performance_profile',
+        'ros.processor.insights_engine_consumer.get_performance_profile',
         return_value=performance_record,
         autospec=True
     )
@@ -71,12 +72,13 @@ def test_process_report_idle(engine_result_message, engine_consumer, db_setup, p
     engine_consumer.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
     system_record = db_get_host(host['id'])
     assert str(system_record.inventory_id) == host['id']
+    assert system_record.groups == host['groups']
     with app.app_context():
         assert system_record.instance_type == _performance_record['instance_type']
         assert system_record.region == _performance_record['region']
         assert system_record.state == SYSTEM_STATES['INSTANCE_IDLE']
-        assert db.session.query(PerformanceProfile).filter_by(system_id=system_record.id).\
-               first().performance_record == performance_record
+        assert db.session.scalar(db.select(PerformanceProfile).filter_by(system_id=system_record.id))\
+            .performance_record == performance_record
 
 
 def test_process_report_under_pressure(engine_result_message, engine_consumer, db_setup, performance_record):
@@ -89,12 +91,13 @@ def test_process_report_under_pressure(engine_result_message, engine_consumer, d
     engine_consumer.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
     system_record = db_get_host(host['id'])
     assert str(system_record.inventory_id) == host['id']
+    assert system_record.groups == host['groups']
     with app.app_context():
         assert system_record.instance_type == _performance_record['instance_type']
         assert system_record.region == _performance_record['region']
         assert system_record.state == SYSTEM_STATES['INSTANCE_OPTIMIZED_UNDER_PRESSURE']
-        assert db.session.query(PerformanceProfile).filter_by(system_id=system_record.id).\
-               first().performance_record == performance_record
+        assert db.session.scalar(db.select(PerformanceProfile).filter_by(system_id=system_record.id))\
+            .performance_record == performance_record
 
 
 def test_process_report_no_pcp(engine_result_message, engine_consumer, db_setup, performance_record):
@@ -106,10 +109,11 @@ def test_process_report_no_pcp(engine_result_message, engine_consumer, db_setup,
     _performance_record = copy.copy(performance_record)
     engine_consumer.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
     system_record = db_get_host(host['id'])
-    performance_utilization = db.session.query(PerformanceProfile).\
-        filter_by(system_id=system_record.id).first().performance_utilization
+    performance_utilization = db.session.scalar(db.select(PerformanceProfile)
+                                                .filter_by(system_id=system_record.id)).performance_utilization
     sample_performance_util_no_pcp = {'cpu': -1, 'memory': -1, 'max_io': -1.0, 'io': {}}
     assert str(system_record.inventory_id) == host['id']
+    assert system_record.groups == host['groups']
     with app.app_context():
         assert system_record.instance_type == _performance_record['instance_type']
         assert system_record.region == _performance_record['region']
@@ -127,12 +131,13 @@ def test_process_report_undersized(engine_result_message, engine_consumer, db_se
     engine_consumer.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
     system_record = db_get_host(host['id'])
     assert str(system_record.inventory_id) == host['id']
+    assert system_record.groups == host['groups']
     with app.app_context():
         assert system_record.instance_type == _performance_record['instance_type']
         assert system_record.region == _performance_record['region']
         assert system_record.state == SYSTEM_STATES['INSTANCE_UNDERSIZED']
-        assert db.session.query(PerformanceProfile).filter_by(system_id=system_record.id).\
-               first().performance_record == performance_record
+        assert db.session.scalar(db.select(PerformanceProfile).filter_by(system_id=system_record.id))\
+            .performance_record == performance_record
 
 
 def test_process_report_optimized(engine_result_message, engine_consumer, db_setup, performance_record):
@@ -146,13 +151,14 @@ def test_process_report_optimized(engine_result_message, engine_consumer, db_set
     system_record = db_get_host(host['id'])
     profile_record = db_get_record(PerformanceProfile, system_id=system_record.id)
     assert str(system_record.inventory_id) == host['id']
+    assert system_record.groups == host['groups']
     with app.app_context():
         assert profile_record.rule_hit_details == ros_reports
         assert system_record.instance_type == _performance_record['instance_type']
         assert system_record.region == _performance_record['region']
         assert system_record.state == SYSTEM_STATES['OPTIMIZED']
-        assert db.session.query(PerformanceProfile).filter_by(system_id=system_record.id).\
-               first().performance_record == performance_record
+        assert db.session.scalar(db.select(PerformanceProfile).filter_by(system_id=system_record.id))\
+            .performance_record == performance_record
 
 
 def test_system_properties(engine_result_message, engine_consumer, db_setup, performance_record):
@@ -164,6 +170,7 @@ def test_system_properties(engine_result_message, engine_consumer, db_setup, per
     engine_consumer.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
     data = db_get_host(host['id'])
     assert str(data.inventory_id) == host['id']
+    assert data.groups == host['groups']
 
 
 def test_history_record_creation(engine_result_message, engine_consumer, db_setup, performance_record):
@@ -214,8 +221,8 @@ def test_process_report_psi_enabled(engine_result_message, engine_consumer, db_s
     platform_metadata = engine_result_message["input"]["platform_metadata"]
     engine_consumer.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
     system_record = db_get_host(host['id'])
-    psi_enabled = db.session.query(PerformanceProfile).\
-        filter_by(system_id=system_record.id).first().psi_enabled
+    psi_enabled = db.session.scalar(db.select(PerformanceProfile).filter_by(system_id=system_record.id))\
+                    .psi_enabled
     assert psi_enabled is True
 
 
@@ -229,7 +236,7 @@ def test_notification(engine_result_message, engine_consumer, db_setup, performa
     engine_consumer.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
     system_record = db_get_host(host['id'])
     response = notification_payload(
-                    host, system_previous_state, system_record.state)
+        host, system_previous_state, system_record.state)
 
     assert response["account_id"] == host["account"]
     assert response["context"]["display_name"] == "ip-172-31-28-69.ec2.internal"

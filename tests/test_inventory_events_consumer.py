@@ -26,6 +26,7 @@ def inventory_event_consumer():
 
 
 def test_process_system_details(inventory_event_consumer, inventory_event_message, db_setup):
+    inventory_event_message['type'] = 'created'
     inventory_event_consumer.process_system_details(inventory_event_message)
     with app.app_context():
         host = db_get_host(inventory_event_message['host']['id'])
@@ -50,6 +51,8 @@ def test_host_create_events(inventory_event_consumer, inventory_event_message, d
         assert type(db_get_host(inventory_event_message['host']['id'])).__name__ == 'System'
         assert db_get_host(inventory_event_message['host']['id']).operating_system == \
                inventory_event_message['host']['system_profile']['operating_system']
+        assert db_get_host(inventory_event_message['host']['id']).groups == \
+               inventory_event_message['host']['groups']
 
 
 def test_host_update_events(inventory_event_consumer, inventory_event_message, db_setup, mocker):
@@ -67,12 +70,14 @@ def test_host_update_events(inventory_event_consumer, inventory_event_message, d
     inventory_event_message['platform_metadata'] = {'org_id': '000001'}
     updated_display_name = 'Test - Display Name Update'  # Test case change
     inventory_event_message['host']['display_name'] = updated_display_name
+    inventory_event_message['host']['groups'] = []
     inventory_event_consumer.host_create_update_events(inventory_event_message)
     inventory_event_consumer.process_system_details.call_count = 2
     inventory_event_consumer.process_system_details(msg=inventory_event_message)
     with app.app_context():
         updated_system = db_get_host(inventory_event_message['host']['id'])
         assert updated_system.display_name == updated_display_name
+        assert updated_system.groups == []
 
 
 def test_host_update_event_no_cp(inventory_event_consumer, inventory_event_message, db_setup, mocker):
@@ -101,7 +106,8 @@ def test_host_update_event_no_cp(inventory_event_consumer, inventory_event_messa
 def test_host_delete_event(inventory_event_consumer, db_setup):
     msg = {"type": "delete", "insights_id": "677fb960-e164-48a4-929f-59e2d917b444",
            "id": "ee0b9978-fe1b-4191-8408-cbadbd47f7a2",
-           "account": '0000001'}
+           "account": '0000001',
+           'org_id': '000001'}
     inventory_event_consumer.host_delete_event(msg)
     host = db_get_host(msg['id'])
     assert host is None
