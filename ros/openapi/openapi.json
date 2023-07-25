@@ -75,6 +75,9 @@
                     },
                     {
                         "$ref": "#/components/parameters/filterOSParam"
+                    },
+                    {
+                        "$ref": "#/components/parameters/filterGroupParam"
                     }
                 ],
                 "responses": {
@@ -914,6 +917,18 @@
                 "in": "query",
                 "required": false,
                 "description": "Filter system with the given RHEL OS version. Eg, 8.4",
+                "schema": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "filterGroupParam": {
+                "name": "group_name",
+                "in": "query",
+                "required": false,
+                "description": "Filter systems by given group name",
                 "schema": {
                     "type": "array",
                     "items": {
