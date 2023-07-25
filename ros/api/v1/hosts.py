@@ -145,6 +145,7 @@ class HostsApi(Resource):
             .filter(PerformanceProfile.system_id.in_(system_query))
             .order_by(*sort_expression)
         )
+
         count = query.count()
         # NOTE: Override limit value to get all the systems when it is -1
         if limit == -1:
