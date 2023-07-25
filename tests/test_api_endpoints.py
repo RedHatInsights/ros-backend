@@ -161,6 +161,24 @@ def test_system_groups(auth_token, db_setup, db_create_account, db_create_system
     }]
 
 
+def test_system_group_filter(auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile):
+    system = db_get_record(System)
+    system.groups = [{
+        "id": "fd11209a-1ca7-49b4-ae27-0f8a365b95b8",
+        "name": "ros-group-test"
+    }]
+    db.session.commit()
+
+    with app.test_client() as client:
+        response = client.get(
+            '/api/ros/v1/systems?group_name=ros-group-test',
+            headers={"x-rh-identity": auth_token}
+        )
+        assert response.status_code == 200
+        assert response.json["meta"]["count"] == 1
+        assert response.json["data"][0]["groups"][0]["name"] == "ros-group-test"
+
+
 def test_system_suggestions(
         auth_token,
         db_setup,

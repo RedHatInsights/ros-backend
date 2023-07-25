@@ -204,6 +204,8 @@ class HostsApi(Resource):
                 else:
                     abort(400, message='Not a valid RHEL version')
             filters.append(System.operating_system.in_(modified_operating_systems))
+        if group_names := request.args.getlist('group_name'):
+            filters.append(System.groups[0]['name'].astext.in_(group_names))
         return filters
 
     @staticmethod
