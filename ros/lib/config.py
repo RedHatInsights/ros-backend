@@ -120,7 +120,7 @@ else:
 DB_URI = f"postgresql://{DB_USER}:{DB_PASSWORD}"\
                 f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 if DB_SSL_CERTPATH:
-    DB_URI += f"?ssl_mode={DB_SSL_MODE}&sslrootcert={DB_SSL_CERTPATH}"
+    DB_URI += f"?sslmode={DB_SSL_MODE}&sslrootcert={DB_SSL_CERTPATH}"
 
 DB_POOL_SIZE = int(os.getenv("DB_POOL_SIZE", '5'))
 DB_MAX_OVERFLOW = int(os.getenv("DB_MAX_OVERFLOW", '10'))
