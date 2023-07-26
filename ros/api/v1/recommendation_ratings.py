@@ -1,14 +1,13 @@
 from flask_restful import Resource, fields, marshal_with
 from ros.lib.models import RecommendationRating, db
 from ros.api.common.utils import validate_rating_data
-from ros.lib.models import System
 
 
 class RecommendationRatingsApi(Resource):
+
     rating_fields = {
         'inventory_id': fields.String,
-        'rating': fields.Integer,
-        'group_id': fields.String,
+        'rating': fields.Integer
     }
 
     @validate_rating_data
@@ -23,17 +22,6 @@ class RecommendationRatingsApi(Resource):
         inventory_id = kwargs.get('inventory_id')
         rating = kwargs.get('rating')
         system_id = kwargs.get('system_id')
-        group_id = kwargs.get('group_id', '')
-        if group_id:
-            sys_query = db.session.query(System.inventory_id). \
-                filter((System.inventory_id == inventory_id) &
-                       ((System.groups[0]['id'].astext == group_id) | (System.groups == '[]')))
-        else:
-            sys_query = db.session.query(System.inventory_id). \
-                filter((System.inventory_id == inventory_id) & (System.groups == '[]'))
-
-        if sys_query.count() == 0:
-            return {}, 401
 
         rating_record = RecommendationRating.query.filter(
             RecommendationRating.system_id == system_id,
