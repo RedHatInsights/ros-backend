@@ -5,6 +5,7 @@ from .config import RBAC_SVC_URL, ENABLE_RBAC, TLS_CA_PATH
 import requests
 import json
 from ros.lib.config import get_logger
+from flask import request
 
 RBAC_SVC_ENDPOINT = "/api/rbac/v1/access/?application=%s"
 AUTH_HEADER_NAME = "X-RH-IDENTITY"
@@ -75,11 +76,6 @@ def query_rbac(application, auth_key, logger):
     return rbac_result
 
 
-def get_perms(result):
-    perms = [perm["permission"] for perm in result["data"]]
-    return perms
-
-
 def ensure_has_permission(**kwargs):
     """
     Ensure permission exists. kwargs needs to contain:
@@ -89,7 +85,6 @@ def ensure_has_permission(**kwargs):
     if not ENABLE_RBAC:
         return
 
-    request = kwargs["request"]
     auth_key = request.headers.get('X-RH-IDENTITY')
 
     rbac_response = query_rbac(kwargs["application"], auth_key, kwargs["logger"])
@@ -97,14 +92,14 @@ def ensure_has_permission(**kwargs):
     if _is_mgmt_url(request.path):
         return  # allow request
     if auth_key:
-        perms = get_perms(rbac_response)
+        perms = [perm["permission"] for perm in rbac_response["data"]]
         if perms:
             for p in perms:
                 if p in kwargs["permissions"]:
                     # Allow access and
                     # Try to set group details on request if any
                     try:
-                        find_host_groups(request, rbac_response)
+                        set_host_groups(rbac_response)
                     except Exception as err:
                         LOG.info(f"Failed to fetch group details {err}")
                     return
@@ -127,7 +122,7 @@ def _is_mgmt_url(path):
     return path.startswith("/mgmt/")
 
 
-def find_host_groups(request, rbac_response):
+def set_host_groups(rbac_response):
     """
     We now also have to store the host group information we get from inventory.
     This comes in the resource definition within the RBAC response:
