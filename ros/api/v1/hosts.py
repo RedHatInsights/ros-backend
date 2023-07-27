@@ -434,6 +434,7 @@ class ExecutiveReportAPI(Resource):
             System.cpu_states,
             System.io_states,
             System.memory_states,
+            System.region,
             PerformanceProfile.system_id,
             PerformanceProfile.report_date,
             PerformanceProfile.rule_hit_details,
@@ -514,7 +515,8 @@ class ExecutiveReportAPI(Resource):
 
         historical_performance_profiles = db.session.query(
             PerformanceProfileHistory.system_id,
-            PerformanceProfileHistory.rule_hit_details
+            PerformanceProfileHistory.rule_hit_details,
+            systems_with_performance_record_subquery.c.region
         ).join(
             systems_with_performance_record_subquery,
             systems_with_performance_record_subquery.c.system_id == PerformanceProfileHistory.system_id
