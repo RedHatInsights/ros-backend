@@ -2,38 +2,10 @@ import datetime
 from dateutil import parser
 import json
 from base64 import b64encode
-
-import pytest
-
 from ros.api.main import app
 from ros.lib.models import db, PerformanceProfile, System
 from tests.helpers.db_helper import db_get_host, db_get_record
-
-
-@pytest.fixture(scope="session")
-def auth_token():
-    identity = {
-        "identity": {
-            "account_number": "12345",
-            "type": "User",
-            "user": {
-                "username": "tuser@redhat.com",
-                "email": "tuser@redhat.com",
-                "first_name": "test",
-                "last_name": "user",
-                "is_active": True,
-                "is_org_admin": False,
-                "is_internal": True,
-                "locale": "en_US"
-            },
-            "org_id": "000001",
-            "internal": {
-                "org_id": "000001"
-            }
-        }
-    }
-    auth_token = b64encode(json.dumps(identity).encode('utf-8'))
-    return auth_token
+from pathlib import Path
 
 
 def assert_report_date_with_current_date(report_date):
@@ -98,7 +70,6 @@ def test_system_history(auth_token, db_setup, db_create_account,
 
 
 def test_system_no_os(auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile):
-
     # Setting db_record.operating_system to None/null
     system_record = db_get_host('ee0b9978-fe1b-4191-8408-cbadbd47f7a3')
     system_record.operating_system = None
@@ -430,7 +401,7 @@ def test_psi_enabled(
     assert response.json['meta']['non_psi_count'] == 0
 
 
-def test_openapi_endpoint():
+def test_openapi_endpoint(auth_token):
     with open("ros/openapi/openapi.json") as f:
         content_from_file = json.loads(f.read())
         f.close()
@@ -440,3 +411,73 @@ def test_openapi_endpoint():
             headers={"x-rh-identity": auth_token}
         )
         assert response.json == content_from_file
+
+
+def get_rbac_mock_file(filename):
+    with open(f"{Path(__file__).parent}/data_files/{filename}") as f:
+        json_data = json.loads(f.read())
+    return json_data
+
+
+def mock_enable_rbac(mocker):
+    mocker.patch('ros.lib.rbac_interface.ENABLE_RBAC', return_value=True)
+
+
+def mock_rbac(json_data, mocker):
+    mocker.patch('ros.lib.rbac_interface.query_rbac', return_value=json_data)
+
+
+def test_systems_rbac_returns_groups_including_example_group(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        system_with_example_group,
+        system_with_test_group,
+        db_create_performance_profile,
+        create_performance_profiles,
+        mocker):
+    with app.test_client() as client:
+        mock_enable_rbac(mocker)
+        mock_rbac(get_rbac_mock_file("mock_rbac_returns_groups_including_example_group.json"), mocker)
+        response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
+        assert response.status_code == 200
+        assert response.json["meta"]["count"] == 2
+        assert response.json["data"][0]["groups"][0]["name"] == "example-group"
+
+
+def test_systems_rbac_returns_emtpy_group(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        system_with_example_group,
+        system_with_test_group,
+        db_create_performance_profile,
+        create_performance_profiles,
+        mocker):
+    with app.test_client() as client:
+        mock_enable_rbac(mocker)
+        mock_rbac(get_rbac_mock_file("mock_rbac_returns_emtpy_group.json"), mocker)
+        response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
+        assert response.status_code == 200
+        assert response.json["meta"]["count"] == 1
+        assert response.json["data"][0]["groups"] == []
+
+
+def test_systems_mock_rbac_returns_no_groups(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        system_with_example_group,
+        system_with_test_group,
+        db_create_performance_profile,
+        create_performance_profiles,
+        mocker):
+    with app.test_client() as client:
+        mock_enable_rbac(mocker)
+        mock_rbac(get_rbac_mock_file("mock_rbac_returns_no_groups.json"), mocker)
+        response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
+        assert response.status_code == 200
+        assert response.json["meta"]["count"] == 3
