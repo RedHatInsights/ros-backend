@@ -427,9 +427,6 @@ def mock_rbac(json_data, mocker):
     mocker.patch('ros.lib.rbac_interface.query_rbac', return_value=json_data)
 
 
-# This is to test filtering of system groups when RBAC returns one or more group(s) in response.
-# While filtering based on groups we check if group id we get from are there in the System's group field
-# It is expected that we also return systems which are in no groups
 def test_systems_rbac_returns_groups_including_example_group(
         auth_token,
         db_setup,
@@ -440,6 +437,9 @@ def test_systems_rbac_returns_groups_including_example_group(
         db_create_performance_profile,
         create_performance_profiles,
         mocker):
+    """This is to test filtering of system groups when RBAC returns one or more group(s) in response.
+    While filtering based on groups we check if group id we get from are there in the System's group field
+    It is expected that we also return systems which are in no groups"""
     with app.test_client() as client:
         mock_enable_rbac(mocker)
         mock_rbac(get_rbac_mock_file("mock_rbac_returns_groups_including_example_group.json"), mocker)
@@ -449,9 +449,6 @@ def test_systems_rbac_returns_groups_including_example_group(
         assert response.json["data"][0]["groups"][0]["name"] == "example-group"
 
 
-# This is to test filtering of system groups when RBAC returns no groups in response however group.id is present.
-# This is the situation when user has no groups created however groups as features in enabled from inventory
-# In this case we can only return the systems which are not included in any of the groups
 def test_systems_rbac_returns_emtpy_group(
         auth_token,
         db_setup,
@@ -462,6 +459,9 @@ def test_systems_rbac_returns_emtpy_group(
         db_create_performance_profile,
         create_performance_profiles,
         mocker):
+    """This is to test filtering of system groups when RBAC returns no groups in response however group.id is present.
+    This is the situation when user has no groups created however groups as features in enabled from inventory
+    In this case we can only return the systems which are not included in any of the groups"""
     with app.test_client() as client:
         mock_enable_rbac(mocker)
         mock_rbac(get_rbac_mock_file("mock_rbac_returns_emtpy_group.json"), mocker)
@@ -471,9 +471,6 @@ def test_systems_rbac_returns_emtpy_group(
         assert response.json["data"][0]["groups"] == []
 
 
-# This is to test filtering of system groups when RBAC does not return group.id at all.
-# This is the use case where for some reason RBAC does not have group.id included(i.e inventory groups disabled)
-# In this case we return all the systems because we can't find groups as feature enabled
 def test_systems_mock_rbac_returns_no_groups(
         auth_token,
         db_setup,
@@ -484,6 +481,9 @@ def test_systems_mock_rbac_returns_no_groups(
         db_create_performance_profile,
         create_performance_profiles,
         mocker):
+    """This is to test filtering of system groups when RBAC does not return group.id at all.
+    This is the use case where for some reason RBAC does not have group.id included(i.e inventory groups disabled)
+    In this case we return all the systems because we can't find groups as feature enabled"""
     with app.test_client() as client:
         mock_enable_rbac(mocker)
         mock_rbac(get_rbac_mock_file("mock_rbac_returns_no_groups.json"), mocker)
