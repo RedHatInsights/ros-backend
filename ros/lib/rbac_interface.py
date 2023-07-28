@@ -131,7 +131,7 @@ def set_host_groups(rbac_response):
       "resourceDefinitions": [
         {
           "attributeFilter": {
-            "key": "inventory.groups",
+            "key": "group.id",
             "value": [
               "group 1",
               "group 2"
@@ -144,7 +144,7 @@ def set_host_groups(rbac_response):
     }
 
     If the permission is 'inventory:hosts:read', we find one of the resource
-    definitions that has an attribute filter key of 'inventory.groups', and
+    definitions that has an attribute filter key of 'group.id', and
     we get the list of inventory groups from its value. We currently ignore
     the operation value.
     """
