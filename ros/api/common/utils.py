@@ -11,6 +11,7 @@ from ros.lib.utils import (
 )
 from ros.extensions import db
 from sqlalchemy import exc
+from ros.api.common.add_group_filter import group_filtered_query
 
 LOG = logging.getLogger(__name__)
 prefix = "VALIDATE REQUEST"
@@ -56,7 +57,8 @@ def validate_rating_data(func):
         system_id = None
         if not is_valid_uuid(inventory_id):
             abort(404, message='Invalid inventory_id, Id should be in form of UUID4')
-        systems = system_ids_by_org_id(ident['org_id']).filter(System.inventory_id == inventory_id)
+        systems = group_filtered_query(system_ids_by_org_id(ident['org_id']).
+                                       filter(System.inventory_id == inventory_id))
         try:
             system_id = db.session.execute(systems).scalar_one()
         except exc.NoResultFound:
