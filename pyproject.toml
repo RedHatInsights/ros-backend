@@ -5,14 +5,6 @@ description = "Backend for Resource Optimization"
 readme = "README.md"
 authors = []
 
-[dev-packages]
-flake8 = "*"
-pytest = "~=7.2.0"
-sqlalchemy-utils = "*"
-pytest-mock = "*"
-pytest-cov = "*"
-
-[packages]
 [tool.poetry.dependencies]
 python = "~=3.8"
 Flask = "~=2.2.5"
@@ -35,7 +27,6 @@ watchtower = ">=1.0.0"
 boto3 = ">=1.16.13"
 botocore = ">=1.19.13"
 flask-caching = "*"
-
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "*"
