@@ -31,7 +31,7 @@ def ensure_rbac():
     if request.endpoint not in ['status', 'prometheus_metrics', 'openapispec']:
         ensure_has_permission(
             permissions=["ros:*:*", "ros:*:read"],
-            application="ros",
+            application="ros,inventory",
             app_name="ros",
             request=request,
             logger=get_logger(__name__)
