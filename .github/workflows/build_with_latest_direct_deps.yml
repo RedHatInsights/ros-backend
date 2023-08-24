@@ -98,6 +98,7 @@ jobs:
         boto3 = "*"
         botocore = "*"
         flask-caching = "*"
+        flask-unleash = "*"
 
         [tool.poetry.group.dev.dependencies]
         flake8 = "*"

@@ -10,6 +10,7 @@ objects:
     name: ros-backend
   spec:
     envName: ${ENV_NAME}
+    featureFlags: true
     dependencies:
     - host-inventory
     - rbac
@@ -63,6 +64,17 @@ objects:
             value: ${DB_POOL_SIZE}
           - name: DB_MAX_OVERFLOW
             value: ${DB_MAX_OVERFLOW}
+          - name: UNLEASH_URL
+            value: ${UNLEASH_URL}
+          - name: UNLEASH_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: ${UNLEASH_SECRET_NAME}
+                key: CLIENT_ACCESS_TOKEN
+                optional: true
+          - name: BYPASS_UNLEASH
+            value: ${BYPASS_UNLEASH}
+
     - name: inventory-events-processor
       replicas: ${{INVENTORY_PROCESSOR_REPLICA_COUNT}}
       podSpec:
@@ -103,6 +115,17 @@ objects:
             value: ${DB_POOL_SIZE}
           - name: DB_MAX_OVERFLOW
             value: ${DB_MAX_OVERFLOW}
+          - name: UNLEASH_URL
+            value: ${UNLEASH_URL}
+          - name: UNLEASH_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: ${UNLEASH_SECRET_NAME}
+                key: CLIENT_ACCESS_TOKEN
+                optional: true
+          - name: BYPASS_UNLEASH
+            value: ${BYPASS_UNLEASH}
+
     - name: engine-result-processor
       replicas: ${{ENGINE_PROCESSOR_REPLICA_COUNT}}
       podSpec:
@@ -143,6 +166,17 @@ objects:
             value: ${DB_POOL_SIZE}
           - name: DB_MAX_OVERFLOW
             value: ${DB_MAX_OVERFLOW}
+          - name: UNLEASH_URL
+            value: ${UNLEASH_URL}
+          - name: UNLEASH_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: ${UNLEASH_SECRET_NAME}
+                key: CLIENT_ACCESS_TOKEN
+                optional: true
+          - name: BYPASS_UNLEASH
+            value: ${BYPASS_UNLEASH}
+
     - name: garbage-collector-processor
       replicas: ${{GARBAGE_COLLECTOR_REPLICA_COUNT}}
       podSpec:
@@ -187,6 +221,17 @@ objects:
             value: ${DB_POOL_SIZE}
           - name: DB_MAX_OVERFLOW
             value: ${DB_MAX_OVERFLOW}
+          - name: UNLEASH_URL
+            value: ${UNLEASH_URL}
+          - name: UNLEASH_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: ${UNLEASH_SECRET_NAME}
+                key: CLIENT_ACCESS_TOKEN
+                optional: true
+          - name: BYPASS_UNLEASH
+            value: ${BYPASS_UNLEASH}
+
     database:
       name: ros
       version: 13
@@ -305,3 +350,13 @@ parameters:
   value: "20"
 - name: DB_MAX_OVERFLOW
   value: "20"
+
+# Feature flags
+- description: Unleash secret name
+  name: UNLEASH_SECRET_NAME
+  value: bypass
+- description: Unleash API url
+  name: UNLEASH_URL
+- description: disable Unleash (feature flags), defaulting to fallback values
+  name: BYPASS_UNLEASH
+  value: 'false'

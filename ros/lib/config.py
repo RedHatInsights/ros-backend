@@ -48,6 +48,7 @@ CLOWDER_ENABLED = True if os.getenv("CLOWDER_ENABLED", default="False").lower() 
 DB_SSL_MODE = "verify-full"
 DB_SSL_CERTPATH = None
 
+
 if CLOWDER_ENABLED:
     LOG.info("Using Clowder Operator...")
     from app_common_python import LoadedConfig, KafkaTopics
@@ -86,6 +87,19 @@ if CLOWDER_ENABLED:
         AWS_REGION_NAME = LoadedConfig.logging.cloudwatch.region
         AWS_LOG_GROUP = LoadedConfig.logging.cloudwatch.logGroup
 
+    # Feature flags
+    unleash = LoadedConfig.featureFlags
+    BYPASS_UNLEASH = True if os.getenv("BYPASS_UNLEASH", default="False").lower() in ["true", "t", "yes",
+                                                                                      "y"] else False
+    UNLEASH_CACHE_DIR = os.getenv("UNLEASH_CACHE_DIR", "/tmp/.unleashcache")
+    UNLEASH_TOKEN = unleash.clientAccessToken if unleash else None
+    UNLEASH_URL = f"{unleash.hostname}:{unleash.port}/api" if unleash else None
+    if unleash and unleash.port in (80, 8080):
+        UNLEASH_URL = f"http://{UNLEASH_URL}"
+    elif unleash:
+        UNLEASH_URL = f"https://{UNLEASH_URL}"
+
+
 else:
     DB_NAME = os.getenv("ROS_DB_NAME", "postgres")
     DB_USER = os.getenv("ROS_DB_USER", "postgres")
@@ -109,7 +123,7 @@ else:
     RBAC_SVC_URL = os.getenv("RBAC_SVC_URL", f"http://{RBAC_HOST}:{RBAC_PORT}/")
     NOTIFICATIONS_TOPIC = os.getenv("NOTIFICATIONS_TOPIC", "platform.notifications.ingress")
     TLS_CA_PATH = os.getenv("TLS_CA_PATH", None)
-
+    BYPASS_UNLEASH = True
     CW_ENABLED = str_to_bool(os.getenv('CW_ENABLED', 'False'))  # CloudWatch/Kibana Logging
     if CW_ENABLED is True:
         AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", None)

@@ -1,11 +1,14 @@
 from flask import Flask
 from ros.extensions import db
-from .config import DB_URI, DB_POOL_SIZE, DB_MAX_OVERFLOW
+from .config import DB_URI, DB_POOL_SIZE, DB_MAX_OVERFLOW, BYPASS_UNLEASH
 from flask import request
 from .rbac_interface import ensure_has_permission
 from .config import get_logger
 from flask_migrate import Migrate
+from ros.lib.feature_flags import init_unleash_app
 # Since we're using flask_sqlalchemy, we must create the flask app in both processor and web api
+
+logger = get_logger(__name__)
 
 
 def create_app():
@@ -17,6 +20,23 @@ def create_app():
         'max_overflow': DB_MAX_OVERFLOW
     }
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    if not BYPASS_UNLEASH:
+        from .config import UNLEASH_URL, UNLEASH_TOKEN, UNLEASH_CACHE_DIR
+        if UNLEASH_TOKEN:
+            app.config['UNLEASH_APP_NAME'] = 'ros-backend'
+            app.config['UNLEASH_ENVIRONMENT'] = 'default'
+            app.config['UNLEASH_URL'] = UNLEASH_URL
+            app.config['UNLEASH_CUSTOM_HEADERS'] = {'Authorization': f"Bearer{UNLEASH_TOKEN}"}
+            app.config['UNLEASH_CACHE_DIRECTORY'] = UNLEASH_CACHE_DIR
+            init_unleash_app(app)
+    else:
+        fallback_msg = (
+            "Unleash is bypassed by config value!"
+            if BYPASS_UNLEASH
+            else "No API token was provided for the Unleash server connection!"
+        )
+        fallback_msg += " Feature flag toggles will default to their fallback values."
+        logger.warning(fallback_msg)
     db.init_app(app)
     migrate = Migrate()
     migrate.init_app(app, db)
