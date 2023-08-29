@@ -157,11 +157,12 @@ def set_host_groups(rbac_response):
         return
 
     role_list = rbac_response['data']
+    host_groups = []
 
     for role in role_list:
         if 'permission' not in role:
             continue
-        if role['permission'] != 'inventory:hosts:read':
+        if role['permission'] not in ['inventory:hosts:read', 'inventory:hosts:*', 'inventory:*:read']:
             continue
         # ignore the failure modes, try moving on to other roles that
         # also match this permission
@@ -189,10 +190,10 @@ def set_host_groups(rbac_response):
                 value = json.loads(value)
             if not isinstance(value, list):
                 continue
-            # Finally, we have the right key: set its value (a list) as
-            # the 'host_group_attr' property
-            # Maybe it would be good to set values as json here instead of list
-            setattr(request, host_group_attr, value)
-            LOG.info(f"User has host groups {value}")
-            # and we can leave in triumph
-            return
+            # Finally, we have the right key: add them to our list
+            host_groups.extend(value)
+
+    # If we found any host groups at the end of that, store them
+    if host_groups:
+        setattr(request, host_group_attr, host_groups)
+        LOG.info(f"User has host groups {host_groups}")
