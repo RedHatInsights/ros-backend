@@ -257,6 +257,10 @@ class HostsApi(Resource):
             return (sort_order(PerformanceProfile.report_date),
                     asc(PerformanceProfile.system_id))
 
+        if order_method == 'group_name':
+            return (sort_order(System.groups[0]['name']),
+                    asc(PerformanceProfile.system_id),)
+
         abort(403, message="Unexpected sort method {}".format(order_method))
         return None
 
