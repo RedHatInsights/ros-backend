@@ -508,6 +508,7 @@ def test_systems_mock_rbac_returns_multiple_inventory_hosts_read(
         mocker):
     with app.test_client() as client:
         mock_enable_rbac(mocker)
+        # This mocks example and foo groups
         mock_rbac(get_rbac_mock_file("mock_rbac_returns_multiple_read_permissions.json"), mocker)
         response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
         assert response.status_code == 200
@@ -527,7 +528,28 @@ def test_systems_mock_rbac_returns_multiple_types_of_read_permissions(
         mocker):
     with app.test_client() as client:
         mock_enable_rbac(mocker)
+        # This mocks example, test and foo groups
         mock_rbac(get_rbac_mock_file("mock_rbac_returns_multiple_types_of_read_permissions.json"), mocker)
+        response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
+        assert response.status_code == 200
+        assert response.json["meta"]["count"] == 4
+
+
+def test_systems_mock_rbac_returns_array_of_groups(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        system_with_example_group,
+        system_with_test_group,
+        system_with_foo_group,
+        db_create_performance_profile,
+        create_performance_profiles,
+        mocker):
+    with app.test_client() as client:
+        mock_enable_rbac(mocker)
+        # This mocks example, test and foo groups returned in single array
+        mock_rbac(get_rbac_mock_file("mock_rbac_returns_array_of_groups.json"), mocker)
         response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
         assert response.status_code == 200
         assert response.json["meta"]["count"] == 4

@@ -5,10 +5,10 @@
    "offset": 0
  },
  "links": {
-   "first": "/api/rbac/v1/access/?application=advisor%2Cinventory&limit=7&offset=0",
+   "first": "/api/rbac/v1/access/?application=ros%2Cinventory&limit=1000&offset=0",
    "next": null,
    "previous": null,
-   "last": "/api/rbac/v1/access/?application=advisor%2Cinventory&limit=7&offset=0"
+   "last": "/api/rbac/v1/access/?application=ros%2Cinventory&limit=1000&offset=0"
  },
   "data": [
     {

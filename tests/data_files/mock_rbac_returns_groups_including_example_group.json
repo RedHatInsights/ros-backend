@@ -5,10 +5,10 @@
    "offset": 0
  },
  "links": {
-   "first": "/api/rbac/v1/access/?application=advisor%2Cinventory&limit=7&offset=0",
+   "first": "/api/rbac/v1/access/?application=ros%2Cinventory&limit=1000&offset=0",
    "next": null,
    "previous": null,
-   "last": "/api/rbac/v1/access/?application=advisor%2Cinventory&limit=7&offset=0"
+   "last": "/api/rbac/v1/access/?application=ros%2Cinventory&limit=1000&offset=0"
  },
  "data": [
    {
@@ -20,9 +20,9 @@
        {
          "attributeFilter": {
            "key": "group.id",
+           "_comment": "The example-group id",
            "value": [
              "12345678-fe1b-4191-8408-cbadbd47f7a3",
-             "99999999-d97e-4ed0-9095-ef07d73b4839",
              null
            ],
            "operation": "in"

@@ -162,7 +162,7 @@ def set_host_groups(rbac_response):
     for role in role_list:
         if 'permission' not in role:
             continue
-        if role['permission'] not in ['inventory:hosts:read', 'inventory:hosts:*', 'inventory:*:read']:
+        if role['permission'] not in ['inventory:hosts:read', 'inventory:hosts:*', 'inventory:*:read', 'inventory:*:*']:
             continue
         # ignore the failure modes, try moving on to other roles that
         # also match this permission
@@ -191,6 +191,7 @@ def set_host_groups(rbac_response):
             if not isinstance(value, list):
                 continue
             # Finally, we have the right key: add them to our list
+            # The host_groups may have duplicate group_ids
             host_groups.extend(value)
 
     # If we found any host groups at the end of that, store them

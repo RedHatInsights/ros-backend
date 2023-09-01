@@ -5,10 +5,10 @@
     "offset": 0
   },
   "links": {
-    "first": "/api/rbac/v1/access/?application=inventory&limit=1000&offset=0",
+    "first": "/api/rbac/v1/access/?application=ros%2Cinventory&limit=1000&offset=0",
     "next": null,
     "previous": null,
-    "last": "/api/rbac/v1/access/?application=inventory&limit=1000&offset=0"
+    "last": "/api/rbac/v1/access/?application=ros%2Cinventory&limit=1000&offset=0"
   },
   "data": [
     {
@@ -48,6 +48,7 @@
         {
           "attributeFilter": {
             "key": "group.id",
+            "_comment": "The example-group id",
             "value": [
               "12345678-fe1b-4191-8408-cbadbd47f7a3"
             ],
@@ -76,6 +77,7 @@
         {
           "attributeFilter": {
             "key": "group.id",
+            "_comment": "The foo-group id",
             "value": [
               "d4e2fc0f-617d-49d5-8d1b-acbb423f0fbe"
             ],
