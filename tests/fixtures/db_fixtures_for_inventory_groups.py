@@ -49,8 +49,30 @@ def system_with_test_group():
 
 
 @pytest.fixture
+def system_with_foo_group():
+    system = System(
+        id=4,
+        tenant_id=1,
+        inventory_id='88888888-d97e-4ed0-9095-ef07d73b4839',
+        display_name='ip-181-36-37-38.ap-north-1.compute.internal',
+        fqdn='ip-181-36-37-38.ap-north-1.compute.internal',
+        cloud_provider='aws',
+        instance_type='t2.micro',
+        state='Idling',
+        region='ap-north-1',
+        operating_system={"name": "RHEL", "major": 8, "minor": 9},
+        cpu_states=['CPU_UNDERSIZED', 'CPU_UNDERSIZED_BY_PRESSURE'],
+        io_states=['IO_UNDERSIZED_BY_PRESSURE'],
+        memory_states=['MEMORY_UNDERSIZED', 'MEMORY_UNDERSIZED_BY_PRESSURE'],
+        groups=[{"id": "d4e2fc0f-617d-49d5-8d1b-acbb423f0fbe", "name": "foo-group"}]
+    )
+    db.session.add(system)
+    db.session.commit()
+
+
+@pytest.fixture
 def create_performance_profiles():
-    for sys_id in range(2, 4):
+    for sys_id in range(2, 5):
         db_create_performance_profile(sys_id)
 
 
