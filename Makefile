@@ -20,3 +20,6 @@ api-get-hosts:
 
 configure-xjoin:
 	@./scripts/xjoin-config/configure-xjoin.sh
+
+get-all-suggested-instance-types:
+	curl -v -H "Content-Type: application/json"  -H "x-rh-identity: ${b64_identity}" "localhost:${ROS_API_PORT}/api/ros/v1/suggested_instance_types" | python -m json.tool

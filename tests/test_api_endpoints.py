@@ -728,3 +728,75 @@ def test_generate_suggestions_for_undersized_system(
         assert response.status_code == 200
         assert response.json["meta"]["count"] == 1
         assert response.json["data"][0]["instance_type"] == "t2.medium"
+
+
+@pytest.mark.generate_suggestions
+def test_get_suggested_instance_details(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_undersized_system,
+        db_create_performance_profile_for_undersized,
+        db_create_underpressure_system,
+        db_create_performance_profile_for_underpressure,
+        db_create_idle_system,
+        db_create_performance_profile_for_idle):
+    with app.test_client() as client:
+        response = client.get('/api/ros/v1/suggested_instance_types/t2.medium', headers={"x-rh-identity": auth_token})
+        assert response.status_code == 200
+        assert response.json["meta"]["count"] == 1
+        assert response.json["data"][0]["instance_type"] == "t2.medium"
+        assert response.json["data"][0]["display_name"] == "undersized.ap-south-1.compute.internal"
+
+
+@pytest.mark.generate_suggestions
+def test_get_suggested_instance_details_filtered_by_display_name(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_idle_system,
+        db_create_performance_profile_for_idle,
+        db_create_idle_system_two,
+        db_create_performance_profile_for_idle_two):
+    with app.test_client() as client:
+        response = client.get('/api/ros/v1/suggested_instance_types/t2.nano?display_name=idle.ap-south-1.compute'
+                              '.internal', headers={"x-rh-identity": auth_token})
+        assert response.json["meta"]["count"] == 1
+        assert response.json["data"][0]["instance_type"] == "t2.nano"
+        assert response.json["data"][0]["display_name"] == "idle.ap-south-1.compute.internal"
+
+
+@pytest.mark.generate_suggestions
+def test_get_suggested_instance_details_filtered_by_state(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_idle_system,
+        db_create_performance_profile_for_idle,
+        db_create_idle_system_two,
+        db_create_performance_profile_for_idle_two):
+    with app.test_client() as client:
+        response = client.get('/api/ros/v1/suggested_instance_types/t2.nano?state=idling',
+                              headers={"x-rh-identity": auth_token})
+        assert response.json["meta"]["count"] == 2
+        assert response.json["data"][0]["instance_type"] == "t2.nano"
+        assert response.json["data"][1]["instance_type"] == "t2.nano"
+        assert response.json["data"][0]["state"] == "Idling"
+        assert response.json["data"][1]["state"] == "Idling"
+
+
+@pytest.mark.generate_suggestions
+def test_get_suggested_instance_details_filtered_by_os(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_idle_system,
+        db_create_performance_profile_for_idle,
+        db_create_idle_system_two,
+        db_create_performance_profile_for_idle_two):
+    with app.test_client() as client:
+        response = client.get('/api/ros/v1/suggested_instance_types/t2.nano?os=RHEL 7.4',
+                              headers={"x-rh-identity": auth_token})
+        assert response.json["meta"]["count"] == 1
+        assert response.json["data"][0]["instance_type"] == "t2.nano"
+        assert response.json["data"][0]["os"] == "RHEL 7.4"

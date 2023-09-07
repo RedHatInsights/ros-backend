@@ -3,7 +3,8 @@ from .v1.recommendations import RecommendationsApi
 from .v1.openapi_spec import OpenAPISpec
 from .v1.status import Status
 from .v1.call_to_action import CallToActionApi
-from .v1.suggested_instance_types import SuggestedInstanceTypes
+from .v1.suggested_instance_types import SuggestedInstanceTypes, SuggestedInstanceDetails
+
 from .v1.hosts import (
     HostsApi,
     HostDetailsApi,
@@ -26,3 +27,4 @@ def initialize_routes(api):
     api.add_resource(CallToActionApi, '/api/ros/v1/call_to_action')
     api.add_resource(ExecutiveReportAPI, '/api/ros/v1/executive_report')
     api.add_resource(SuggestedInstanceTypes, '/api/ros/v1/suggested_instance_types')
+    api.add_resource(SuggestedInstanceDetails, '/api/ros/v1/suggested_instance_types/<instance_type>')
