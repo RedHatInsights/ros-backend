@@ -27,3 +27,8 @@ EVENT_TYPE = "new-suggestion"
 class CloudProvider(Enum):
     """Supported cloud providers"""
     AWS = 'aws'
+
+
+class OperatingSystem(Enum):
+    """Supported Operating Systems"""
+    RHEL = 'RHEL'

@@ -38,7 +38,12 @@
       "system_profile": {
         "os_release": "8.4",
         "os_kernel_version": "4.18.0",
-        "satellite_managed": false
+        "satellite_managed": false,
+        "operating_system": {
+          "major": 8,
+          "minor": 0,
+          "name": "RHEL"
+        }
       },
       "culled_timestamp": "2021-12-30T18:38:06.897973+00:00",
       "id": "934c2525-adb7-4cb7-93c1-b45d7f5d44eb",
