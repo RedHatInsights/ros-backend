@@ -10,8 +10,6 @@ def group_filtered_query(query):
     if get_flag_value(FLAG_INVENTORY_GROUPS):
         if len(get_host_groups()) >= 1:
             query = query.filter(System.groups[0]['id'].astext.in_(get_host_groups()) | (System.groups == '[]'))
-        else:
-            query = query.filter((System.groups == '[]'))
     return query
 
 
