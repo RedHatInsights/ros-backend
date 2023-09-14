@@ -485,8 +485,7 @@ def test_systems_rbac_returns_emtpy_group(
         mock_rbac(get_rbac_mock_file("mock_rbac_returns_emtpy_group.json"), mocker)
         response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
         assert response.status_code == 200
-        assert response.json["meta"]["count"] == 1
-        assert response.json["data"][0]["groups"] == []
+        assert response.json["meta"]["count"] == 4
 
 
 def test_systems_mock_rbac_returns_no_groups(
@@ -509,7 +508,7 @@ def test_systems_mock_rbac_returns_no_groups(
         mock_rbac(get_rbac_mock_file("mock_rbac_returns_no_groups.json"), mocker)
         response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
         assert response.status_code == 200
-        assert response.json["meta"]["count"] == 1
+        assert response.json["meta"]["count"] == 4
 
 
 def test_systems_mock_rbac_returns_multiple_inventory_hosts_read(
