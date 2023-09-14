@@ -441,7 +441,7 @@ def mock_unleash_hbi_flag_enabled(mocker):
     mocker.patch('ros.lib.feature_flags.FLAG_FALLBACK_VALUES', return_value={FLAG_INVENTORY_GROUPS: True})
 
 
-def test_systems_rbac_returns_groups_including_example_group(
+def test_systems_rbac_returns_ungrouped_and_example_group(
         auth_token,
         db_setup,
         db_create_account,
@@ -463,6 +463,7 @@ def test_systems_rbac_returns_groups_including_example_group(
         assert response.status_code == 200
         assert response.json["meta"]["count"] == 2
         assert response.json["data"][0]["groups"][0]["name"] == "example-group"
+        assert response.json["data"][1]["groups"] == []
 
 
 def test_systems_rbac_returns_emtpy_group(
@@ -485,7 +486,8 @@ def test_systems_rbac_returns_emtpy_group(
         mock_rbac(get_rbac_mock_file("mock_rbac_returns_emtpy_group.json"), mocker)
         response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
         assert response.status_code == 200
-        assert response.json["meta"]["count"] == 4
+        assert response.json["meta"]["count"] == 1
+        assert response.json["data"][0]["groups"] == []
 
 
 def test_systems_mock_rbac_returns_no_groups(
@@ -511,7 +513,7 @@ def test_systems_mock_rbac_returns_no_groups(
         assert response.json["meta"]["count"] == 4
 
 
-def test_systems_mock_rbac_returns_multiple_inventory_hosts_read(
+def test_systems_multiple_inventory_hosts_read_without_ungrouped(
         auth_token,
         db_setup,
         db_create_account,
@@ -523,16 +525,18 @@ def test_systems_mock_rbac_returns_multiple_inventory_hosts_read(
         create_performance_profiles,
         mocker):
     with app.test_client() as client:
+        mock_unleash_hbi_flag_enabled(mocker)
         mock_enable_rbac(mocker)
         # This mocks example and foo groups
         mock_rbac(get_rbac_mock_file("mock_rbac_returns_multiple_read_permissions.json"), mocker)
-        mock_unleash_hbi_flag_enabled(mocker)
         response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
         assert response.status_code == 200
-        assert response.json["meta"]["count"] == 3
+        assert response.json["meta"]["count"] == 2
+        assert response.json["data"][0]["groups"][0]["name"] == "foo-group"
+        assert response.json["data"][1]["groups"][0]["name"] == "test-group"
 
 
-def test_systems_mock_rbac_returns_multiple_types_of_read_permissions(
+def test_systems_multiple_types_of_read_permissions_without_ungrouped(
         auth_token,
         db_setup,
         db_create_account,
@@ -549,10 +553,38 @@ def test_systems_mock_rbac_returns_multiple_types_of_read_permissions(
         mock_rbac(get_rbac_mock_file("mock_rbac_returns_multiple_types_of_read_permissions.json"), mocker)
         response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
         assert response.status_code == 200
+        assert response.json["meta"]["count"] == 3
+        assert response.json["data"][0]["groups"][0]["name"] == "foo-group"
+        assert response.json["data"][1]["groups"][0]["name"] == "test-group"
+        assert response.json["data"][2]["groups"][0]["name"] == "example-group"
+
+
+def test_systems_multiple_types_of_read_permissions_with_ungrouped(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        system_with_example_group,
+        system_with_test_group,
+        system_with_foo_group,
+        db_create_performance_profile,
+        create_performance_profiles,
+        mocker):
+    with app.test_client() as client:
+        mock_enable_rbac(mocker)
+        # This mocks example, test and foo groups
+        mock_rbac(get_rbac_mock_file("mock_rbac_returns_multiple_types_of_read_permissions_with_ungrouped.json"),
+                  mocker)
+        response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
+        assert response.status_code == 200
         assert response.json["meta"]["count"] == 4
+        assert response.json["data"][0]["groups"][0]["name"] == "foo-group"
+        assert response.json["data"][1]["groups"][0]["name"] == "test-group"
+        assert response.json["data"][2]["groups"][0]["name"] == "example-group"
+        assert response.json["data"][3]["groups"] == []
 
 
-def test_systems_mock_rbac_returns_array_of_groups(
+def test_systems_array_of_groups(
         auth_token,
         db_setup,
         db_create_account,
@@ -569,4 +601,31 @@ def test_systems_mock_rbac_returns_array_of_groups(
         mock_rbac(get_rbac_mock_file("mock_rbac_returns_array_of_groups.json"), mocker)
         response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
         assert response.status_code == 200
+        assert response.json["meta"]["count"] == 3
+        assert response.json["data"][0]["groups"][0]["name"] == "foo-group"
+        assert response.json["data"][1]["groups"][0]["name"] == "test-group"
+        assert response.json["data"][2]["groups"][0]["name"] == "example-group"
+
+
+def test_systems_array_of_groups_with_ungrouped(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        system_with_example_group,
+        system_with_test_group,
+        system_with_foo_group,
+        db_create_performance_profile,
+        create_performance_profiles,
+        mocker):
+    with app.test_client() as client:
+        mock_enable_rbac(mocker)
+        # This mocks example, test and foo groups returned in single array
+        mock_rbac(get_rbac_mock_file("mock_rbac_returns_array_of_groups_with_null.json"), mocker)
+        response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
+        assert response.status_code == 200
         assert response.json["meta"]["count"] == 4
+        assert response.json["data"][0]["groups"][0]["name"] == "foo-group"
+        assert response.json["data"][1]["groups"][0]["name"] == "test-group"
+        assert response.json["data"][2]["groups"][0]["name"] == "example-group"
+        assert response.json["data"][3]["groups"] == []
