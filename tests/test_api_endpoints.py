@@ -4,6 +4,7 @@ import json
 from base64 import b64encode
 from ros.api.main import app
 from ros.lib.feature_flags import FLAG_INVENTORY_GROUPS
+
 from ros.lib.models import db, PerformanceProfile, System
 from tests.helpers.db_helper import db_get_host, db_get_record
 from pathlib import Path
@@ -107,6 +108,7 @@ def test_system_os_filter(auth_token, db_setup, db_create_account, db_create_sys
 
 def test_system_groups(
         auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile, mocker):
+
     with app.test_client() as client:
         response_all_systems = client.get(
             '/api/ros/v1/systems',
@@ -118,6 +120,7 @@ def test_system_groups(
     system = db_get_record(System)
     system.groups = [{
         "id": "12345678-fe1b-4191-8408-cbadbd47f7a3",
+
         "name": "ros-test-3"
     }]
     db.session.commit()
@@ -127,6 +130,7 @@ def test_system_groups(
         mock_rbac(get_rbac_mock_file("mock_rbac_returns_groups_including_example_group.json"), mocker)
 
         mock_unleash_hbi_flag_enabled(mocker)
+
         response_all_systems = client.get(
             '/api/ros/v1/systems',
             headers={"x-rh-identity": auth_token}
@@ -134,6 +138,7 @@ def test_system_groups(
     assert response_all_systems.status_code == 200
     assert response_all_systems.json["data"][0]["groups"] == [{
         "id": "12345678-fe1b-4191-8408-cbadbd47f7a3",
+
         "name": "ros-test-3"
     }]
 
@@ -143,6 +148,7 @@ def test_system_group_filter(
     system = db_get_record(System)
     system.groups = [{
         "id": "12345678-fe1b-4191-8408-cbadbd47f7a3",
+
         "name": "ros-group-test"
     }]
     db.session.commit()
@@ -151,6 +157,7 @@ def test_system_group_filter(
         mock_enable_rbac(mocker)
         mock_rbac(get_rbac_mock_file("mock_rbac_returns_groups_including_example_group.json"), mocker)
         mock_unleash_hbi_flag_enabled(mocker)
+
         response = client.get(
             '/api/ros/v1/systems?group_name=ros-group-test',
             headers={"x-rh-identity": auth_token}

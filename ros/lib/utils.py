@@ -18,6 +18,7 @@ from ros.lib import aws_instance_types
 from ros.processor.metrics import ec2_instance_lookup_failures
 from ros.lib.constants import CloudProvider, OperatingSystem
 
+
 LOG = get_logger(__name__)
 PROCESSOR_INSTANCES = []
 
@@ -104,6 +105,7 @@ def is_valid_operating_system(operating_system):
 
 
 def validate_ros_payload(is_ros, cloud_provider, operating_system):
+
     """
     Validate ros payload.
     :param is_ros: is_ros boolean flag
@@ -111,6 +113,7 @@ def validate_ros_payload(is_ros, cloud_provider, operating_system):
     :return: True if cloud_provider is supported & is_ros is true else False.
     """
     return is_ros and is_valid_cloud_provider(cloud_provider) and is_valid_operating_system(operating_system)
+
 
 
 def cast_iops_as_float(iops_all_dict):
@@ -322,6 +325,7 @@ def system_allowed_in_ros(msg, reporter):
     elif reporter == 'INVENTORY EVENTS':
         cloud_provider = msg["host"]["system_profile"].get("cloud_provider")
         operating_system = msg["host"]["system_profile"].get("operating_system")
+
         # Note that 'is_ros' ONLY available when payload uploaded
         # via insights-client. 'platform_metadata' field not included
         # when the host is updated via the API.
@@ -333,3 +337,4 @@ def system_allowed_in_ros(msg, reporter):
             return is_valid_cloud_provider(cloud_provider)
         is_ros = msg["platform_metadata"].get("is_ros")
     return validate_ros_payload(is_ros, cloud_provider, operating_system)
+

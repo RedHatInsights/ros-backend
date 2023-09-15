@@ -89,6 +89,7 @@ def ensure_has_permission(**kwargs):
 
     rbac_response = query_rbac(kwargs["application"], auth_key, kwargs["logger"])
 
+
     if _is_mgmt_url(request.path):
         return  # allow request
     if auth_key:
@@ -198,3 +199,4 @@ def set_host_groups(rbac_response):
     if host_groups:
         setattr(request, host_group_attr, host_groups)
         LOG.info(f"User has host groups {host_groups}")
+

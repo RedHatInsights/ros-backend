@@ -209,6 +209,7 @@ class HostsApi(Resource):
             filters.append(System.operating_system.in_(modified_operating_systems))
         if get_flag_value(FLAG_INVENTORY_GROUPS) and request.args.getlist('group_name'):
             group_names = request.args.getlist('group_name')
+
             filters.append(System.groups[0]['name'].astext.in_(group_names))
         return filters
 
@@ -303,6 +304,7 @@ class HostDetailsApi(Resource):
         org_id = org_id_from_identity_header(request)
         system_query = group_filtered_query(system_ids_by_org_id(org_id).filter(System.inventory_id == host_id))
 
+
         profile = PerformanceProfile.query.filter(
             PerformanceProfile.system_id.in_(system_query)).first()
 
@@ -365,6 +367,7 @@ class HostHistoryApi(Resource):
 
         org_id = org_id_from_identity_header(request)
         system_query = group_filtered_query(system_ids_by_org_id(org_id).filter(System.inventory_id == host_id))
+
 
         query = PerformanceProfileHistory.query.filter(
             PerformanceProfileHistory.system_id.in_(system_query)

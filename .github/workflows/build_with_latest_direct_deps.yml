@@ -78,6 +78,7 @@ jobs:
 
         [tool.poetry.dependencies]
         python = "~=3.8"
+
         Flask = "*"
         gunicorn = "*"
         flask-restful = "*"
@@ -85,6 +86,7 @@ jobs:
         sqlalchemy = "*"
         psycopg2-binary = "*"
         flask-migrate = "*"
+
         flask-cors = "*"
         confluent-kafka = "*"
         requests = "*"
@@ -97,6 +99,7 @@ jobs:
         watchtower = "*"
         boto3 = "*"
         botocore = "*"
+
         flask-caching = "*"
         flask-unleash = "*"
 
@@ -118,6 +121,7 @@ jobs:
       run: |
         poetry run pip list
 
+
     - name: Lint with flake8
       run: |
         pip install flake8
@@ -127,6 +131,7 @@ jobs:
       run: |
         pip install pytest pytest-cov
         poetry run pytest --cov=ros tests
+
       env:
         DB_NAME: ros_db_test
         DB_HOST: localhost

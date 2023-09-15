@@ -26,6 +26,7 @@ objects:
         image: ${IMAGE}:${IMAGE_TAG}
         command: ["sh"]
         args: ["-c", "export FLASK_APP=manage.py && poetry run flask db upgrade && poetry run flask seed && poetry run gunicorn ros.api.main:app"]
+
         resources:
           requests:
             cpu: ${CPU_REQUEST}
@@ -74,6 +75,7 @@ objects:
                 optional: true
           - name: BYPASS_UNLEASH
             value: ${BYPASS_UNLEASH}
+
 
     - name: inventory-events-processor
       replicas: ${{INVENTORY_PROCESSOR_REPLICA_COUNT}}

@@ -97,6 +97,7 @@ class InsightsEngineConsumer:
             reports = []
             if msg["results"]["reports"] \
                     and isinstance(msg["results"]["reports"], list):
+
                 reports = msg["results"]["reports"]
             ros_reports = [
                 report for report in reports
