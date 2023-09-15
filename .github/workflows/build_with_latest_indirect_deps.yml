@@ -73,7 +73,6 @@ jobs:
       run: |
         poetry run pip list
 
-
     - name: Lint with flake8
       run: |
         pip install flake8
@@ -83,7 +82,6 @@ jobs:
       run: |
         pip install pytest pytest-cov
         poetry run pytest --cov=ros tests
-
       env:
         DB_NAME: ros_db_test
         DB_HOST: localhost

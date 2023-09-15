@@ -7,7 +7,6 @@ from sqlalchemy import exc
 from ros.api.common.add_group_filter import group_filtered_query
 
 
-
 class RecommendationsApi(Resource):
     recommendation_fields = {
         'rule_id': fields.String,
@@ -42,7 +41,6 @@ class RecommendationsApi(Resource):
         filter_description = request.args.get('description')
         system_query = group_filtered_query(system_ids_by_org_id(ident['org_id'], True).
                                             filter(System.inventory_id == host_id))
-
         try:
             system = db.session.execute(system_query).scalar_one()
         except exc.NoResultFound:

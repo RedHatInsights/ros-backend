@@ -1,7 +1,6 @@
 from flask import Flask
 from ros.extensions import db
 from .config import DB_URI, DB_POOL_SIZE, DB_MAX_OVERFLOW, BYPASS_UNLEASH
-
 from flask import request
 from .rbac_interface import ensure_has_permission
 from .config import get_logger
@@ -10,7 +9,6 @@ from ros.lib.feature_flags import init_unleash_app
 # Since we're using flask_sqlalchemy, we must create the flask app in both processor and web api
 
 logger = get_logger(__name__)
-
 
 
 def create_app():
@@ -39,7 +37,6 @@ def create_app():
         )
         fallback_msg += " Feature flag toggles will default to their fallback values."
         logger.warning(fallback_msg)
-
     db.init_app(app)
     migrate = Migrate()
     migrate.init_app(app, db)
