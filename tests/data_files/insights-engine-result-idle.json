@@ -46,7 +46,12 @@
         "system_profile": {
           "os_release": "8.4",
           "os_kernel_version": "4.18.0",
-          "satellite_managed": false
+          "satellite_managed": false,
+          "operating_system": {
+						"major": 8,
+						"minor": 0,
+						"name": "RHEL"
+				  }
         },
         "ip_addresses": [
           "172.31.28.69"
