@@ -25,10 +25,10 @@ docker-compose up --build insights-inventory-web db-ros insights-engine
 
 ## Usage
 Following commands are expected to be run from the repository root (not within the *scripts* directory).
-### Enter the pipenv environment
+### Enter into the poetry(poetry shell) environment
 ```bash
-pipenv install --dev 
-pipenv shell
+poetry install
+poetry shell
 ```
 ### Run ros-api application
 ```

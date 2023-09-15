@@ -4,6 +4,8 @@ from ros.api.modules.recommendations import Recommendation
 from flask_restful import Resource, abort, fields, marshal_with
 from flask import request
 from sqlalchemy import exc
+from ros.api.common.add_group_filter import group_filtered_query
+
 
 
 class RecommendationsApi(Resource):
@@ -38,8 +40,9 @@ class RecommendationsApi(Resource):
         ident = identity(request)['identity']
 
         filter_description = request.args.get('description')
+        system_query = group_filtered_query(system_ids_by_org_id(ident['org_id'], True).
+                                            filter(System.inventory_id == host_id))
 
-        system_query = system_ids_by_org_id(ident['org_id'], True).filter(System.inventory_id == host_id)
         try:
             system = db.session.execute(system_query).scalar_one()
         except exc.NoResultFound:

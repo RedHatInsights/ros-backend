@@ -2,38 +2,12 @@ import datetime
 from dateutil import parser
 import json
 from base64 import b64encode
-
-import pytest
-
 from ros.api.main import app
+from ros.lib.feature_flags import FLAG_INVENTORY_GROUPS
+
 from ros.lib.models import db, PerformanceProfile, System
 from tests.helpers.db_helper import db_get_host, db_get_record
-
-
-@pytest.fixture(scope="session")
-def auth_token():
-    identity = {
-        "identity": {
-            "account_number": "12345",
-            "type": "User",
-            "user": {
-                "username": "tuser@redhat.com",
-                "email": "tuser@redhat.com",
-                "first_name": "test",
-                "last_name": "user",
-                "is_active": True,
-                "is_org_admin": False,
-                "is_internal": True,
-                "locale": "en_US"
-            },
-            "org_id": "000001",
-            "internal": {
-                "org_id": "000001"
-            }
-        }
-    }
-    auth_token = b64encode(json.dumps(identity).encode('utf-8'))
-    return auth_token
+from pathlib import Path
 
 
 def assert_report_date_with_current_date(report_date):
@@ -98,7 +72,6 @@ def test_system_history(auth_token, db_setup, db_create_account,
 
 
 def test_system_no_os(auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile):
-
     # Setting db_record.operating_system to None/null
     system_record = db_get_host('ee0b9978-fe1b-4191-8408-cbadbd47f7a3')
     system_record.operating_system = None
@@ -133,7 +106,9 @@ def test_system_os_filter(auth_token, db_setup, db_create_account, db_create_sys
         assert response.json["data"][0]["os"] == "RHEL 8.4"
 
 
-def test_system_groups(auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile):
+def test_system_groups(
+        auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile, mocker):
+
     with app.test_client() as client:
         response_all_systems = client.get(
             '/api/ros/v1/systems',
@@ -144,32 +119,45 @@ def test_system_groups(auth_token, db_setup, db_create_account, db_create_system
 
     system = db_get_record(System)
     system.groups = [{
-        "id": "fd11209a-1ca7-49b4-ae27-0f8a365b95b8",
+        "id": "12345678-fe1b-4191-8408-cbadbd47f7a3",
+
         "name": "ros-test-3"
     }]
     db.session.commit()
 
     with app.test_client() as client:
+        mock_enable_rbac(mocker)
+        mock_rbac(get_rbac_mock_file("mock_rbac_returns_groups_including_example_group.json"), mocker)
+
+        mock_unleash_hbi_flag_enabled(mocker)
+
         response_all_systems = client.get(
             '/api/ros/v1/systems',
             headers={"x-rh-identity": auth_token}
         )
     assert response_all_systems.status_code == 200
     assert response_all_systems.json["data"][0]["groups"] == [{
-        "id": "fd11209a-1ca7-49b4-ae27-0f8a365b95b8",
+        "id": "12345678-fe1b-4191-8408-cbadbd47f7a3",
+
         "name": "ros-test-3"
     }]
 
 
-def test_system_group_filter(auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile):
+def test_system_group_filter(
+        auth_token, db_setup, db_create_account, db_create_system, db_create_performance_profile, mocker):
     system = db_get_record(System)
     system.groups = [{
-        "id": "fd11209a-1ca7-49b4-ae27-0f8a365b95b8",
+        "id": "12345678-fe1b-4191-8408-cbadbd47f7a3",
+
         "name": "ros-group-test"
     }]
     db.session.commit()
 
     with app.test_client() as client:
+        mock_enable_rbac(mocker)
+        mock_rbac(get_rbac_mock_file("mock_rbac_returns_groups_including_example_group.json"), mocker)
+        mock_unleash_hbi_flag_enabled(mocker)
+
         response = client.get(
             '/api/ros/v1/systems?group_name=ros-group-test',
             headers={"x-rh-identity": auth_token}
@@ -380,6 +368,30 @@ def test_executive_report(
         assert response.json['conditions']['memory']['count'] == 2
 
 
+def test_candidates_region_info_in_executive_report(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        db_create_performance_profile
+):
+    region_info = 'ap-south-1'
+    candidate_type = 't2.micro'
+    with app.test_client() as client:
+        response = client.get(
+            '/api/ros/v1/executive_report',
+            headers={"x-rh-identity": auth_token}
+        )
+        assert response.json
+        assert response.status_code == 200
+        current_section = response.json['instance_types_highlights']['current']
+        first_candidate_from_current = current_section[0]
+
+        assert current_section
+        assert first_candidate_from_current['type'] == candidate_type
+        assert region_info in first_candidate_from_current['desc']
+
+
 def test_psi_enabled(
         auth_token,
         db_setup,
@@ -406,7 +418,7 @@ def test_psi_enabled(
     assert response.json['meta']['non_psi_count'] == 0
 
 
-def test_openapi_endpoint():
+def test_openapi_endpoint(auth_token):
     with open("ros/openapi/openapi.json") as f:
         content_from_file = json.loads(f.read())
         f.close()
@@ -416,3 +428,152 @@ def test_openapi_endpoint():
             headers={"x-rh-identity": auth_token}
         )
         assert response.json == content_from_file
+
+
+def get_rbac_mock_file(filename):
+    with open(f"{Path(__file__).parent}/data_files/{filename}") as f:
+        json_data = json.loads(f.read())
+    return json_data
+
+
+def mock_enable_rbac(mocker):
+    mocker.patch('ros.lib.rbac_interface.ENABLE_RBAC', return_value=True)
+
+
+def mock_rbac(json_data, mocker):
+    mocker.patch('ros.lib.rbac_interface.query_rbac', return_value=json_data)
+
+
+def mock_unleash_hbi_flag_enabled(mocker):
+    mocker.patch('ros.lib.feature_flags.FLAG_FALLBACK_VALUES', return_value={FLAG_INVENTORY_GROUPS: True})
+
+
+def test_systems_rbac_returns_groups_including_example_group(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        system_with_example_group,
+        system_with_test_group,
+        system_with_foo_group,
+        db_create_performance_profile,
+        create_performance_profiles,
+        mocker):
+    """This is to test filtering of system groups when RBAC returns one or more group(s) in response.
+    While filtering based on groups we check if group id we get from are there in the System's group field
+    It is expected that we also return systems which are in no groups"""
+    with app.test_client() as client:
+        mock_unleash_hbi_flag_enabled(mocker)
+        mock_enable_rbac(mocker)
+        mock_rbac(get_rbac_mock_file("mock_rbac_returns_groups_including_example_group.json"), mocker)
+        response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
+        assert response.status_code == 200
+        assert response.json["meta"]["count"] == 2
+        assert response.json["data"][0]["groups"][0]["name"] == "example-group"
+
+
+def test_systems_rbac_returns_emtpy_group(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        system_with_example_group,
+        system_with_test_group,
+        system_with_foo_group,
+        db_create_performance_profile,
+        create_performance_profiles,
+        mocker):
+    """This is to test filtering of system groups when RBAC returns no groups in response however group.id is present.
+    This is the situation when user has no groups created however groups as features in enabled from inventory
+    In this case we can only return the systems which are not included in any of the groups"""
+    with app.test_client() as client:
+        mock_unleash_hbi_flag_enabled(mocker)
+        mock_enable_rbac(mocker)
+        mock_rbac(get_rbac_mock_file("mock_rbac_returns_emtpy_group.json"), mocker)
+        response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
+        assert response.status_code == 200
+        assert response.json["meta"]["count"] == 4
+
+
+def test_systems_mock_rbac_returns_no_groups(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        system_with_example_group,
+        system_with_test_group,
+        system_with_foo_group,
+        db_create_performance_profile,
+        create_performance_profiles,
+        mocker):
+    """This is to test filtering of system groups when RBAC does not return group.id at all.
+    This is the use case where for some reason RBAC does not have group.id included(i.e inventory groups disabled)
+    In this case we return all the systems because we can't find groups as feature enabled"""
+    with app.test_client() as client:
+        mock_unleash_hbi_flag_enabled(mocker)
+        mock_enable_rbac(mocker)
+        mock_rbac(get_rbac_mock_file("mock_rbac_returns_no_groups.json"), mocker)
+        response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
+        assert response.status_code == 200
+        assert response.json["meta"]["count"] == 4
+
+
+def test_systems_mock_rbac_returns_multiple_inventory_hosts_read(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        system_with_example_group,
+        system_with_test_group,
+        system_with_foo_group,
+        db_create_performance_profile,
+        create_performance_profiles,
+        mocker):
+    with app.test_client() as client:
+        mock_enable_rbac(mocker)
+        # This mocks example and foo groups
+        mock_rbac(get_rbac_mock_file("mock_rbac_returns_multiple_read_permissions.json"), mocker)
+        mock_unleash_hbi_flag_enabled(mocker)
+        response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
+        assert response.status_code == 200
+        assert response.json["meta"]["count"] == 3
+
+
+def test_systems_mock_rbac_returns_multiple_types_of_read_permissions(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        system_with_example_group,
+        system_with_test_group,
+        system_with_foo_group,
+        db_create_performance_profile,
+        create_performance_profiles,
+        mocker):
+    with app.test_client() as client:
+        mock_enable_rbac(mocker)
+        # This mocks example, test and foo groups
+        mock_rbac(get_rbac_mock_file("mock_rbac_returns_multiple_types_of_read_permissions.json"), mocker)
+        response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
+        assert response.status_code == 200
+        assert response.json["meta"]["count"] == 4
+
+
+def test_systems_mock_rbac_returns_array_of_groups(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        system_with_example_group,
+        system_with_test_group,
+        system_with_foo_group,
+        db_create_performance_profile,
+        create_performance_profiles,
+        mocker):
+    with app.test_client() as client:
+        mock_enable_rbac(mocker)
+        # This mocks example, test and foo groups returned in single array
+        mock_rbac(get_rbac_mock_file("mock_rbac_returns_array_of_groups.json"), mocker)
+        response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
+        assert response.status_code == 200
+        assert response.json["meta"]["count"] == 4

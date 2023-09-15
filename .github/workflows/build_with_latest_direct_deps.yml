@@ -62,23 +62,23 @@ jobs:
     - run: |
         pip --version
 
-    - name: Install pipenv and update packages
+    - name: Install poetry
       run: |
-        pip install pipenv
+        pip install poetry
+
+    - name: Update all dependencies to latest
+      run: |
         echo "`cat <<EOF
-        [[source]]
-        name = "pypi"
-        url = "https://pypi.org/simple"
-        verify_ssl = true
+        [tool.poetry]
+        name = "ros-backend"
+        version = "2.4.0"
+        description = "Backend for Resource Optimization"
+        readme = "README.md"
+        authors = []
 
-        [dev-packages]
-        flake8 = "*"
-        pytest = "*"
-        sqlalchemy-utils = "*"
-        pytest-mock = "*"
-        pytest-cov = "*"
+        [tool.poetry.dependencies]
+        python = "~=3.8"
 
-        [packages]
         Flask = "*"
         gunicorn = "*"
         flask-restful = "*"
@@ -86,7 +86,7 @@ jobs:
         sqlalchemy = "*"
         psycopg2-binary = "*"
         flask-migrate = "*"
-        flask-script = "*"
+
         flask-cors = "*"
         confluent-kafka = "*"
         requests = "*"
@@ -99,18 +99,28 @@ jobs:
         watchtower = "*"
         boto3 = "*"
         botocore = "*"
-        markupsafe = "*"
-        flask-caching = "*"
 
-        [requires]
-        python_version = "3.8"
-        EOF`" > Pipfile
-        rm -rf Pipfile.lock
-        pipenv install --dev
+        flask-caching = "*"
+        flask-unleash = "*"
+
+        [tool.poetry.group.dev.dependencies]
+        flake8 = "*"
+        pytest = "*"
+        sqlalchemy-utils = "*"
+        pytest-mock = "*"
+        pytest-cov = "*"
+        
+        [build-system]
+        requires = ["poetry-core"]
+        build-backend = "poetry.core.masonry.api"
+        EOF`" > pyproject.toml
+        rm -rf poetry.lock
+        poetry install
 
     - name: Show all installed packages
       run: |
-        pipenv run pip list
+        poetry run pip list
+
 
     - name: Lint with flake8
       run: |
@@ -120,7 +130,8 @@ jobs:
     - name: Test with pytest
       run: |
         pip install pytest pytest-cov
-        pipenv run pytest --cov=ros tests
+        poetry run pytest --cov=ros tests
+
       env:
         DB_NAME: ros_db_test
         DB_HOST: localhost
