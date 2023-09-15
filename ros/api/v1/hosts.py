@@ -6,8 +6,6 @@ from ros.lib.constants import SubStates
 from datetime import datetime, timedelta, timezone
 from sqlalchemy import asc, desc, nullslast, nullsfirst
 from flask_restful import Resource, abort, fields, marshal_with
-from ros.api.common.add_group_filter import group_filtered_query
-from ros.lib.feature_flags import FLAG_INVENTORY_GROUPS, get_flag_value
 
 from ros.lib.models import (
     db,
@@ -35,6 +33,7 @@ from ros.api.common.pagination import (
     build_paginated_system_list_response
 )
 
+
 LOG = logging.getLogger(__name__)
 SYSTEM_STATES_EXCEPT_EMPTY = [
     "Oversized", "Undersized", "Idling", "Under pressure", "Storage rightsizing", "Optimized", "Waiting for data"
@@ -55,7 +54,7 @@ SYSTEM_COLUMNS = [
 class IsROSConfiguredApi(Resource):
     def get(self):
         org_id = org_id_from_identity_header(request)
-        query = group_filtered_query(systems_ids_for_existing_profiles(org_id))
+        query = systems_ids_for_existing_profiles(org_id)
         system_count = query.count()
         systems_with_suggestions = query.filter(PerformanceProfile.number_of_recommendations > 0).count()
         systems_waiting_for_data = query.filter(PerformanceProfile.state == 'Waiting for data').count()
@@ -135,9 +134,9 @@ class HostsApi(Resource):
         # Otherwise you will get an unpredictable subset of the query's rows.
         # Refer - https://www.postgresql.org/docs/13/queries-limit.html
 
-        sys_query = group_filtered_query(system_ids_by_org_id(org_id))
-        system_query = sys_query.filter(*self.build_system_filters())
+        system_query = system_ids_by_org_id(org_id).filter(*self.build_system_filters())
         sort_expression = self.build_sort_expression(order_how, order_by)
+
         query = (
             db.session.query(PerformanceProfile, System, RhAccount)
             .join(System, System.id == PerformanceProfile.system_id)
@@ -165,8 +164,6 @@ class HostsApi(Resource):
                 host['os'] = row.System.deserialize_host_os_data
                 host['report_date'] = row.PerformanceProfile.report_date
                 host['number_of_recommendations'] = row.PerformanceProfile.number_of_recommendations
-                if not get_flag_value(FLAG_INVENTORY_GROUPS):
-                    host['groups'] = []
                 hosts.append(host)
             except Exception as err:
                 LOG.error(
@@ -207,9 +204,7 @@ class HostsApi(Resource):
                 else:
                     abort(400, message='Not a valid RHEL version')
             filters.append(System.operating_system.in_(modified_operating_systems))
-        if get_flag_value(FLAG_INVENTORY_GROUPS) and request.args.getlist('group_name'):
-            group_names = request.args.getlist('group_name')
-
+        if group_names := request.args.getlist('group_name'):
             filters.append(System.groups[0]['name'].astext.in_(group_names))
         return filters
 
@@ -262,10 +257,6 @@ class HostsApi(Resource):
             return (sort_order(PerformanceProfile.report_date),
                     asc(PerformanceProfile.system_id))
 
-        if order_method == 'group_name' and get_flag_value(FLAG_INVENTORY_GROUPS):
-            return (sort_order(System.groups[0]['name']),
-                    asc(PerformanceProfile.system_id),)
-
         abort(403, message="Unexpected sort method {}".format(order_method))
         return None
 
@@ -302,8 +293,8 @@ class HostDetailsApi(Resource):
         user = user_data_from_identity(ident)
         username = user['username'] if 'username' in user else None
         org_id = org_id_from_identity_header(request)
-        system_query = group_filtered_query(system_ids_by_org_id(org_id).filter(System.inventory_id == host_id))
 
+        system_query = system_ids_by_org_id(org_id).filter(System.inventory_id == host_id)
 
         profile = PerformanceProfile.query.filter(
             PerformanceProfile.system_id.in_(system_query)).first()
@@ -366,8 +357,8 @@ class HostHistoryApi(Resource):
             abort(404, message='Invalid host_id, Id should be in form of UUID4')
 
         org_id = org_id_from_identity_header(request)
-        system_query = group_filtered_query(system_ids_by_org_id(org_id).filter(System.inventory_id == host_id))
 
+        system_query = system_ids_by_org_id(org_id).filter(System.inventory_id == host_id)
 
         query = PerformanceProfileHistory.query.filter(
             PerformanceProfileHistory.system_id.in_(system_query)
@@ -395,6 +386,7 @@ class HostHistoryApi(Resource):
 
 
 class ExecutiveReportAPI(Resource):
+
     count_and_percentage = {
         "count": fields.Integer,
         "percentage": fields.Float
@@ -442,8 +434,6 @@ class ExecutiveReportAPI(Resource):
             System.cpu_states,
             System.io_states,
             System.memory_states,
-            System.region,
-            System.groups,
             PerformanceProfile.system_id,
             PerformanceProfile.report_date,
             PerformanceProfile.rule_hit_details,
@@ -454,8 +444,7 @@ class ExecutiveReportAPI(Resource):
             System.id.in_(system_ids_by_org_id(org_id))
         )
 
-        sys_query = group_filtered_query(systems_with_performance_record_queryset)
-        systems_with_performance_record_subquery = sys_query.subquery()
+        systems_with_performance_record_subquery = systems_with_performance_record_queryset.subquery()
 
         # System counts
         total_systems = systems_with_performance_record_queryset.count()
@@ -525,8 +514,7 @@ class ExecutiveReportAPI(Resource):
 
         historical_performance_profiles = db.session.query(
             PerformanceProfileHistory.system_id,
-            PerformanceProfileHistory.rule_hit_details,
-            systems_with_performance_record_subquery.c.region
+            PerformanceProfileHistory.rule_hit_details
         ).join(
             systems_with_performance_record_subquery,
             systems_with_performance_record_subquery.c.system_id == PerformanceProfileHistory.system_id

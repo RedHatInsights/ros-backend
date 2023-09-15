@@ -1,0 +1,177 @@
+apiVersion: v1
+kind: Template
+labels:
+  app: ros
+  template: ros-db
+metadata:
+  name: ros-database-template
+objects:
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    labels:
+      app: ros
+      template: ros-template
+    name: ros-db
+  spec:
+    minReadySeconds: 15
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 9
+    selector:
+      matchLabels:
+        name: ros-db
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          app: ros
+          name: ros-db
+          template: ros-template
+        name: ros-db
+      spec:
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                    - ros
+                  - key: template
+                    operator: In
+                    values:
+                    - ros-template
+                topologyKey: failure-domain.beta.kubernetes.io/zone
+              weight: 100
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                    - ros
+                  - key: template
+                    operator: In
+                    values:
+                    - ros-template
+                topologyKey: kubernetes.io/hostname
+              weight: 99
+        containers:
+        - env:
+          - name: POSTGRESQL_USER
+            valueFrom:
+              secretKeyRef:
+                key: db.user
+                name: ros-db
+          - name: POSTGRESQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: db.password
+                name: ros-db
+          - name: POSTGRESQL_DATABASE
+            valueFrom:
+              secretKeyRef:
+                key: db.name
+                name: ros-db
+          image: registry.access.redhat.com/rhscl/postgresql-96-rhel7
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            exec:
+              command:
+              - /usr/libexec/check-container
+              - --live
+            failureThreshold: 3
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 10
+          name: ros-db
+          ports:
+          - containerPort: 5432
+            protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+              - /usr/libexec/check-container
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: ${POSTGRESQL_CPU_LIMIT}
+              memory: ${POSTGRESQL_MEMORY_LIMIT}
+            requests:
+              cpu: ${POSTGRESQL_CPU_REQUEST}
+              memory: ${POSTGRESQL_MEMORY_REQUEST}
+          volumeMounts:
+          - mountPath: /var/lib/pgsql/data
+            name: ros-db-data
+        imagePullSecrets:
+        - name: quay-cloudservices-pull
+        - name: rh-registry-pull
+        volumes:
+        - name: ros-db-data
+          persistentVolumeClaim:
+            claimName: ros-db
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    labels:
+      app: ros
+      template: ros-template
+    name: ros-db
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ${VOLUME_CAPACITY}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: Exposes the database server
+    labels:
+      app: ros
+      template: ros-template
+    name: ros-db
+  spec:
+    ports:
+    - name: ros-db
+      port: 5432
+      protocol: TCP
+      targetPort: 5432
+    selector:
+      name: ros-db
+parameters:
+- description: Initial amount of memory the PostgreSQL container will request.
+  displayName: Memory Request (PostgreSQL)
+  name: POSTGRESQL_MEMORY_REQUEST
+  required: true
+  value: 1Gi
+- description: Maximum amount of memory the PostgreSQL container can use.
+  displayName: Memory Limit (PostgreSQL)
+  name: POSTGRESQL_MEMORY_LIMIT
+  required: true
+  value: 1Gi
+- description: Initial amount of CPU the build container will request.
+  displayName: CPU Request
+  name: POSTGRESQL_CPU_REQUEST
+  required: true
+  value: 500m
+- description: Maximum amount of CPU the build container can use.
+  displayName: CPU Limit
+  name: POSTGRESQL_CPU_LIMIT
+  required: true
+  value: '1'
+- description: Volume space available for data, e.g. 512Mi, 2Gi
+  displayName: Volume Capacity
+  name: VOLUME_CAPACITY
+  required: true
+  value: 10Gi

@@ -1,0 +1,195 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: ros-processor-deployment-config
+objects:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: ros-processor
+    name: ros-processor
+  spec:
+    ports:
+    - name: metrics
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+    selector:
+      app: ros-processor
+    type: ClusterIP
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    labels:
+      app: ros-processor
+    name: ros-processor
+  spec:
+    minReadySeconds: 15
+    progressDeadlineSeconds: 600
+    replicas: ${{MINIMUM_REPLICAS}}
+    revisionHistoryLimit: 9
+    selector:
+      matchLabels:
+        app: ros-processor
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        annotations:
+          prometheus.io/path: /metrics
+          prometheus.io/port: '9000'
+          prometheus.io/scrape: 'true'
+        labels:
+          app: ros-processor
+        name: ros-processor
+      spec:
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                    - ros-processor
+                topologyKey: failure-domain.beta.kubernetes.io/zone
+              weight: 100
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                    - ros-processor
+                topologyKey: kubernetes.io/hostname
+              weight: 99
+        containers:
+        - args:
+          - -c
+          - python -m manage db upgrade && python -m manage seed && python -m ros.processor.main
+          command:
+          - bash
+          env:
+          - name: INVENTORY_HOST
+            value: ${HOST_INVENTORY_HOST}
+          - name: INVENTORY_PORT
+            value: '8080'
+          - name: INSIGHTS_KAFKA_HOST
+            value: ${KAFKA_BOOTSTRAP_HOST}
+          - name: INSIGHTS_KAFKA_PORT
+            value: ${KAFKA_BOOTSTRAP_PORT}
+          - name: METRICS_PORT
+            value: ${METRICS_PORT}
+          - name: ROS_DB_USER
+            valueFrom:
+              secretKeyRef:
+                key: db.user
+                name: ros-db
+                optional: false
+          - name: ROS_DB_PASS
+            valueFrom:
+              secretKeyRef:
+                key: db.password
+                name: ros-db
+                optional: false
+          - name: ROS_DB_HOST
+            valueFrom:
+              secretKeyRef:
+                key: db.host
+                name: ros-db
+                optional: false
+          - name: ROS_DB_PORT
+            valueFrom:
+              secretKeyRef:
+                key: db.port
+                name: ros-db
+                optional: false
+          - name: ROS_DB_NAME
+            valueFrom:
+              secretKeyRef:
+                key: db.name
+                name: ros-db
+                optional: false
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                key: aws_access_key_id
+                name: cloudwatch
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                key: aws_secret_access_key
+                name: cloudwatch
+          - name: AWS_REGION_NAME
+            valueFrom:
+              secretKeyRef:
+                key: aws_region
+                name: cloudwatch
+          - name: AWS_LOG_GROUP
+            valueFrom:
+              secretKeyRef:
+                key: log_group_name
+                name: cloudwatch
+          - name: CW_ENABLED
+            value: ${CW_ENABLED}
+          image: quay.io/cloudservices/ros-backend:${IMAGE_TAG}
+          name: ros-processor
+          ports:
+          - containerPort: ${{METRICS_PORT}}
+            name: metrics
+            protocol: TCP
+          resources:
+            limits:
+              cpu: ${CPU_LIMIT}
+              memory: ${MEMORY_LIMIT}
+            requests:
+              cpu: ${CPU_REQUEST}
+              memory: ${MEMORY_REQUEST}
+        imagePullSecrets:
+        - name: quay-cloudservices-pull
+        - name: rh-registry-pull
+parameters:
+- name: HOST_INVENTORY_HOST
+  required: true
+  value: insights-inventory.platform-ci.svc
+- name: KAFKA_BOOTSTRAP_HOST
+  required: true
+  value: platform-mq-ci-kafka-bootstrap.platform-mq-ci.svc.cluster.local
+- name: KAFKA_BOOTSTRAP_PORT
+  required: true
+  value: '9092'
+- description: Minimum Replicas for Autoscaling
+  displayName: Minimum Replicas
+  name: MINIMUM_REPLICAS
+  required: true
+  value: '1'
+- description: Initial cpu request.
+  displayName: CPU Request
+  name: CPU_REQUEST
+  required: true
+  value: 500m
+- description: Initial amount of memory the container will request.
+  displayName: Memory Request
+  name: MEMORY_REQUEST
+  required: true
+  value: 1Gi
+- description: Maximum amount of memory the Django container can use.
+  displayName: Memory Limit
+  name: MEMORY_LIMIT
+  required: true
+  value: 1Gi
+- description: Maximum amount of CPU the build container can use.
+  displayName: CPU Limit
+  name: CPU_LIMIT
+  required: true
+  value: '1'
+- name: METRICS_PORT
+  value: '9000'
+- description: Image tag
+  name: IMAGE_TAG
+  required: true
+- name: CW_ENABLED
+  description: Cloudwatch logging flag
+  value: 'True'

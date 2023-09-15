@@ -16,8 +16,7 @@ from ros.lib.models import (
 from ros.lib.config import get_logger
 from ros.lib import aws_instance_types
 from ros.processor.metrics import ec2_instance_lookup_failures
-from ros.lib.constants import CloudProvider, OperatingSystem
-
+from ros.lib.constants import CloudProvider
 
 LOG = get_logger(__name__)
 PROCESSOR_INSTANCES = []
@@ -97,23 +96,14 @@ def is_valid_cloud_provider(cloud_provider):
     return cloud_provider in [provider.value for provider in CloudProvider]
 
 
-def is_valid_operating_system(operating_system):
-    """
-    Validates operating_system value.
-    """
-    return operating_system["name"] in [os.value for os in OperatingSystem]
-
-
-def validate_ros_payload(is_ros, cloud_provider, operating_system):
-
+def validate_ros_payload(is_ros, cloud_provider):
     """
     Validate ros payload.
     :param is_ros: is_ros boolean flag
     :param cloud_provider: cloud provider value
     :return: True if cloud_provider is supported & is_ros is true else False.
     """
-    return is_ros and is_valid_cloud_provider(cloud_provider) and is_valid_operating_system(operating_system)
-
+    return is_ros and is_valid_cloud_provider(cloud_provider)
 
 
 def cast_iops_as_float(iops_all_dict):
@@ -217,85 +207,46 @@ def get_psi_count(queryset: db.Model, bool_flag: bool) -> int:
     ).count()
 
 
-def instance_type_info_by_name(instance_type_name, cloud_provider):
-    """Returns dict with metadata of instance type from static data."""
-    instance_type_properties = None
+def generate_highlight_description(instance_type, cloud_provider):
+    instance_type_properties, cpu_type, num_vcpus, ram_gb, cloud_regions = None, None, None, None, None
     if cloud_provider == 'AWS':
-        instance_type_properties = aws_instance_types.INSTANCE_TYPES.get(
-            instance_type_name, None)
+        instance_type_properties = aws_instance_types.INSTANCE_TYPES.get(instance_type, None)
         if instance_type_properties is None:
             # logging lookup failure on Prometheus
             ec2_instance_lookup_failures.labels(reporter='API Events').inc()
-    return instance_type_properties
+            return 'NA'
 
-
-def generate_highlight_description(instance_type, cloud_provider, regions):
-    """Returns string that is description against instance type."""
-    instance_type_properties = instance_type_info_by_name(
-        instance_type, cloud_provider)
-    regions_info = ",".join(regions) + ' regions' if regions else ''
-
-    if instance_type_properties is not None:
         cpu_type = instance_type_properties['extra']['physicalProcessor']
         num_vcpus = instance_type_properties['extra']['vcpu']
         ram_gb = instance_type_properties['extra']['memory']
-        description_text = f'{cpu_type} instance with {num_vcpus} vCPUs ' \
-                           f'and {ram_gb} of RAM, running on {cloud_provider} ' \
-                           f'{regions_info}'
-        return description_text
+        cloud_regions = instance_type_properties['extra']['regionCode']
 
-    return 'NA'
+    description_text = f'{cpu_type} instance with {num_vcpus} vCPUs ' \
+                       f'and {ram_gb} of RAM, running on {cloud_provider} ' \
+                       f'{cloud_regions} regions'
 
-
-def is_current_section(section):
-    """
-        Returns true when section is current
-        otherwise false for rest sections.
-    """
-    return section == 'current'
-
-
-def find_instance_type(section, record):
-    """Get instance type by current, suggested & historical section."""
-    instance_type = None
-    try:
-        if is_current_section(section):
-            instance_type = record.rule_hit_details[0]['details']['instance_type']
-        else:
-            instance_type = record.rule_hit_details[0]['details']['candidates'][0][0]
-    except (IndexError, KeyError):
-        instance_type = None
-
-    if is_current_section(section):
-        return (instance_type if instance_type else record.instance_type)
-
-    return instance_type
-
-
-def find_candidates_and_regions(highlight_type, dataset):
-    """Find candidates by highlight_type & regions per candidate ."""
-    instance_candidates, regions = [], {}
-    for record in dataset:
-        instance_type = find_instance_type(highlight_type, record)
-        if instance_type is None:
-            continue
-        instance_candidates.append(instance_type)
-        if instance_type not in regions:
-            regions[instance_type] = []
-        if record.region not in regions[instance_type]:
-            regions[instance_type].append(record.region)
-
-    return instance_candidates, regions
+    return description_text
 
 
 def highlights_instance_types(queryset, highlight_type):
-    values_dict, highlights_list = {}, []
-    candidates, regions_by_type = find_candidates_and_regions(
-        highlight_type, queryset)
+    instance_candidates, values_dict, highlights_list = [], {}, []
+    if highlight_type == 'current':
+        for record in queryset:
+            try:
+                _instance_type = record.rule_hit_details[0]['details']['instance_type']
+            except (IndexError, KeyError):
+                _instance_type = None
+            instance_candidates.append(_instance_type if _instance_type else record.instance_type)
+    elif highlight_type in ['suggested', 'historical']:
+        for _record in queryset:
+            try:
+                instance_candidates.append(_record.rule_hit_details[0]['details']['candidates'][0][0])
+            except (IndexError, KeyError):
+                continue
 
-    if candidates:
+    if instance_candidates:
         # Creates a dict with {value: count} values sorts the same, DESC order
-        values_dict = dict(sorted(Counter(candidates).items(), key=lambda x: x[1], reverse=True))
+        values_dict = dict(sorted(Counter(instance_candidates).items(), key=lambda x: x[1], reverse=True))
 
     item_count = 1
     for key, value in values_dict.items():
@@ -306,8 +257,7 @@ def highlights_instance_types(queryset, highlight_type):
             "type": key,
             "count": value,
             # file will differ w.r.t. instance_type properties as per cloud_provider value
-            "desc": generate_highlight_description(
-                key, 'AWS', regions_by_type.get(key))
+            "desc": generate_highlight_description(key, 'AWS')
         })
         item_count += 1
 
@@ -317,15 +267,11 @@ def highlights_instance_types(queryset, highlight_type):
 def system_allowed_in_ros(msg, reporter):
     is_ros = False
     cloud_provider = ''
-    operating_system = ''
     if reporter == 'INSIGHTS ENGINE':
         is_ros = msg["input"]["platform_metadata"].get("is_ros")
-        cloud_provider = msg["results"]["system"]["metadata"].get("cloud_provider")
-        operating_system = msg["input"]["host"]["system_profile"].get("operating_system")
+        cloud_provider = msg["results"]["system"]["metadata"].get('cloud_provider')
     elif reporter == 'INVENTORY EVENTS':
-        cloud_provider = msg["host"]["system_profile"].get("cloud_provider")
-        operating_system = msg["host"]["system_profile"].get("operating_system")
-
+        cloud_provider = msg['host']['system_profile'].get('cloud_provider')
         # Note that 'is_ros' ONLY available when payload uploaded
         # via insights-client. 'platform_metadata' field not included
         # when the host is updated via the API.
@@ -336,5 +282,4 @@ def system_allowed_in_ros(msg, reporter):
         ):
             return is_valid_cloud_provider(cloud_provider)
         is_ros = msg["platform_metadata"].get("is_ros")
-    return validate_ros_payload(is_ros, cloud_provider, operating_system)
-
+    return validate_ros_payload(is_ros, cloud_provider)
