@@ -6,33 +6,6 @@ from ros.lib.app import app
 from ros.extensions import db
 from sqlalchemy_utils import database_exists, create_database, drop_database
 from ros.lib.models import RhAccount, System, PerformanceProfile, Rule, PerformanceProfileHistory
-from base64 import b64encode
-
-
-@pytest.fixture(scope="session")
-def auth_token():
-    identity = {
-        "identity": {
-            "account_number": "12345",
-            "type": "User",
-            "user": {
-                "username": "tuser@redhat.com",
-                "email": "tuser@redhat.com",
-                "first_name": "test",
-                "last_name": "user",
-                "is_active": True,
-                "is_org_admin": False,
-                "is_internal": True,
-                "locale": "en_US"
-            },
-            "org_id": "000001",
-            "internal": {
-                "org_id": "000001"
-            }
-        }
-    }
-    auth_token = b64encode(json.dumps(identity).encode('utf-8'))
-    return auth_token
 
 
 @pytest.fixture(scope="session")

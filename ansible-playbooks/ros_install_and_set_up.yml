@@ -34,7 +34,7 @@
       lineinfile:
         dest: /etc/pcp/pmlogger/control.d/local
         regexp: ".*config.ros.*"
-        line: "LOCALHOSTNAME	n   n	PCP_LOG_DIR/pmlogger/ros	-r -T24h10m -c config.ros -v 100Mb"
+        line: "LOCALHOSTNAME	n   y	PCP_LOG_DIR/pmlogger/ros	-r -T24h10m -c config.ros -v 100Mb"
         create: yes
 
     - name: Create pcp configuration file for ROS

@@ -865,8 +865,7 @@
                         "number_of_suggestions",
                         "state",
                         "os",
-                        "report_date",
-                        "group_name"
+                        "report_date"
                     ]
                 }
             },

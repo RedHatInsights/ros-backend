@@ -60,19 +60,15 @@ jobs:
     - run: |
         pip --version
 
-    - name: Install poetry
+    - name: Install pipenv and update packages
       run: |
-        pip install poetry
-
-    - name: Update indirect dependencies to latest
-      run: |
-        rm -rf poetry.lock
-        poetry update
+        pip install pipenv
+        rm -rf Pipfile.lock
+        pipenv update --dev
 
     - name: Show all installed packages
       run: |
-        poetry run pip list
-
+        pipenv run pip list
 
     - name: Lint with flake8
       run: |
@@ -82,8 +78,7 @@ jobs:
     - name: Test with pytest
       run: |
         pip install pytest pytest-cov
-        poetry run pytest --cov=ros tests
-
+        pipenv run pytest --cov=ros tests
       env:
         DB_NAME: ros_db_test
         DB_HOST: localhost

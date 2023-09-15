@@ -34,7 +34,7 @@ def test_identity(mocker):
 
 
 def test_user_data_from_identity():
-    identity_obj = {"internal": {"org_id": "001122"}, "account_number": "000", "auth_type": "jwt-auth",
+    identity_obj = {"internal": {"org_id": "001122"}, "account_number": "000", "auth_type": "basic-auth",
                     "user": {"is_active": "true", "user_id": "123123"}, "type": "User"}
     expected_result = {"is_active": "true", "user_id": "123123"}
     result = utils.user_data_from_identity(identity_obj)
