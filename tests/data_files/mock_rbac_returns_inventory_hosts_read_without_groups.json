@@ -1,0 +1,53 @@
+{
+  "meta": {
+    "count": 5,
+    "limit": 1000,
+    "offset": 0
+  },
+  "links": {
+
+    "first": "/api/rbac/v1/access/?application=ros%2Cinventory&limit=1000&offset=0",
+    "next": null,
+    "previous": null,
+    "last": "/api/rbac/v1/access/?application=ros%2Cinventory&limit=1000&offset=0"
+  },
+  "data": [
+    {
+      "resourceDefinitions": [],
+      "permission": "ros:*:*"
+    },
+    {
+      "resourceDefinitions": [
+        {
+          "attributeFilter": {
+            "key": "group.id",
+            "value": [
+              "12345678-fe1b-4191-8408-cbadbd47f7a3"
+            ],
+            "operation": "in"
+          }
+        }
+      ],
+      "permission": "inventory:groups:read"
+    },
+    {
+      "resourceDefinitions": [],
+      "permission": "inventory:hosts:read"
+    },
+    {
+      "resourceDefinitions": [
+        {
+          "attributeFilter": {
+            "key": "group.id",
+            "_comment": "The test-group id",
+            "value": [
+              "abcdefgh-d97e-4ed0-9095-ef07d73b4839"
+            ],
+            "operation": "in"
+          }
+        }
+      ],
+      "permission": "inventory:hosts:read"
+    }
+  ]
+}
