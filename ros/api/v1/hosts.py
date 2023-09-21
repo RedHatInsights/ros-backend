@@ -7,7 +7,6 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import asc, desc, nullslast, nullsfirst
 from flask_restful import Resource, abort, fields, marshal_with
 from ros.api.common.add_group_filter import group_filtered_query
-from ros.lib.feature_flags import FLAG_INVENTORY_GROUPS, get_flag_value
 
 from ros.lib.models import (
     db,
@@ -164,8 +163,6 @@ class HostsApi(Resource):
                 host['os'] = row.System.deserialize_host_os_data
                 host['report_date'] = row.PerformanceProfile.report_date
                 host['number_of_recommendations'] = row.PerformanceProfile.number_of_recommendations
-                if not get_flag_value(FLAG_INVENTORY_GROUPS):
-                    host['groups'] = []
                 hosts.append(host)
             except Exception as err:
                 LOG.error(
@@ -206,7 +203,7 @@ class HostsApi(Resource):
                 else:
                     abort(400, message='Not a valid RHEL version')
             filters.append(System.operating_system.in_(modified_operating_systems))
-        if get_flag_value(FLAG_INVENTORY_GROUPS) and request.args.getlist('group_name'):
+        if request.args.getlist('group_name'):
             group_names = request.args.getlist('group_name')
             filters.append(System.groups[0]['name'].astext.in_(group_names))
         return filters
@@ -260,7 +257,7 @@ class HostsApi(Resource):
             return (sort_order(PerformanceProfile.report_date),
                     asc(PerformanceProfile.system_id))
 
-        if order_method == 'group_name' and get_flag_value(FLAG_INVENTORY_GROUPS):
+        if order_method == 'group_name':
             return (sort_order(System.groups[0]['name']),
                     asc(PerformanceProfile.system_id),)
 
