@@ -12,6 +12,7 @@ AUTH_HEADER_NAME = "X-RH-IDENTITY"
 VALID_HTTP_VERBS = ["get", "options", "head", "post", "put", "patch", "delete"]
 LOG = get_logger(__name__)
 host_group_attr = 'host_groups'
+access_all_systems = 'able_to_access_all_systems'
 
 
 def fetch_url(url, auth_header, logger, method="get"):
@@ -157,19 +158,27 @@ def set_host_groups(rbac_response):
         return
 
     role_list = rbac_response['data']
-    host_groups = []
-
+    host_groups = set()
+    able_to_access_all_systems = False
     for role in role_list:
         if 'permission' not in role:
             continue
         if role['permission'] not in ['inventory:hosts:read', 'inventory:hosts:*', 'inventory:*:read', 'inventory:*:*']:
             continue
+
         # ignore the failure modes, try moving on to other roles that
         # also match this permission
         if 'resourceDefinitions' not in role:
             continue
         if not isinstance(role['resourceDefinitions'], list):
             continue
+
+        if len(role['resourceDefinitions']) == 0 and role['permission'] in ['inventory:hosts:*', 'inventory:hosts:read',
+                                                                            'inventory:*:*', 'inventory:*:read']:
+            able_to_access_all_systems = True
+            # If user is inventory or hosts admin then we break the loop and don't check for next roles
+            break
+
         for rscdef in role['resourceDefinitions']:
             if not isinstance(rscdef, dict):
                 continue
@@ -192,9 +201,12 @@ def set_host_groups(rbac_response):
                 continue
             # Finally, we have the right key: add them to our list
             # The host_groups may have duplicate group_ids
-            host_groups.extend(value)
+            host_groups.update(value)
 
     # If we found any host groups at the end of that, store them
     if host_groups:
         setattr(request, host_group_attr, host_groups)
         LOG.info(f"User has host groups {host_groups}")
+
+    # Set admin even if we don't find it true
+    setattr(request, access_all_systems, able_to_access_all_systems)

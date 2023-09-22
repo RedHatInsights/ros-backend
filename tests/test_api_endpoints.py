@@ -629,3 +629,33 @@ def test_systems_array_of_groups_with_ungrouped(
         assert response.json["data"][1]["groups"][0]["name"] == "test-group"
         assert response.json["data"][2]["groups"][0]["name"] == "example-group"
         assert response.json["data"][3]["groups"] == []
+
+
+def test_access_of_all_systems(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        system_with_example_group,
+        system_with_test_group,
+        system_with_foo_group,
+        db_create_performance_profile,
+        create_performance_profiles,
+        mocker):
+    """When user has 'inventory:hosts:*' or 'inventory:hosts:read' or 'inventory:*:*' or 'inventory:*:read' permissions
+     and resource definition does not have any groups it means user can see all the systems on ROS"""
+    with app.test_client() as client:
+        mock_enable_rbac(mocker)
+        rbac_mocks = ['mock_rbac_returns_inventory_hosts_star_without_groups.json',
+                      'mock_rbac_returns_inventory_hosts_read_without_groups.json',
+                      'mock_rbac_returns_inventory_star_star_without_groups.json',
+                      'mock_rbac_returns_inventory_star_read_without_groups.json']
+        for mocks in rbac_mocks:
+            mock_rbac(get_rbac_mock_file(mocks), mocker)
+            response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
+            assert response.status_code == 200
+            assert response.json["meta"]["count"] == 4
+            assert response.json["data"][0]["groups"][0]["name"] == "foo-group"
+            assert response.json["data"][1]["groups"][0]["name"] == "test-group"
+            assert response.json["data"][2]["groups"][0]["name"] == "example-group"
+            assert response.json["data"][3]["groups"] == []
