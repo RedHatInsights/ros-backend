@@ -158,7 +158,7 @@ def set_host_groups(rbac_response):
         return
 
     role_list = rbac_response['data']
-    host_groups = []
+    host_groups = set()
     able_to_access_all_systems = False
     for role in role_list:
         if 'permission' not in role:
@@ -201,7 +201,7 @@ def set_host_groups(rbac_response):
                 continue
             # Finally, we have the right key: add them to our list
             # The host_groups may have duplicate group_ids
-            host_groups.extend(value)
+            host_groups.update(value)
 
     # If we found any host groups at the end of that, store them
     if host_groups:
