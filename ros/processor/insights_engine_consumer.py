@@ -1,5 +1,4 @@
-import json
-from ros.lib import consume, produce
+from ros.lib import produce
 from ros.lib.app import app
 from ros.extensions import db
 from datetime import datetime, timezone
@@ -54,6 +53,7 @@ class InsightsEngineConsumer(RosConsumer):
             decoded_msg = self.decode_and_load_json(msg)
             self.try_to_handle_msg(self.handle_msg(decoded_msg),
                                    org_id(decoded_msg))
+        self.consumer.close()
 
     def handle_msg(self, msg):
         if system_allowed_in_ros(msg, self.reporter):
@@ -207,7 +207,7 @@ class InsightsEngineConsumer(RosConsumer):
     ):
         if system_previous_state is not None:
             if system_current_state not in (SYSTEM_STATES['OPTIMIZED'], system_previous_state):
-                LOG.info(
+                self.LOG.info(
                     f"{self.prefix} - Triggering a new suggestion event for the system: {inventory_id} belonging"
                     f" to account: {account.account} ({account.id}) and org_id: {account.org_id}"
                 )

@@ -1,5 +1,3 @@
-import json
-from ros.lib import consume
 from ros.lib.app import app
 from ros.extensions import db
 from ros.lib.utils import get_or_create, system_allowed_in_ros, update_system_record
@@ -53,6 +51,7 @@ class InventoryEventsConsumer(RosConsumer):
                 self.LOG.info(
                     f"{self.prefix} - Event Handling is not found for event {event_type}"
                 )
+        self.consumer.close()
 
     def host_delete_event(self, msg):
         """Process delete message."""
