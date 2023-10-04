@@ -10,6 +10,7 @@ from ros.processor.process_archive import get_performance_profile
 from ros.processor.event_producer import new_suggestion_event
 from ros.lib.cw_logging import commence_cw_log_streaming
 from prometheus_client import start_http_server
+from ros.lib.constants import SystemStatesWithKeys
 from ros.lib.utils import (
     get_or_create,
     cast_iops_as_float,
@@ -20,16 +21,6 @@ from ros.processor.metrics import (processor_requests_success,
                                    processor_requests_failures,
                                    kafka_failures)
 
-SYSTEM_STATES = {
-    "INSTANCE_OVERSIZED": "Oversized",
-    "INSTANCE_UNDERSIZED": "Undersized",
-    "INSTANCE_IDLE": "Idling",
-    "INSTANCE_OPTIMIZED_UNDER_PRESSURE": "Under pressure",
-    "STORAGE_RIGHTSIZING": "Storage rightsizing",
-    "OPTIMIZED": "Optimized",
-    "NO_PCP_DATA": "Waiting for data"
-}
-OPTIMIZED_SYSTEM_KEY = "OPTIMIZED"
 LOG = get_logger(__name__)
 
 producer = None
@@ -115,17 +106,17 @@ class InsightsEngineConsumer:
                 )
                 if len(reports) == 0:
                     rec_count = len(reports)
-                    state_key = OPTIMIZED_SYSTEM_KEY
+                    state_key = SystemStatesWithKeys.OPTIMIZED_SYSTEM.value
                     LOG.info(
                         f"{self.prefix} - No ROS rule hits found for system with inventory id: {host['id']}. "
-                        f"Hence, marking the state as {SYSTEM_STATES[state_key]}."
+                        f"Hence, marking the state as {SystemStatesWithKeys.SYSTEM_STATES.value[state_key]}."
                     )
                 else:
                     state_key = reports[0].get('key')
                     rec_count = 0 if state_key == 'NO_PCP_DATA' else len(reports)
                     LOG.info(
                         f"{self.prefix} - Marking the state of system with "
-                        f"inventory id: {host['id']} as {SYSTEM_STATES[state_key]}"
+                        f"inventory id: {host['id']} as {SystemStatesWithKeys.SYSTEM_STATES.value[state_key]}"
                     )
 
                 # get previous state of the system
@@ -137,7 +128,7 @@ class InsightsEngineConsumer:
                     'inventory_id': host['id'],
                     'display_name': host['display_name'],
                     'fqdn': host['fqdn'],
-                    'state': SYSTEM_STATES[state_key],
+                    'state': SystemStatesWithKeys.SYSTEM_STATES.value[state_key],
                     'instance_type': performance_record.get('instance_type'),
                     'region': performance_record.get('region'),
                     'cloud_provider': system_metadata.get('cloud_provider'),
@@ -198,7 +189,7 @@ class InsightsEngineConsumer:
                     "report_date": datetime.now(timezone.utc),
                     "rule_hit_details": reports,
                     "number_of_recommendations": -1 if state_key == 'NO_PCP_DATA' else rec_count,
-                    "state": SYSTEM_STATES[state_key],
+                    "state": SystemStatesWithKeys.SYSTEM_STATES.value[state_key],
                     "operating_system": system.operating_system,
                     'psi_enabled': system_metadata.get('psi_enabled'),
                 }
@@ -234,7 +225,10 @@ class InsightsEngineConsumer:
             self, inventory_id, account, host, platform_metadata, system_previous_state, system_current_state
     ):
         if system_previous_state is not None:
-            if system_current_state not in (SYSTEM_STATES['OPTIMIZED'], system_previous_state):
+            if system_current_state not in (
+                SystemStatesWithKeys.SYSTEM_STATES.value['OPTIMIZED'],
+                system_previous_state
+            ):
                 LOG.info(
                     f"{self.prefix} - Triggering a new suggestion event for the system: {inventory_id} belonging"
                     f" to account: {account.account} ({account.id}) and org_id: {account.org_id}"

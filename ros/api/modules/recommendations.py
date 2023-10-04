@@ -1,25 +1,10 @@
 """
 Custom readonly class for Recommendation
 """
-from ros.lib.config import INSTANCE_PRICE_UNIT
-
-
-NEWLINE_SEPARATOR = '\n'
-RULES_COLUMNS = ['rule_id', 'description', 'reason', 'resolution', 'condition']
-
-ROSSUMMARY = dict(
-    OPTIMIZED='System is OPTIMIZED',
-    MEMORY_OVERSIZED='Memory utilization is very low',
-    MEMORY_UNDERSIZED='Memory utilization is too high',
-    MEMORY_UNDERSIZED_BY_PRESSURE='System is suffering from memory pressure',
-    CPU_OVERSIZED='CPU utilization is very low',
-    CPU_UNDERSIZED='CPU utilization is too high',
-    CPU_UNDERSIZED_BY_PRESSURE='System is suffering from CPU pressure',
-    IO_OVERSIZED='I/O utilization is very low',
-    IO_UNDERSIZED='I/O utilization is too high',
-    IO_UNDERSIZED_BY_PRESSURE='System is suffering from IO pressure',
-    IDLE='System is IDLE',
-)
+from ros.lib.constants import (
+        RosSummary, INSTANCE_PRICE_UNIT,
+        NEWLINE_SEPARATOR, RULES_COLUMNS
+    )
 
 
 class Recommendation:
@@ -59,8 +44,8 @@ class Recommendation:
 
         states = self.rule_hit_details.get('states')
         summaries = [
-            ROSSUMMARY[state] for substates in states.values()
+            RosSummary.ROSSUMMARY.value.get(state) for substates in states.values()
             for state in substates
-            if ROSSUMMARY.get(state) is not None
+            if RosSummary.ROSSUMMARY.value.get(state) is not None
         ]
         return NEWLINE_SEPARATOR.join(summaries)

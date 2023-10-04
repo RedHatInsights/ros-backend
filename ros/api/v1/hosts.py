@@ -1,7 +1,7 @@
 import logging
 from flask import request
 from sqlalchemy.types import Float
-from ros.lib.constants import SubStates
+from ros.lib.constants import SubStates, SystemStates, SystemsTableColumn
 
 from datetime import datetime, timedelta, timezone
 from sqlalchemy import asc, desc, nullslast, nullsfirst
@@ -35,20 +35,6 @@ from ros.api.common.pagination import (
 )
 
 LOG = logging.getLogger(__name__)
-SYSTEM_STATES_EXCEPT_EMPTY = [
-    "Oversized", "Undersized", "Idling", "Under pressure", "Storage rightsizing", "Optimized", "Waiting for data"
-]
-
-SYSTEM_COLUMNS = [
-    'inventory_id',
-    'display_name',
-    'instance_type',
-    'cloud_provider',
-    'state',
-    'fqdn',
-    'operating_system',
-    'groups'
-]
 
 
 class IsROSConfiguredApi(Resource):
@@ -154,7 +140,7 @@ class HostsApi(Resource):
         for row in query_results:
             try:
                 system_dict = row.System.__dict__
-                host = {skey: system_dict[skey] for skey in SYSTEM_COLUMNS}
+                host = {skey: system_dict[skey] for skey in SystemsTableColumn.SYSTEM_COLUMNS.value}
                 host['org_id'] = row.RhAccount.org_id
                 host['performance_utilization'] = sort_io_dict(
                     row.PerformanceProfile.performance_utilization
@@ -184,12 +170,12 @@ class HostsApi(Resource):
             modified_states = []
             for state in states:
                 state = state.capitalize()
-                if state not in SYSTEM_STATES_EXCEPT_EMPTY:
+                if state not in SystemStates.SYSTEM_STATES_EXCEPT_EMPTY.value:
                     abort(400, message='values are not matching')
                 modified_states.append(state)
             filters.append(System.state.in_(modified_states))
         else:
-            filters.append(System.state.in_(SYSTEM_STATES_EXCEPT_EMPTY))
+            filters.append(System.state.in_(SystemStates.SYSTEM_STATES_EXCEPT_EMPTY.value))
         if operating_systems := request.args.getlist('os'):
             modified_operating_systems = []
             for os in operating_systems:
@@ -311,7 +297,7 @@ class HostDetailsApi(Resource):
 
         record = None
         if profile:
-            record = {key: system.__dict__[key] for key in SYSTEM_COLUMNS}
+            record = {key: system.__dict__[key] for key in SystemsTableColumn.SYSTEM_COLUMNS.value}
             record['performance_utilization'] = sort_io_dict(profile.performance_utilization)
             record['rating'] = rating_record.rating if rating_record else None
             record['report_date'] = profile.report_date
