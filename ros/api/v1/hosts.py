@@ -1,7 +1,7 @@
 import logging
 from flask import request
 from sqlalchemy.types import Float
-from ros.lib.constants import SubStates, SystemStates, SystemsTableColumn
+from ros.lib.constants import SubStates, SystemStatesWithKeys, SystemsTableColumn
 
 from datetime import datetime, timedelta, timezone
 from sqlalchemy import asc, desc, nullslast, nullsfirst
@@ -170,12 +170,12 @@ class HostsApi(Resource):
             modified_states = []
             for state in states:
                 state = state.capitalize()
-                if state not in SystemStates.SYSTEM_STATES_EXCEPT_EMPTY.value:
+                if state not in SystemStatesWithKeys.SYSTEM_STATES.value.values():
                     abort(400, message='values are not matching')
                 modified_states.append(state)
             filters.append(System.state.in_(modified_states))
         else:
-            filters.append(System.state.in_(SystemStates.SYSTEM_STATES_EXCEPT_EMPTY.value))
+            filters.append(System.state.in_(SystemStatesWithKeys.SYSTEM_STATES.value.values()))
         if operating_systems := request.args.getlist('os'):
             modified_operating_systems = []
             for os in operating_systems:

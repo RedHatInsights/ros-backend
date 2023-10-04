@@ -29,18 +29,6 @@ class OperatingSystem(Enum):
     RHEL = 'RHEL'
 
 
-class SystemStates(Enum):
-    SYSTEM_STATES_EXCEPT_EMPTY = [
-        "Oversized",
-        "Undersized",
-        "Idling",
-        "Under pressure",
-        "Storage rightsizing",
-        "Optimized",
-        "Waiting for data"
-    ]
-
-
 class SystemStatesWithKeys(Enum):
     SYSTEM_STATES = {
         "INSTANCE_OVERSIZED": "Oversized",
@@ -71,7 +59,7 @@ class RosSummary(Enum):
 
 
 class SystemsTableColumn(Enum):
-    """Comman column names for System table"""
+    """Common column names for System table"""
     SYSTEM_COLUMNS = [
         'inventory_id',
         'display_name',
