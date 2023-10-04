@@ -1,0 +1,24 @@
+@startuml
+title ROS Backend Processing Flow
+participant hbi
+entity platform.inventory.events
+participant "insights\nengine"
+entity platform.engine.results
+box "ROS Backend" #LightBlue
+    participant "inventory events\nprocessor"
+    participant "engine results\nprocessor"
+end box
+database "ROS DB"
+hbi->platform.inventory.events: host-inventory payload
+platform.inventory.events->"insights\nengine"
+"insights\nengine"->platform.engine.results: insights-engine payload
+platform.engine.results->"engine results\nprocessor"
+Note right of platform.engine.results: {"input": <host-inventory payload>,\n"type": "updated"},\n{"results": {"system": "metadata": {..}},\n{"reports": \n[{"rule_id": 'ros_instance_evaluation|<SYSTEM_STATE>}]\n"details": \n{"instance_type": "t2.micro",\n"region": "us-east-1",\n"states":\n{"cpu": ["CPU_OVERSIZED", ".."],\n"memory": ["MEMORY_OVERSIZED", ".."],\n"io": [IO_UNDERSIZED_BY_PRESSURE],}}]}}
+"engine results\nprocessor"<-"ROS DB": Get account details from Rh_accounts table
+"ROS DB"<-"engine results\nprocessor": Create / Update system info in Systems table
+"ROS DB"<-"engine results\nprocessor": Create Performance Profile record for a system \nin Performance_profile table.
+platform.inventory.events->"inventory events\nprocessor"
+Note right of platform.inventory.events: {"platform_metadata": \n{"account": <account number>, \n"url": <URL to download archive from S3>, \n"is_ros": true},\n"host": \n{"system_profile": \n{"cloud_provider": "aws", "reporter": "puptoo", "id": <id>},\n"type": "created",\n"metadata": {..},}}
+"ROS DB"<-"inventory events\nprocessor": Create / Update system info in Systems table\nAdd / Verify account_id and org_id in Rh_accounts table
+skinparam BoxPadding 100
+@enduml
