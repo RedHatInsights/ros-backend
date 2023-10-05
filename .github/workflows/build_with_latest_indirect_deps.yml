@@ -16,7 +16,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:9.6
+        image: postgres:14
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -45,20 +45,21 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.8
+    - name: Set up Python 3.11
       uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: 3.11
 
     - uses: actions/cache@v2
       with:
         path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/Pipfile.lock') }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/poetry.lock') }}
         restore-keys: |
           ${{ runner.os }}-pip-
 
-    - run: |
-        pip --version
+    - name: Get pip version
+      run: |
+          pip --version
 
     - name: Install poetry
       run: |
