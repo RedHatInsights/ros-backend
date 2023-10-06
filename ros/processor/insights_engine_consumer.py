@@ -106,17 +106,17 @@ class InsightsEngineConsumer:
                 )
                 if len(reports) == 0:
                     rec_count = len(reports)
-                    state_key = SystemStatesWithKeys.OPTIMIZED_SYSTEM.value
+                    state_key = "OPTIMIZED"
                     LOG.info(
                         f"{self.prefix} - No ROS rule hits found for system with inventory id: {host['id']}. "
-                        f"Hence, marking the state as {SystemStatesWithKeys.SYSTEM_STATES.value[state_key]}."
+                        f"Hence, marking the state as {SystemStatesWithKeys[state_key].value}."
                     )
                 else:
                     state_key = reports[0].get('key')
                     rec_count = 0 if state_key == 'NO_PCP_DATA' else len(reports)
                     LOG.info(
                         f"{self.prefix} - Marking the state of system with "
-                        f"inventory id: {host['id']} as {SystemStatesWithKeys.SYSTEM_STATES.value[state_key]}"
+                        f"inventory id: {host['id']} as {SystemStatesWithKeys[state_key].value}"
                     )
 
                 # get previous state of the system
@@ -128,7 +128,7 @@ class InsightsEngineConsumer:
                     'inventory_id': host['id'],
                     'display_name': host['display_name'],
                     'fqdn': host['fqdn'],
-                    'state': SystemStatesWithKeys.SYSTEM_STATES.value[state_key],
+                    'state': SystemStatesWithKeys[state_key].value,
                     'instance_type': performance_record.get('instance_type'),
                     'region': performance_record.get('region'),
                     'cloud_provider': system_metadata.get('cloud_provider'),
@@ -189,7 +189,7 @@ class InsightsEngineConsumer:
                     "report_date": datetime.now(timezone.utc),
                     "rule_hit_details": reports,
                     "number_of_recommendations": -1 if state_key == 'NO_PCP_DATA' else rec_count,
-                    "state": SystemStatesWithKeys.SYSTEM_STATES.value[state_key],
+                    "state": SystemStatesWithKeys[state_key].value,
                     "operating_system": system.operating_system,
                     'psi_enabled': system_metadata.get('psi_enabled'),
                 }
@@ -226,7 +226,7 @@ class InsightsEngineConsumer:
     ):
         if system_previous_state is not None:
             if system_current_state not in (
-                SystemStatesWithKeys.SYSTEM_STATES.value['OPTIMIZED'],
+                SystemStatesWithKeys.OPTIMIZED.value,
                 system_previous_state
             ):
                 LOG.info(

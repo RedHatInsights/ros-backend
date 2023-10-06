@@ -30,54 +30,50 @@ class OperatingSystem(Enum):
 
 
 class SystemStatesWithKeys(Enum):
-    SYSTEM_STATES = {
-        "INSTANCE_OVERSIZED": "Oversized",
-        "INSTANCE_UNDERSIZED": "Undersized",
-        "INSTANCE_IDLE": "Idling",
-        "INSTANCE_OPTIMIZED_UNDER_PRESSURE": "Under pressure",
-        "STORAGE_RIGHTSIZING": "Storage rightsizing",
-        "OPTIMIZED": "Optimized",
-        "NO_PCP_DATA": "Waiting for data"
-    }
-    OPTIMIZED_SYSTEM = "OPTIMIZED"
+    INSTANCE_OVERSIZED = "Oversized"
+    INSTANCE_UNDERSIZED = "Undersized"
+    INSTANCE_IDLE = "Idling"
+    INSTANCE_OPTIMIZED_UNDER_PRESSURE = "Under pressure"
+    STORAGE_RIGHTSIZING = "Storage rightsizing"
+    OPTIMIZED = "Optimized"
+    NO_PCP_DATA = "Waiting for data"
 
 
 class RosSummary(Enum):
-    ROSSUMMARY = dict(
-        OPTIMIZED='System is OPTIMIZED',
-        MEMORY_OVERSIZED='Memory utilization is very low',
-        MEMORY_UNDERSIZED='Memory utilization is too high',
-        MEMORY_UNDERSIZED_BY_PRESSURE='System is suffering from memory pressure',
-        CPU_OVERSIZED='CPU utilization is very low',
-        CPU_UNDERSIZED='CPU utilization is too high',
-        CPU_UNDERSIZED_BY_PRESSURE='System is suffering from CPU pressure',
-        IO_OVERSIZED='I/O utilization is very low',
-        IO_UNDERSIZED='I/O utilization is too high',
-        IO_UNDERSIZED_BY_PRESSURE='System is suffering from IO pressure',
-        IDLE='System is IDLE',
-    )
+    OPTIMIZED = "System is OPTIMIZED"
+    MEMORY_OVERSIZED = "Memory utilization is very low"
+    MEMORY_UNDERSIZED = "Memory utilization is too high"
+    MEMORY_UNDERSIZED_BY_PRESSURE = "System is suffering from memory pressure"
+    CPU_OVERSIZED = "CPU utilization is very low"
+    CPU_UNDERSIZED = "CPU utilization is too high"
+    CPU_UNDERSIZED_BY_PRESSURE = "System is suffering from CPU pressure"
+    IO_OVERSIZED = "I/O utilization is very low"
+    IO_UNDERSIZED = "I/O utilization is too high"
+    IO_UNDERSIZED_BY_PRESSURE = "System is suffering from IO pressure"
+    IDLE = "System is IDLE"
 
 
 class SystemsTableColumn(Enum):
     """Common column names for System table"""
     SYSTEM_COLUMNS = [
-        'inventory_id',
-        'display_name',
-        'instance_type',
-        'cloud_provider',
-        'state',
-        'fqdn',
-        'operating_system',
-        'groups'
+        "inventory_id",
+        "display_name",
+        "instance_type",
+        "cloud_provider",
+        "state",
+        "fqdn",
+        "operating_system",
+        "groups"
     ]
 
 
-# recommendations
-NEWLINE_SEPARATOR = '\n'
-RULES_COLUMNS = ['rule_id', 'description', 'reason', 'resolution', 'condition']
-INSTANCE_PRICE_UNIT = 'USD/hour'
+class Suggestions(Enum):
+    NEWLINE_SEPARATOR = "\n"
+    RULES_COLUMNS = ["rule_id", "description", "reason", "resolution", "condition"]
+    INSTANCE_PRICE_UNIT = "USD/hour"
 
-# notification
-BUNDLE = "rhel"
-APPLICATION = "resource-optimization"
-EVENT_TYPE = "new-suggestion"
+
+class Notification(Enum):
+    BUNDLE = "rhel"
+    APPLICATION = "resource-optimization"
+    EVENT_TYPE = "new-suggestion"

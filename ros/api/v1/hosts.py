@@ -166,16 +166,18 @@ class HostsApi(Resource):
         filters = []
         if filter_display_name := request.args.get('display_name'):
             filters.append(System.display_name.ilike(f'%{filter_display_name}%'))
+
+        system_states = [i.value for i in SystemStatesWithKeys]
         if states := request.args.getlist('state'):
             modified_states = []
             for state in states:
                 state = state.capitalize()
-                if state not in SystemStatesWithKeys.SYSTEM_STATES.value.values():
+                if state not in system_states:
                     abort(400, message='values are not matching')
                 modified_states.append(state)
             filters.append(System.state.in_(modified_states))
         else:
-            filters.append(System.state.in_(SystemStatesWithKeys.SYSTEM_STATES.value.values()))
+            filters.append(System.state.in_(system_states))
         if operating_systems := request.args.getlist('os'):
             modified_operating_systems = []
             for os in operating_systems:

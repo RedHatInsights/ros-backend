@@ -2,8 +2,7 @@
 Custom readonly class for Recommendation
 """
 from ros.lib.constants import (
-        RosSummary, INSTANCE_PRICE_UNIT,
-        NEWLINE_SEPARATOR, RULES_COLUMNS
+        RosSummary, Suggestions
     )
 
 
@@ -18,13 +17,13 @@ class Recommendation:
         self.suggested_instances = self.candidates_str()
         self.current_instance = self.instance_info_str()
         self.psi_enabled = psi_enabled
-        for rkey in RULES_COLUMNS:
+        for rkey in Suggestions.RULES_COLUMNS.value:
             setattr(self, rkey, eval("f'{}'".format(rule_dict[rkey])))
 
     def instance_info_str(self):
         """Return current instance type with price info."""
         return f'{self.rule_hit_details.get("instance_type")} ' + \
-            f'({self.rule_hit_details.get("price")} {INSTANCE_PRICE_UNIT})'
+            f'({self.rule_hit_details.get("price")} {Suggestions.INSTANCE_PRICE_UNIT.value})'
 
     def candidates_str(self):
         """Get string of instance types separated by newline."""
@@ -33,9 +32,9 @@ class Recommendation:
 
         for candidate in candidates[0:3]:
             formatted_candidates.append(
-                f'{candidate[0]} ({candidate[1]} {INSTANCE_PRICE_UNIT})')
+                f'{candidate[0]} ({candidate[1]} {Suggestions.INSTANCE_PRICE_UNIT.value})')
 
-        return NEWLINE_SEPARATOR.join(formatted_candidates)
+        return Suggestions.NEWLINE_SEPARATOR.value.join(formatted_candidates)
 
     def detected_issues_by_states(self, rule_hit_key):
         """Get string of issues descriptions per state."""
@@ -44,8 +43,8 @@ class Recommendation:
 
         states = self.rule_hit_details.get('states')
         summaries = [
-            RosSummary.ROSSUMMARY.value.get(state) for substates in states.values()
+            RosSummary[state].value for substates in states.values()
             for state in substates
-            if RosSummary.ROSSUMMARY.value.get(state) is not None
+            if RosSummary[state].value is not None
         ]
-        return NEWLINE_SEPARATOR.join(summaries)
+        return Suggestions.NEWLINE_SEPARATOR.value.join(summaries)
