@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 from ros.lib.app import app
 from ros.processor.inventory_events_consumer import InventoryEventsConsumer
+from ros.lib.config import INVENTORY_EVENTS_TOPIC
 from tests.helpers.db_helper import db_get_host
 
 PERFORMANCE_RECORD = {'total_cpus': 1, 'instance_type': 't2.micro', 'mem.physmem': 825152.0,
@@ -22,7 +23,7 @@ def inventory_event_message():
 
 @pytest.fixture(scope="function")
 def inventory_event_consumer():
-    return InventoryEventsConsumer()
+    return InventoryEventsConsumer(INVENTORY_EVENTS_TOPIC, 'INVENTORY EVENTS', 'INVENTORY EVENTS')
 
 
 def test_process_system_details(inventory_event_consumer, inventory_event_message, db_setup):
