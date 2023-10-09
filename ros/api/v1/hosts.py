@@ -4,9 +4,10 @@ from sqlalchemy.types import Float
 from ros.lib.constants import SubStates
 
 from datetime import datetime, timedelta, timezone
-from sqlalchemy import asc, desc, nullslast, nullsfirst
+from sqlalchemy import asc, nullslast, nullsfirst
 from flask_restful import Resource, abort, fields, marshal_with
 from ros.api.common.add_group_filter import group_filtered_query
+from ros.api.common.utils import sorting_order
 
 from ros.lib.models import (
     db,
@@ -208,24 +209,9 @@ class HostsApi(Resource):
             filters.append(System.groups[0]['name'].astext.in_(group_names))
         return filters
 
-    @staticmethod
-    def sorting_order(order_how):
-        """Sorting order method."""
-        method_name = None
-        if order_how == 'asc':
-            method_name = asc
-        elif order_how == 'desc':
-            method_name = desc
-        else:
-            abort(
-                403,
-                message="Incorrect sorting order. Possible values - ASC/DESC"
-            )
-        return method_name
-
     def build_sort_expression(self, order_how, order_method):
         """Build sort expression."""
-        sort_order = self.sorting_order(order_how)
+        sort_order = sorting_order(order_how)
 
         if order_method == 'display_name':
             return (sort_order(System.display_name),

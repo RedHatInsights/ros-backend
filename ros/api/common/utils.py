@@ -12,6 +12,7 @@ from ros.lib.utils import (
 from ros.extensions import db
 from sqlalchemy import exc
 from ros.api.common.add_group_filter import group_filtered_query
+from sqlalchemy import asc, desc
 
 LOG = logging.getLogger(__name__)
 prefix = "VALIDATE REQUEST"
@@ -90,3 +91,18 @@ def validate_rating_data(func):
         return func(*args, **new_kwargs)
 
     return validate_request
+
+
+def sorting_order(order_how):
+    """Sorting order method."""
+    method_name = None
+    if order_how == 'asc':
+        method_name = asc
+    elif order_how == 'desc':
+        method_name = desc
+    else:
+        abort(
+            403,
+            message="Incorrect sorting order. Possible values - ASC/DESC"
+        )
+    return method_name

@@ -295,6 +295,42 @@
                     }
                 }
             }
+        },
+        "/suggested_instance_types": {
+            "get": {
+                "summary": "List all suggested instance types for the system",
+                "description": "Lists suggested instance types as per the suggestions",
+                "operationId": "getSuggestedInstanceTypes",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/limitParam"
+                    },
+                    {
+                        "$ref": "#/components/parameters/offsetParam"
+                    },
+                    {
+                        "$ref": "#/components/parameters/SuggestedInstanceTypeOrderByParam"
+                    },
+                    {
+                        "$ref": "#/components/parameters/orderHowParam"
+                    },
+                    {
+                        "$ref":"#/components/parameters/filterInstanceType"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuggestedInstanceTypes"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
     },
@@ -826,6 +862,40 @@
                         "description": "Message text"
                     }
                 }
+            },
+            "SuggestedInstanceTypes": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SuggestedInstanceTypesItem"
+                        }
+                    },
+                    "links": {
+                        "$ref": "#/components/schemas/Links"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/ListMeta"
+                    }
+                }
+            },
+            "SuggestedInstanceTypesItem": {
+                "type": "object",
+                "properties": {
+                    "instance_type": {
+                        "type": "string"
+                    },
+                    "cloud_provider": {
+                        "type": "string"
+                    },
+                    "system_count": {
+                        "type": "integer"
+                    },
+                    "description": {
+                        "type": "string"
+                    }
+                }
             }
         },
         "parameters": {
@@ -935,6 +1005,30 @@
                     "items": {
                         "type": "string"
                     }
+                }
+            },
+            "filterInstanceType": {
+                "name": "instance_type",
+                "in": "query",
+                "required": false,
+                "description": "Filter by instance type's name",
+                "schema": {
+                    "type": "string"
+                }
+
+            },
+            "SuggestedInstanceTypeOrderByParam": {
+                "name": "order_by",
+                "in": "query",
+                "required": false,
+                "description": "Ordering field name, defaults to system count",
+                "schema": {
+                    "type": "string",
+                    "default": "system_count",
+                    "enum": [
+                        "instance_type",
+                        "system_count"
+                        ]
                 }
             }
 
