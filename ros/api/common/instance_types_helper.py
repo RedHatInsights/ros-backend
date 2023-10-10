@@ -1,8 +1,6 @@
 from ros.lib.aws_instance_types import INSTANCE_TYPES
-from ros.extensions import cache
 
 
-@cache.cached(timeout=0)
 def instance_types_desc_dict():
     instance_and_descriptions = {}
     for instance, info in INSTANCE_TYPES.items():

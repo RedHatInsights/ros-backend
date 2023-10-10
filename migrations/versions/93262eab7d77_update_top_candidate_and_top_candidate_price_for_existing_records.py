@@ -21,7 +21,7 @@ def upgrade():
         print('Updating top_candidate and top_candidate_price for existing PerformanceProfile records!')
         op.execute(
             "update performance_profile set top_candidate = subquery.top_candidate, top_candidate_price = cast("
-            "subquery.top_candidate_price as double precision) from (select rule_hit_details #> '{0,details,"
+            "subquery.top_candidate_price as double precision) from (select rule_hit_details #>> '{0,details,"
             "candidates,0,0}' as top_candidate, rule_hit_details #> '{0,details,candidates,0,"
             "1}' as top_candidate_price, system_id from performance_profile) as subquery where "
             "performance_profile.system_id = subquery.system_id")
@@ -29,3 +29,7 @@ def upgrade():
         print(f"Failed to update table with error {err}!")
     else:
         print('Successfully updated top_candidate and top_candidate_price for existing PerformanceProfile records!')
+
+
+def downgrade():
+    pass
