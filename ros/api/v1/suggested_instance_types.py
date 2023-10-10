@@ -19,6 +19,9 @@ from ros.api.common.pagination import (
 )
 from ros.api.common.instance_types_helper import instance_types_desc_dict
 from ros.api.common.utils import sorting_order
+from ros.lib.config import get_logger
+
+LOG = get_logger(__name__)
 
 
 def non_null_suggested_instance_types():
@@ -71,8 +74,12 @@ class SuggestedInstanceTypes(Resource):
         for row in query_result:
             # FIXME: As of now we only support AWS cloud, so statically adding it to the dict. Fix this code block
             #  upon supporting multiple clouds.
-            record = {'instance_type': row.top_candidate, 'cloud_provider': 'AWS', 'system_count': row.system_count,
-                      'description': instance_types_desc_dict()[row.top_candidate]}
+            record = {'instance_type': row.top_candidate, 'cloud_provider': 'AWS', 'system_count': row.system_count}
+            try:
+                record['description'] = instance_types_desc_dict()[row.top_candidate]
+            except KeyError:
+                LOG.info(f"Unable to get the description for {row.top_candidate}! "
+                         f"Looks like lib/aws_instance_types.py is stale!")
             suggested_instance_types.append(record)
         return build_paginated_system_list_response(limit, offset, suggested_instance_types, count)
 
