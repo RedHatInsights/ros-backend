@@ -19,11 +19,6 @@ class SubStates(Enum):
     CPU_IDLING = 'CPU_IDLING'
 
 
-BUNDLE = "rhel"
-APPLICATION = "resource-optimization"
-EVENT_TYPE = "new-suggestion"
-
-
 class CloudProvider(Enum):
     """Supported cloud providers"""
     AWS = 'aws'
@@ -32,3 +27,53 @@ class CloudProvider(Enum):
 class OperatingSystem(Enum):
     """Supported Operating Systems"""
     RHEL = 'RHEL'
+
+
+class SystemStatesWithKeys(Enum):
+    INSTANCE_OVERSIZED = "Oversized"
+    INSTANCE_UNDERSIZED = "Undersized"
+    INSTANCE_IDLE = "Idling"
+    INSTANCE_OPTIMIZED_UNDER_PRESSURE = "Under pressure"
+    STORAGE_RIGHTSIZING = "Storage rightsizing"
+    OPTIMIZED = "Optimized"
+    NO_PCP_DATA = "Waiting for data"
+
+
+class RosSummary(Enum):
+    OPTIMIZED = "System is OPTIMIZED"
+    MEMORY_OVERSIZED = "Memory utilization is very low"
+    MEMORY_UNDERSIZED = "Memory utilization is too high"
+    MEMORY_UNDERSIZED_BY_PRESSURE = "System is suffering from memory pressure"
+    CPU_OVERSIZED = "CPU utilization is very low"
+    CPU_UNDERSIZED = "CPU utilization is too high"
+    CPU_UNDERSIZED_BY_PRESSURE = "System is suffering from CPU pressure"
+    IO_OVERSIZED = "I/O utilization is very low"
+    IO_UNDERSIZED = "I/O utilization is too high"
+    IO_UNDERSIZED_BY_PRESSURE = "System is suffering from IO pressure"
+    IDLE = "System is IDLE"
+
+
+class SystemsTableColumn(Enum):
+    """Common column names for System table"""
+    SYSTEM_COLUMNS = [
+        "inventory_id",
+        "display_name",
+        "instance_type",
+        "cloud_provider",
+        "state",
+        "fqdn",
+        "operating_system",
+        "groups"
+    ]
+
+
+class Suggestions(Enum):
+    NEWLINE_SEPARATOR = "\n"
+    RULES_COLUMNS = ["rule_id", "description", "reason", "resolution", "condition"]
+    INSTANCE_PRICE_UNIT = "USD/hour"
+
+
+class Notification(Enum):
+    BUNDLE = "rhel"
+    APPLICATION = "resource-optimization"
+    EVENT_TYPE = "new-suggestion"

@@ -1,25 +1,9 @@
 """
 Custom readonly class for Recommendation
 """
-from ros.lib.config import INSTANCE_PRICE_UNIT
-
-
-NEWLINE_SEPARATOR = '\n'
-RULES_COLUMNS = ['rule_id', 'description', 'reason', 'resolution', 'condition']
-
-ROSSUMMARY = dict(
-    OPTIMIZED='System is OPTIMIZED',
-    MEMORY_OVERSIZED='Memory utilization is very low',
-    MEMORY_UNDERSIZED='Memory utilization is too high',
-    MEMORY_UNDERSIZED_BY_PRESSURE='System is suffering from memory pressure',
-    CPU_OVERSIZED='CPU utilization is very low',
-    CPU_UNDERSIZED='CPU utilization is too high',
-    CPU_UNDERSIZED_BY_PRESSURE='System is suffering from CPU pressure',
-    IO_OVERSIZED='I/O utilization is very low',
-    IO_UNDERSIZED='I/O utilization is too high',
-    IO_UNDERSIZED_BY_PRESSURE='System is suffering from IO pressure',
-    IDLE='System is IDLE',
-)
+from ros.lib.constants import (
+        RosSummary, Suggestions
+    )
 
 
 class Recommendation:
@@ -33,13 +17,13 @@ class Recommendation:
         self.suggested_instances = self.candidates_str()
         self.current_instance = self.instance_info_str()
         self.psi_enabled = psi_enabled
-        for rkey in RULES_COLUMNS:
+        for rkey in Suggestions.RULES_COLUMNS.value:
             setattr(self, rkey, eval("f'{}'".format(rule_dict[rkey])))
 
     def instance_info_str(self):
         """Return current instance type with price info."""
         return f'{self.rule_hit_details.get("instance_type")} ' + \
-            f'({self.rule_hit_details.get("price")} {INSTANCE_PRICE_UNIT})'
+            f'({self.rule_hit_details.get("price")} {Suggestions.INSTANCE_PRICE_UNIT.value})'
 
     def candidates_str(self):
         """Get string of instance types separated by newline."""
@@ -48,9 +32,9 @@ class Recommendation:
 
         for candidate in candidates[0:3]:
             formatted_candidates.append(
-                f'{candidate[0]} ({candidate[1]} {INSTANCE_PRICE_UNIT})')
+                f'{candidate[0]} ({candidate[1]} {Suggestions.INSTANCE_PRICE_UNIT.value})')
 
-        return NEWLINE_SEPARATOR.join(formatted_candidates)
+        return Suggestions.NEWLINE_SEPARATOR.value.join(formatted_candidates)
 
     def detected_issues_by_states(self, rule_hit_key):
         """Get string of issues descriptions per state."""
@@ -59,8 +43,8 @@ class Recommendation:
 
         states = self.rule_hit_details.get('states')
         summaries = [
-            ROSSUMMARY[state] for substates in states.values()
+            RosSummary[state].value for substates in states.values()
             for state in substates
-            if ROSSUMMARY.get(state) is not None
+            if RosSummary[state].value is not None
         ]
-        return NEWLINE_SEPARATOR.join(summaries)
+        return Suggestions.NEWLINE_SEPARATOR.value.join(summaries)

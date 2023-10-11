@@ -4,7 +4,8 @@ import copy
 from pathlib import Path
 from ros.lib.app import app
 from ros.lib.models import db, PerformanceProfile, PerformanceProfileHistory
-from ros.processor.insights_engine_consumer import InsightsEngineConsumer, SYSTEM_STATES
+from ros.processor.insights_engine_consumer import InsightsEngineConsumer
+from ros.lib.constants import SystemStatesWithKeys
 from tests.helpers.db_helper import db_get_host, db_get_record
 from ros.processor.event_producer import notification_payload
 
@@ -76,7 +77,7 @@ def test_process_report_idle(engine_result_message, engine_consumer, db_setup, p
     with app.app_context():
         assert system_record.instance_type == _performance_record['instance_type']
         assert system_record.region == _performance_record['region']
-        assert system_record.state == SYSTEM_STATES['INSTANCE_IDLE']
+        assert system_record.state == SystemStatesWithKeys.INSTANCE_IDLE.value
         assert db.session.scalar(db.select(PerformanceProfile).filter_by(system_id=system_record.id))\
             .performance_record == performance_record
 
@@ -95,7 +96,7 @@ def test_process_report_under_pressure(engine_result_message, engine_consumer, d
     with app.app_context():
         assert system_record.instance_type == _performance_record['instance_type']
         assert system_record.region == _performance_record['region']
-        assert system_record.state == SYSTEM_STATES['INSTANCE_OPTIMIZED_UNDER_PRESSURE']
+        assert system_record.state == SystemStatesWithKeys.INSTANCE_OPTIMIZED_UNDER_PRESSURE.value
         assert db.session.scalar(db.select(PerformanceProfile).filter_by(system_id=system_record.id))\
             .performance_record == performance_record
 
@@ -117,7 +118,7 @@ def test_process_report_no_pcp(engine_result_message, engine_consumer, db_setup,
     with app.app_context():
         assert system_record.instance_type == _performance_record['instance_type']
         assert system_record.region == _performance_record['region']
-        assert system_record.state == SYSTEM_STATES['NO_PCP_DATA']
+        assert system_record.state == SystemStatesWithKeys.NO_PCP_DATA.value
         assert performance_utilization == sample_performance_util_no_pcp
 
 
@@ -135,7 +136,7 @@ def test_process_report_undersized(engine_result_message, engine_consumer, db_se
     with app.app_context():
         assert system_record.instance_type == _performance_record['instance_type']
         assert system_record.region == _performance_record['region']
-        assert system_record.state == SYSTEM_STATES['INSTANCE_UNDERSIZED']
+        assert system_record.state == SystemStatesWithKeys.INSTANCE_UNDERSIZED.value
         assert db.session.scalar(db.select(PerformanceProfile).filter_by(system_id=system_record.id))\
             .performance_record == performance_record
 
@@ -156,7 +157,7 @@ def test_process_report_optimized(engine_result_message, engine_consumer, db_set
         assert profile_record.rule_hit_details == ros_reports
         assert system_record.instance_type == _performance_record['instance_type']
         assert system_record.region == _performance_record['region']
-        assert system_record.state == SYSTEM_STATES['OPTIMIZED']
+        assert system_record.state == SystemStatesWithKeys.OPTIMIZED.value
         assert db.session.scalar(db.select(PerformanceProfile).filter_by(system_id=system_record.id))\
             .performance_record == performance_record
 
