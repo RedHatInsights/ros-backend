@@ -279,6 +279,24 @@ objects:
           requests:
             cpu: 50m
             memory: 512Mi
+    # This is one time job to correct the PerformanceTable top_candidate entries
+    - name: one-time-migration-runner
+      podSpect:
+        image: ${IMAGE}:${IMAGE_TAG}
+        command: ["sh"]
+        args: ["-c", "export FLASK_APP=manage.py && poetry run flask db downgrade && poetry run flask db upgrade"]
+      env:
+        - name: DB_POOL_SIZE
+          value: ${DB_POOL_SIZE}
+        - name: DB_MAX_OVERFLOW
+          value: ${DB_MAX_OVERFLOW}
+      resources:
+        limits:
+          cpu: 300m
+          memory: 512Mi
+        requests:
+          cpu: 50m
+          memory: 512Mi
 
 parameters:
 - description: Enable rbac needs to be "True" or "False"
