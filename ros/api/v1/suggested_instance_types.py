@@ -22,15 +22,6 @@ from ros.api.common.pagination import (
 from ros.api.common.instance_types_helper import instance_types_desc_dict
 from ros.api.common.utils import sorting_order
 
-SYSTEM_DETAILS_COLUMNS = [
-    'fqdn',
-    'display_name',
-    'instance_type',
-    'os',
-    'performance_utilization',
-    'state',
-    'last_reported'
-]
 LOG = logging.getLogger(__name__)
 
 
