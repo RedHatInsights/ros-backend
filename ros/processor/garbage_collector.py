@@ -32,7 +32,7 @@ class GarbageCollector():
 
                 if deleted_history.rowcount > 0:
                     LOG.info(
-                        f"{self.prefix} - Deleted {deleted_history} outdated history record(s) "
+                        f"{self.prefix} - Deleted {deleted_history.rowcount} outdated history record(s) "
                         f"older than {DAYS_UNTIL_STALE} days"
                     )
 
@@ -42,7 +42,7 @@ class GarbageCollector():
 
                 if deleted_profiles.rowcount > 0:
                     LOG.info(
-                        f"{self.prefix} - Deleted {deleted_profiles} outdated performance profile(s) "
+                        f"{self.prefix} - Deleted {deleted_profiles.rowcount} outdated performance profile(s) "
                         f"older than {DAYS_UNTIL_STALE} days"
                     )
                 db.session.commit()
