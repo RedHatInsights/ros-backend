@@ -6,7 +6,7 @@ from ros.lib.utils import get_or_create, system_allowed_in_ros, update_system_re
 from confluent_kafka import KafkaException
 from ros.lib.models import RhAccount, System
 from ros.lib.config import INVENTORY_EVENTS_TOPIC, METRICS_PORT, get_logger
-from ros.lib.cw_logging import commence_cw_log_streaming
+from ros.lib.cw_logging import commence_cw_log_streaming, threadctx
 from prometheus_client import start_http_server
 from ros.processor.metrics import (processor_requests_success,
                                    processor_requests_failures,
@@ -54,6 +54,9 @@ class InventoryEventsConsumer:
             try:
                 msg = json.loads(msg.value().decode("utf-8"))
                 event_type = msg['type']
+                threadctx.request_id = msg["platform_metadata"].get('request_id')
+                threadctx.account = msg["platform_metadata"].get('account')
+                threadctx.org_id = msg["platform_metadata"].get('org_id')
                 if event_type == 'delete':
                     account = msg['account']
                     host_id = msg['id']

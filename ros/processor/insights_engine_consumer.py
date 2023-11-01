@@ -8,7 +8,7 @@ from ros.lib.models import RhAccount, System
 from ros.lib.config import ENGINE_RESULT_TOPIC, METRICS_PORT, get_logger
 from ros.processor.process_archive import get_performance_profile
 from ros.processor.event_producer import new_suggestion_event
-from ros.lib.cw_logging import commence_cw_log_streaming
+from ros.lib.cw_logging import commence_cw_log_streaming, threadctx
 from prometheus_client import start_http_server
 from ros.lib.constants import SystemStatesWithKeys
 from ros.lib.utils import (
@@ -86,6 +86,11 @@ class InsightsEngineConsumer:
             host = msg["input"]["host"]
             platform_metadata = msg["input"]["platform_metadata"]
             system_metadata = msg["results"]["system"]["metadata"]
+
+            threadctx.request_id = platform_metadata.get('request_id')
+            threadctx.account = platform_metadata.get('account')
+            threadctx.org_id = platform_metadata.get('org_id')
+
             performance_record = get_performance_profile(
                 platform_metadata['url'],
                 platform_metadata.get('org_id'),
