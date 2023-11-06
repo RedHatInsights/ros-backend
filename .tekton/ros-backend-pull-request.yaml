@@ -15,6 +15,7 @@ metadata:
     appstudio.openshift.io/application: ros-backend
     appstudio.openshift.io/component: ros-backend
     pipelines.appstudio.openshift.io/type: build
+    testlabel: test
   name: ros-backend-on-pull-request
   namespace: rh-ros-tenant
 spec:
