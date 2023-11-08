@@ -1,6 +1,8 @@
 FROM registry.redhat.io/ubi8/ubi-minimal
 
-RUN microdnf install --disableplugin=subscription-manager --nodocs -y python311 tar gzip gcc python3.11-devel
+RUN microdnf install \
+    --disableplugin=subscription-manager \
+    --nodocs -y python311 tar gzip gcc python3.11-devel libpq-devel
 
 # Install poetry in separate virtual env
 ENV POETRY_HOME=/opt/poetry
