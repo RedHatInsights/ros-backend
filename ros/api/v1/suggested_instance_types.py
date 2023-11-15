@@ -91,7 +91,7 @@ class SuggestedInstanceTypes(Resource):
     def build_instance_filters():
         filters = []
         if filter_instance_type := request.args.get('instance_type'):
-            filters.append(PerformanceProfile.top_candidate.ilike(f'%{filter_instance_type}'))
+            filters.append(PerformanceProfile.top_candidate.ilike(f'%{filter_instance_type}%'))
         # TODO: once ROS has multi cloud support, add cloud provider filter
         return filters
 
