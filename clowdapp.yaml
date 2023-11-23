@@ -292,7 +292,7 @@ parameters:
   value: "1"
 - description: Replica count for inventory processor pod
   name: INVENTORY_PROCESSOR_REPLICA_COUNT
-  value: "1"
+  value: "2"
 - description: Replica count for engine processor pod
   name: ENGINE_PROCESSOR_REPLICA_COUNT
   value: "1"
