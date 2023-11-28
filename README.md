@@ -19,9 +19,21 @@ This project uses poetry to manage the development and production environments.
 
 Once you have poetry installed, do the following:
 
+The latest version is supported on Python 3.11, install it and then switch to 3.11 version:
+```bash
+poetry env use python3.11
+```
+
+There are some package dependencies, install those:
+```bash
+dnf install tar gzip gcc python3.11-devel libpq-devel
+```
+
+Install the required dependencies:
 ```bash
 poetry install
 ```
+
 Afterwards you can activate the virtual environment by running:
 ```bash
 poetry shell
