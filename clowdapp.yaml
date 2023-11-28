@@ -74,6 +74,16 @@ objects:
                 optional: true
           - name: BYPASS_UNLEASH
             value: ${BYPASS_UNLEASH}
+          - name: GITHUB_OWNER
+            value: ${GITHUB_OWNER}
+          - name: GITHUB_REPO
+            value: ${GITHUB_REPO}
+          - name: GITHUB_DEPLOYMENT_BRANCH
+            value: ${GITHUB_DEPLOYMENT_BRANCH}
+          - name: GITHUB_API_PAGE_SIZE
+            value: ${GITHUB_API_PAGE_SIZE}
+          - name: GITHUB_API_MAXIMUM_RETRIES
+            value: ${GITHUB_API_MAXIMUM_RETRIES}
 
     - name: inventory-events-processor
       replicas: ${{INVENTORY_PROCESSOR_REPLICA_COUNT}}
@@ -360,3 +370,20 @@ parameters:
 - description: disable Unleash (feature flags), defaulting to fallback values
   name: BYPASS_UNLEASH
   value: 'false'
+
+# Deployment version
+- description: organisation/owner-name of the GitHub repo
+  name: GITHUB_OWNER
+  value: "RedHatInsights"
+- description: name of the GitHub repo
+  name: GITHUB_REPO
+  value: "ros-backend"
+- description: deployment-branch-name of the GitHub repo
+  name: GITHUB_DEPLOYMENT_BRANCH
+  value: "main"
+- description: page-size of the GitHub API
+  name: GITHUB_API_PAGE_SIZE
+  value: "5"
+- description: max-retries of the GitHub API
+  name: GITHUB_API_MAXIMUM_RETRIES
+  value: "3"
