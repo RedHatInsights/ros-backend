@@ -12,19 +12,22 @@ from .v1.hosts import (
     IsROSConfiguredApi,
     ExecutiveReportAPI,
 )
+from .v1.api_deployment_version import ApiDeploymentVersion
+from ros.lib.config import API_VERSION
 
 
 # Initialize Routes
 def initialize_routes(api):
-    api.add_resource(Status, '/api/ros/v1/status')
-    api.add_resource(IsROSConfiguredApi, '/api/ros/v1/is_configured')
-    api.add_resource(HostsApi, '/api/ros/v1/systems')
-    api.add_resource(HostHistoryApi, '/api/ros/v1/systems/<host_id>/history')
-    api.add_resource(RecommendationsApi, '/api/ros/v1/systems/<host_id>/suggestions')
-    api.add_resource(HostDetailsApi, '/api/ros/v1/systems/<host_id>')
-    api.add_resource(RecommendationRatingsApi, '/api/ros/v1/rating')
-    api.add_resource(OpenAPISpec, '/api/ros/v1/openapi.json')
-    api.add_resource(CallToActionApi, '/api/ros/v1/call_to_action')
-    api.add_resource(ExecutiveReportAPI, '/api/ros/v1/executive_report')
-    api.add_resource(SuggestedInstanceTypes, '/api/ros/v1/suggested_instance_types')
-    api.add_resource(SuggestedInstanceDetails, '/api/ros/v1/suggested_instance_types/<instance_type>')
+    api.add_resource(Status, f'/api/ros/{API_VERSION}/status')
+    api.add_resource(IsROSConfiguredApi, f'/api/ros/{API_VERSION}/is_configured')
+    api.add_resource(HostsApi, f'/api/ros/{API_VERSION}/systems')
+    api.add_resource(HostHistoryApi, f'/api/ros/{API_VERSION}/systems/<host_id>/history')
+    api.add_resource(RecommendationsApi, f'/api/ros/{API_VERSION}/systems/<host_id>/suggestions')
+    api.add_resource(HostDetailsApi, f'/api/ros/{API_VERSION}/systems/<host_id>')
+    api.add_resource(RecommendationRatingsApi, f'/api/ros/{API_VERSION}/rating')
+    api.add_resource(OpenAPISpec, f'/api/ros/{API_VERSION}/openapi.json')
+    api.add_resource(CallToActionApi, f'/api/ros/{API_VERSION}/call_to_action')
+    api.add_resource(ExecutiveReportAPI, f'/api/ros/{API_VERSION}/executive_report')
+    api.add_resource(SuggestedInstanceTypes, '/api/ros/{API_VERSION}/suggested_instance_types')
+    api.add_resource(SuggestedInstanceDetails, '/api/ros/{API_VERSION}/suggested_instance_types/<instance_type>')
+    api.add_resource(ApiDeploymentVersion, f'/api/ros/{API_VERSION}/deployment_status')
