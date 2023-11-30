@@ -22,3 +22,21 @@ COPY seed.d seed.d
 RUN python -m venv $VIRTUAL_ENV && \
     poetry update pip setuptools wheel && \
     poetry install
+
+LABEL description="The Red Hat Insights resource optimization service \
+enables RHEL customers to assess and monitor their public cloud usage \
+and optimization. The service exposes workload metrics for CPU, memory, \
+and disk-usage and compares them to resource limits recommended by the \
+public cloud provider. Currently ROS only provides suggestions for AWS \
+RHEL instances. To enable ROS, a customer needs to perform a few \
+prerequisite steps on targeted systems via Ansible playbook."
+LABEL io.k8s.description="The Red Hat Insights resource optimization service \
+enables RHEL customers to assess and monitor their public cloud usage \
+and optimization. The service exposes workload metrics for CPU, memory, \
+and disk-usage and compares them to resource limits recommended by the \
+public cloud provider. Currently ROS only provides suggestions for AWS \
+RHEL instances. To enable ROS, a customer needs to perform a few \
+prerequisite steps on targeted systems via Ansible playbook."
+LABEL io.k8s.display-name="ros-backend"
+LABEL io.openshift.tags="ros-backend"
+LABEL summary="Image of Resource Optimization Service backend"
