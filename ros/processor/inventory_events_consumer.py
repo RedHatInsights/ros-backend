@@ -147,10 +147,6 @@ class InventoryEventsConsumer:
                         f"{self.prefix} - Refreshed system {system.inventory_id} ({system.id}) "
                         f"belonging to account: {account.account} ({account.id}) and org_id: {account.org_id}"
                     )
-                else:
-                    LOG.info(
-                        f"{self.prefix} - System {system_fields.get('inventory_id')} does not exist in the database"
-                    )
             else:
                 try:
                     account = get_or_create(
