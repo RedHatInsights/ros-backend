@@ -22,20 +22,6 @@ def get_logger(name):
     return logging.getLogger(name)
 
 
-def kafka_auth_config(connection_object):
-    if KAFKA_BROKER:
-        if KAFKA_CACERT_LOCATION:
-            connection_object["ssl.ca.location"] = KAFKA_CACERT_LOCATION
-        if KAFKA_BROKER.sasl and KAFKA_BROKER.sasl.username:
-            connection_object.update({
-                "security.protocol": KAFKA_BROKER.sasl.securityProtocol,
-                "sasl.mechanisms": KAFKA_BROKER.sasl.saslMechanism,
-                "sasl.username": KAFKA_BROKER.sasl.username,
-                "sasl.password": KAFKA_BROKER.sasl.password,
-            })
-    return connection_object
-
-
 def build_endpoint_url(ep):
     """check for TLS certs path."""
     protocol = 'https' if LoadedConfig.tlsCAPath else 'http'
@@ -48,10 +34,10 @@ CLOWDER_ENABLED = True if os.getenv("CLOWDER_ENABLED", default="False").lower() 
 DB_SSL_MODE = "verify-full"
 DB_SSL_CERTPATH = None
 
-
 if CLOWDER_ENABLED:
     LOG.info("Using Clowder Operator...")
-    from app_common_python import LoadedConfig, KafkaTopics
+    from app_common_python import LoadedConfig, KafkaTopics, KafkaServers
+
     TLS_CA_PATH = getattr(LoadedConfig, "tlsCAPath", None)
 
     DB_NAME = LoadedConfig.database.name
@@ -70,7 +56,7 @@ if CLOWDER_ENABLED:
     KAFKA_CACERT_LOCATION = None
     if KAFKA_BROKER.cacert:
         KAFKA_CACERT_LOCATION = LoadedConfig.kafka_ca()
-    INSIGHTS_KAFKA_ADDRESS = KAFKA_BROKER.hostname + ":" + str(KAFKA_BROKER.port)
+    KAFKA_BOOTSTRAP_SERVERS = KafkaServers
     INVENTORY_EVENTS_TOPIC = KafkaTopics["platform.inventory.events"].name
     ENGINE_RESULT_TOPIC = KafkaTopics["platform.engine.results"].name
     NOTIFICATIONS_TOPIC = KafkaTopics["platform.notifications.ingress"].name
@@ -112,7 +98,7 @@ else:
     REDIS_PORT = os.getenv("REDIS_PORT", default=6379)
     INSIGHTS_KAFKA_HOST = os.getenv("INSIGHTS_KAFKA_HOST", "localhost")
     INSIGHTS_KAFKA_PORT = os.getenv("INSIGHTS_KAFKA_PORT", "9092")
-    INSIGHTS_KAFKA_ADDRESS = f"{INSIGHTS_KAFKA_HOST}:{INSIGHTS_KAFKA_PORT}"
+    KAFKA_BOOTSTRAP_SERVERS = [f"{INSIGHTS_KAFKA_HOST}:{INSIGHTS_KAFKA_PORT}"]
     INVENTORY_EVENTS_TOPIC = os.getenv("INVENTORY_EVENTS_TOPIC", "platform.inventory.events")
     ENGINE_RESULT_TOPIC = os.getenv("ENGINE_RESULT_TOPIC", "platform.engine.results")
     METRICS_PORT = os.getenv("METRICS_PORT", 5005)
@@ -132,7 +118,7 @@ else:
         AWS_LOG_GROUP = os.getenv("AWS_LOG_GROUP", None)
 
 DB_URI = f"postgresql://{DB_USER}:{DB_PASSWORD}"\
-                f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+         f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 if DB_SSL_CERTPATH:
     DB_URI += f"?sslmode={DB_SSL_MODE}&sslrootcert={DB_SSL_CERTPATH}"
 
@@ -156,3 +142,21 @@ DAYS_UNTIL_STALE = int(os.getenv("DAYS_UNTIL_STALE", '45'))
 CW_LOGGING_FORMAT = '%(asctime)s - %(levelname)s  - %(funcName)s - %(message)s'
 ROS_PROCESSOR_PORT = int(os.getenv("ROS_PROCESSOR_PORT", "8000"))
 ROS_API_PORT = int(os.getenv("ROS_API_PORT", "8000"))
+
+
+def kafka_auth_config(connection_object=None):
+    if connection_object is None:
+        connection_object = {}
+    connection_object['bootstrap.servers'] = ",".join(KAFKA_BOOTSTRAP_SERVERS)
+
+    if KAFKA_BROKER:
+        if KAFKA_CACERT_LOCATION:
+            connection_object["ssl.ca.location"] = KAFKA_CACERT_LOCATION
+        if KAFKA_BROKER.sasl and KAFKA_BROKER.sasl.username:
+            connection_object.update({
+                "security.protocol": KAFKA_BROKER.sasl.securityProtocol,
+                "sasl.mechanisms": KAFKA_BROKER.sasl.saslMechanism,
+                "sasl.username": KAFKA_BROKER.sasl.username,
+                "sasl.password": KAFKA_BROKER.sasl.password,
+            })
+    return connection_object
