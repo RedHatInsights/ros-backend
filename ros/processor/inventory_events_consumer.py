@@ -2,7 +2,7 @@ import json
 from ros.lib import consume
 from ros.lib.app import app
 from ros.extensions import db
-from ros.lib.utils import get_or_create, system_allowed_in_ros, update_system_record
+from ros.lib.utils import get_or_create, system_allowed_in_ros, update_system_record, is_platform_metadata_check_pass
 from confluent_kafka import KafkaException
 from ros.lib.models import RhAccount, System
 from ros.lib.config import INVENTORY_EVENTS_TOPIC, METRICS_PORT, get_logger
@@ -123,10 +123,7 @@ class InventoryEventsConsumer:
         host = msg['host']
         with app.app_context():
             # 'platform_metadata' field not included when the host is updated via the API.
-            if (
-                    msg.get('type') == 'updated'
-                    and msg.get("platform_metadata") is None
-            ):
+            if (msg.get('type') == 'updated' and is_platform_metadata_check_pass(msg)):
                 system_fields = {
                     "inventory_id": host['id'],
                     "display_name": host['display_name'],

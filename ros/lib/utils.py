@@ -350,8 +350,18 @@ def system_allowed_in_ros(msg, reporter):
         # https://consoledot.pages.redhat.com/docs/dev/services/inventory.html#_updated_event
         if (
                 msg.get('type') == 'updated'
-                and msg.get('platform_metadata') is None
+                and is_platform_metadata_check_pass(msg)
         ):
             return is_valid_cloud_provider(cloud_provider)
         is_ros = msg["platform_metadata"].get("is_ros")
     return validate_ros_payload(is_ros, cloud_provider, operating_system)
+
+
+def is_platform_metadata_check_pass(msg):
+    if msg.get("platform_metadata") is None or \
+            (isinstance(msg.get("platform_metadata"), dict) and
+             len(msg.get("platform_metadata")) <= 1 and
+             "b64_identity" in msg.get("platform_metadata")):
+        return True
+
+    return False
