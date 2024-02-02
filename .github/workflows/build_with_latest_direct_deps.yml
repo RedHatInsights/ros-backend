@@ -107,6 +107,7 @@ jobs:
         sqlalchemy-utils = "*"
         pytest-mock = "*"
         pytest-cov = "*"
+        logstash_formatter = "*"
         
         [build-system]
         requires = ["poetry-core"]

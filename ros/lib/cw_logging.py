@@ -8,6 +8,8 @@ import logging
 import boto3
 import watchtower
 from botocore.exceptions import ClientError
+from threading import local
+from logstash_formatter import LogstashFormatterV1
 
 from ros.lib.config import (
     get_logger,
@@ -23,7 +25,7 @@ if CW_ENABLED is True:
         CW_LOGGING_FORMAT,
     )
 
-
+threadctx = local()
 module_prefix = 'CLOUDWATCH LOGGING'
 
 
@@ -58,4 +60,32 @@ def commence_cw_log_streaming(stream_name):
         logger.info(f"{module_prefix} - Streaming in progress - Log group: {AWS_LOG_GROUP}")
         watchtower_handler.setLevel(logging.INFO)
         watchtower_handler.setFormatter(logging.Formatter(fmt=CW_LOGGING_FORMAT))
+        watchtower_handler.setFormatter(LogstashFormatterV1())
+        watchtower_handler.addFilter(ContextualFilter())
         root_logger.addHandler(watchtower_handler)
+
+
+class ContextualFilter(logging.Filter):
+    """
+    This filter gets the request_id, account, org_id from the message and adds it to
+    each log record. This way we do not have to explicitly retreive/pass
+    around them for each log message
+    """
+
+    def filter(self, log_record):
+        try:
+            log_record.request_id = threadctx.request_id
+        except Exception:
+            log_record.request_id = "-1"
+
+        try:
+            log_record.account = threadctx.account
+        except Exception:
+            log_record.account = "000001"
+
+        try:
+            log_record.org_id = threadctx.org_id
+        except Exception:
+            log_record.org_id = "000001"
+
+        return True
