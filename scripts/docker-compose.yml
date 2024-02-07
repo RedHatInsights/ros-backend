@@ -31,6 +31,7 @@ services:
     command: "bash -c 'echo Waiting for Kafka to be ready... && \
                        cub kafka-ready -b kafka:29092 1 20 && \
                        kafka-topics --create --if-not-exists --topic platform.inventory.events --bootstrap-server kafka:29092 && \
+                       kafka-topics --create --if-not-exists --topic platform.upload.announce --bootstrap-server kafka:29092 && \
                        kafka-topics --create --if-not-exists --topic platform.engine.results --bootstrap-server kafka:29092'"
     depends_on:
       - kafka
@@ -76,9 +77,9 @@ services:
       - INGRESS_MINIOACCESSKEY=$MINIO_ACCESS_KEY
       - INGRESS_MINIOSECRETKEY=$MINIO_SECRET_KEY
       - INGRESS_MINIOENDPOINT=minio:9000
+    restart: always
     depends_on:
-       - createbuckets
-       - kafka
+    - kafka
   db-ros:
     image: postgres
     restart: always
@@ -117,7 +118,6 @@ services:
        - kafka-create-topics
        - db-host-inventory
        - puptoo
-       - createbuckets
 
   insights-inventory-web:
     <<: *inventory
@@ -216,7 +216,6 @@ services:
     depends_on:
       - kafka
       - db-host-inventory
-      - insights-inventory-mq
     ports:
       - 8083:8083
   elasticsearch:
