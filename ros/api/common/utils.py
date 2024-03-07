@@ -7,7 +7,8 @@ from ros.lib.utils import (
     identity,
     user_data_from_identity,
     is_valid_uuid,
-    system_ids_by_org_id
+    system_ids_by_org_id,
+    service_account_from_identity
 )
 from ros.extensions import db
 from sqlalchemy import exc
@@ -45,9 +46,14 @@ def validate_rating_data(func):
         return rating
 
     def check_for_user():
+        username = None
         ident = identity(request)['identity']
         user = user_data_from_identity(ident)
-        username = user['username'] if 'username' in user else None
+        service_account_info = service_account_from_identity(ident)
+        if isinstance(user, dict):
+            username = user.get('username')
+        elif isinstance(service_account_info, dict):
+            username = service_account_info.get('username')
 
         if username is None:
             abort(403, message="Username doesn't exist")

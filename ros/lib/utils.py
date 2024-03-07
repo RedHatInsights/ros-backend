@@ -81,12 +81,22 @@ def identity(request):
 
 def user_data_from_identity(identity):
     """
-    Get the user details dict from the rh-identity data or error out.
+    Get the user dict from the rh-identity data or return None.
     """
     if 'user' not in identity:
         return None
 
     return identity['user']
+
+
+def service_account_from_identity(identity):
+    """
+    Get the service_account dict from rh-identity data or return None.
+    """
+    if 'service_account' not in identity:
+        return None
+
+    return identity['service_account']
 
 
 def is_valid_cloud_provider(cloud_provider):
