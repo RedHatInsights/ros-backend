@@ -46,6 +46,14 @@ def test_user_data_from_identity():
     assert not result
 
 
+def test_service_user_data_from_identity():
+    identity_obj = {"account_number": "111111", "auth_type": "jwt-auth", "internal": {}, "org_id": "555555",
+                    "service_account": {"client_id": "0000", "username": "test"}, "type": "ServiceAccount"}
+    expected_result = {"client_id": "0000", "username": "test"}
+    result = utils.service_account_from_identity(identity_obj)
+    assert result == expected_result
+
+
 def setup_threads():
     engine_processor_thread = mock.Mock()
     engine_processor_thread.name = 'process-engine-results'
