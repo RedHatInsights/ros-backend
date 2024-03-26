@@ -10,6 +10,11 @@
         },
         "version": "v1"
     },
+    "servers": [
+        {
+            "url": "https://console.redhat.com/api/ros/v1"
+        }
+    ],
     "paths": {
         "/status": {
             "get": {
