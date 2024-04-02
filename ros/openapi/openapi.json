@@ -13,7 +13,7 @@
     "servers": [
         {
             "url": "https://console.redhat.com/api/ros/v1",
-            "description": "Production ROS API URL"
+            "description": "ROS Production API"
         }
     ],
     "paths": {
