@@ -12,7 +12,8 @@
     },
     "servers": [
         {
-            "url": "https://console.redhat.com/api/ros/v1"
+            "url": "https://console.redhat.com/api/ros/v1",
+            "description": "Production ROS API URL"
         }
     ],
     "paths": {
