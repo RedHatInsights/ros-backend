@@ -1,2 +1,12 @@
-scripts/minio-conf/
-scripts/minio-data/
+# Ignore everything
+*
+
+# Allow files and directories
+!/pyproject.toml
+!/poetry.lock
+!/manage.py
+!/seed.py
+!/gunicorn.conf.py
+!/ros
+!/migrations
+!/seed.d
