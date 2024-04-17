@@ -1,5 +1,7 @@
 FROM registry.redhat.io/ubi8/ubi-minimal
 
+ARG PYTHON_PIP_VERSION=23.3
+
 RUN microdnf install \
     --disableplugin=subscription-manager \
     --nodocs -y python311 tar gzip gcc python3.11-devel libpq-devel
@@ -7,6 +9,7 @@ RUN microdnf install \
 # Install poetry in separate virtual env
 ENV POETRY_HOME=/opt/poetry
 RUN python -m venv $POETRY_HOME &&\
+    $POETRY_HOME/bin/pip install --upgrade pip==$PYTHON_PIP_VERSION setuptools wheel && \
     $POETRY_HOME/bin/pip install poetry
 
 # Set new virtual env for ROS
@@ -20,7 +23,7 @@ COPY migrations migrations
 COPY seed.d seed.d
 
 RUN python -m venv $VIRTUAL_ENV && \
-    poetry update pip setuptools wheel && \
+    $VIRTUAL_ENV/bin/pip install --upgrade pip==$PYTHON_PIP_VERSION setuptools wheel && \
     poetry install
 
 ARG description="The Red Hat Insights resource optimization service \
