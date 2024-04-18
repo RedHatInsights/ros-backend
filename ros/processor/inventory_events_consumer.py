@@ -150,7 +150,7 @@ class InventoryEventsConsumer:
             else:
                 try:
                     account = get_or_create(
-                        db.session, RhAccount, 'account',
+                        db.session, RhAccount, 'org_id',
                         account=host['account'],
                         org_id=host.get('org_id')
                     )
