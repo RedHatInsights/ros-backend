@@ -113,7 +113,7 @@ class InsightsEngineConsumer:
         with app.app_context():
             try:
                 account = get_or_create(
-                    db.session, RhAccount, 'account',
+                    db.session, RhAccount, 'org_id',
                     account=host['account'],
                     org_id=platform_metadata.get('org_id')
                 )
