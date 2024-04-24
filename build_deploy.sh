@@ -34,16 +34,17 @@ mkdir -p "$DOCKER_CONF"
 docker --config="$DOCKER_CONF" login -u="$QUAY_USER" -p="$QUAY_TOKEN" quay.io
 docker --config="$DOCKER_CONF" login -u="$RH_REGISTRY_USER" -p="$RH_REGISTRY_TOKEN" registry.redhat.io
 docker --config="$DOCKER_CONF" build -t "${IMAGE_NAME}:${IMAGE_TAG}" .
-docker --config="$DOCKER_CONF" push "${IMAGE_NAME}:${IMAGE_TAG}"
 
 
-if [[ $GIT_BRANCH == *"security-compliance"* ]]; then
+if [[ "$GIT_BRANCH" == "origin/security-compliance" ]]; then
     docker --config="$DOCKER_CONF" tag "${IMAGE_NAME}:${IMAGE_TAG}" "${IMAGE_NAME}:${SECURITY_COMPLIANCE_TAG}"
     docker --config="$DOCKER_CONF" push "${IMAGE_NAME}:${SECURITY_COMPLIANCE_TAG}"
 elif [[ $GIT_BRANCH == *"hotfix"* ]]; then
+    docker --config="$DOCKER_CONF" push "${IMAGE_NAME}:${IMAGE_TAG}"
     docker --config="$DOCKER_CONF" tag "${IMAGE_NAME}:${IMAGE_TAG}" "${IMAGE_NAME}:${HOTFIX_CVE_TAG}"
     docker --config="$DOCKER_CONF" push "${IMAGE_NAME}:${HOTFIX_CVE_TAG}"
 else
+    docker --config="$DOCKER_CONF" push "${IMAGE_NAME}:${IMAGE_TAG}"
     for ADDITIONAL_TAG in $ADDITIONAL_TAGS; do
         docker --config="$DOCKER_CONF" tag "${IMAGE_NAME}:${IMAGE_TAG}" "${IMAGE_NAME}:${ADDITIONAL_TAG}"
         docker --config="$DOCKER_CONF" push "${IMAGE_NAME}:${ADDITIONAL_TAG}"
