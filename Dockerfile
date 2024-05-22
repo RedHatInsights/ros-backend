@@ -1,4 +1,4 @@
-FROM registry.redhat.io/ubi8/ubi-minimal
+FROM registry.access.redhat.com/ubi8/ubi-minimal
 
 ARG PYTHON_PIP_VERSION=23.3
 
