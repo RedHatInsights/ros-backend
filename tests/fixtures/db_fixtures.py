@@ -1,4 +1,3 @@
-import codecs
 import datetime
 import json
 import os
@@ -32,7 +31,7 @@ def auth_token():
             }
         }
     }
-    auth_token = codecs.decode(b64encode(json.dumps(identity).encode('utf-8')))
+    auth_token = b64encode(json.dumps(identity).encode('utf-8')).decode()
     return auth_token
 
 
