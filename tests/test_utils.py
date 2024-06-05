@@ -19,8 +19,9 @@ def test_is_valid_uuid():
 
 def test_identity(mocker):
     request = mock.Mock()
-    request.headers = {"X-RH-IDENTITY": "eyJpZGVudGl0eSI6IHsiYWNjb3VudF9udW1iZXIiOiAiMDAwMDAwMSIsICJ0eXB"
-                       "lIjogIlVzZXIiLCAiaW50ZXJuYWwiOiB7Im9yZ19pZCI6ICIwMDAwMDEifX19Cg=="}
+    str_ident = "eyJpZGVudGl0eSI6IHsiYWNjb3VudF9udW1iZXIiOiAiMDAwMDAwMSIsICJ0eXB" \
+                "lIjogIlVzZXIiLCAiaW50ZXJuYWwiOiB7Im9yZ19pZCI6ICIwMDAwMDEifX19Cg=="
+    request.headers = {"X-RH-IDENTITY": str_ident}
     expected_result = {'identity': {'account_number': '0000001', 'type': 'User', 'internal': {'org_id': '000001'}}}
     result = utils.identity(request)
     assert expected_result == result

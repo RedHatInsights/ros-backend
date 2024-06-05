@@ -329,7 +329,7 @@ def test_should_check_authorization_for_rating_request(
             }
         }
     }
-    auth_token_for_t1 = b64encode(json.dumps(identity).encode('utf-8'))
+    auth_token_for_t1 = b64encode(json.dumps(identity).encode('utf-8')).decode()
     with app.test_client() as client:
         data_dict = {
             "inventory_id": "ee0b9978-fe1b-4191-8408-cbadbd47f7a3",
