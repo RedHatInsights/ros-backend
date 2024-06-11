@@ -1,13 +1,19 @@
 import json
+from prometheus_client import start_http_server
 from ros.lib import consume
 from ros.lib.app import app
-from ros.extensions import db
+from ros.extensions import db, cache
 from ros.lib.utils import get_or_create, system_allowed_in_ros, update_system_record, is_platform_metadata_check_pass
 from confluent_kafka import KafkaException
 from ros.lib.models import RhAccount, System
-from ros.lib.config import INVENTORY_EVENTS_TOPIC, METRICS_PORT, get_logger
+from ros.lib.config import (
+    INVENTORY_EVENTS_TOPIC,
+    METRICS_PORT,
+    get_logger,
+    CACHE_TIMEOUT_FOR_DELETED_SYSTEM,
+    CACHE_KEYWORD_FOR_DELETED_SYSTEM
+)
 from ros.lib.cw_logging import commence_cw_log_streaming, threadctx
-from prometheus_client import start_http_server
 from ros.processor.metrics import (processor_requests_success,
                                    processor_requests_failures,
                                    kafka_failures)
@@ -82,6 +88,8 @@ class InventoryEventsConsumer:
                 processor_requests_failures.labels(
                     reporter=self.reporter, org_id=org_id
                 ).inc()
+                print("----------------------------")
+                print(msg)
                 LOG.error(
                     f"{self.prefix} - An error occurred during message processing: {repr(err)} "
                     f"in the system {host_id} created from account: {account} and org_id: {org_id}"
@@ -109,6 +117,13 @@ class InventoryEventsConsumer:
                 ).inc()
                 LOG.info(
                     f"{self.prefix} - Deleted system with inventory id: {host_id}"
+                )
+                cache_key = (f"{msg['org_id']}{CACHE_KEYWORD_FOR_DELETED_SYSTEM}"
+                             f'{host_id}')
+                print("----------------setting cache with key-----")
+                print(cache_key)
+                cache.set(
+                    cache_key, 1, timeout=CACHE_TIMEOUT_FOR_DELETED_SYSTEM
                 )
 
     def host_create_update_events(self, msg):

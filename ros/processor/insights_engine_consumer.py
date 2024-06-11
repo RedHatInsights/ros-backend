@@ -1,11 +1,16 @@
 import json
 from ros.lib import consume, produce
 from ros.lib.app import app
-from ros.extensions import db
+from ros.extensions import db, cache
 from datetime import datetime, timezone
 from confluent_kafka import KafkaException
 from ros.lib.models import RhAccount, System
-from ros.lib.config import ENGINE_RESULT_TOPIC, METRICS_PORT, get_logger
+from ros.lib.config import (
+    ENGINE_RESULT_TOPIC,
+    METRICS_PORT,
+    get_logger,
+    CACHE_KEYWORD_FOR_DELETED_SYSTEM
+)
 from ros.processor.process_archive import get_performance_profile
 from ros.processor.event_producer import new_suggestion_event
 from ros.lib.cw_logging import commence_cw_log_streaming, threadctx
@@ -91,6 +96,15 @@ class InsightsEngineConsumer:
             threadctx.account = platform_metadata.get('account')
             threadctx.org_id = platform_metadata.get('org_id')
 
+            cache_key = (f"{platform_metadata.get('org_id')}"
+                         f"{CACHE_KEYWORD_FOR_DELETED_SYSTEM}{host['id']}")
+            print(cache.get(cache_key))
+            if cache.get(cache_key):
+                LOG.info(
+                    f"{self.prefix} - Received a msg for deleted system "
+                    f" with inventory id: {host['id']}.Hence, rejecting a msg."
+                )
+                return
             performance_record = get_performance_profile(
                 platform_metadata['url'],
                 platform_metadata.get('org_id'),
