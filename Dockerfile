@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi-minimal
+FROM registry.access.redhat.com/ubi8/ubi-minimal as img-ros-backend
 
 ARG PYTHON_PIP_VERSION=23.3
 
@@ -39,3 +39,7 @@ LABEL description=$description \
       io.k8s.display-name="ros-backend" \
       io.openshift.tags="ros-backend" \
       summary="Image of Resource Optimization Service backend"
+
+FROM registry.access.redhat.com/ubi8/ubi-minimal as img-pcp-metric-generator
+RUN microdnf install \
+    --nodocs -y pcp

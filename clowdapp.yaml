@@ -23,7 +23,7 @@ objects:
           enabled: true
           apiPath: ros
       podSpec:
-        image: ${IMAGE}:${IMAGE_TAG}
+        image: ${ROS_BACKEND_IMAGE}:${IMAGE_TAG}
         command: ["sh"]
         args: ["-c", "export FLASK_APP=manage.py && poetry run flask db upgrade && poetry run flask seed && poetry run gunicorn ros.api.main:app"]
         resources:
@@ -75,10 +75,24 @@ objects:
           - name: BYPASS_UNLEASH
             value: ${BYPASS_UNLEASH}
 
+    - name: pcp-metric-generator
+      replicas: ${{PCP_METRIC_GENERATOR_REPLICA_COUNT}}
+      podSpec:
+        image: ${PCP_METRIC_GENERATOR_IMAGE}:${IMAGE_TAG}
+        command: ["bash"]
+        args: ["-c", "while true; do sleep 30; pmlogsummary; done;"]
+        resources:
+          requests:
+            cpu: ${CPU_REQUEST}
+            memory: ${MEMORY_REQUEST}
+          limits:
+            cpu: ${CPU_LIMIT}
+            memory: ${MEMORY_LIMIT}
+
     - name: inventory-events-processor
       replicas: ${{INVENTORY_PROCESSOR_REPLICA_COUNT}}
       podSpec:
-        image: ${IMAGE}:${IMAGE_TAG}
+        image: ${ROS_BACKEND_IMAGE}:${IMAGE_TAG}
         command: ["bash"]
         args: ["-c", "python -m ros.processor.inventory_events_consumer"]
         resources:
@@ -129,7 +143,7 @@ objects:
     - name: engine-result-processor
       replicas: ${{ENGINE_PROCESSOR_REPLICA_COUNT}}
       podSpec:
-        image: ${IMAGE}:${IMAGE_TAG}
+        image: ${ROS_BACKEND_IMAGE}:${IMAGE_TAG}
         command: ["bash"]
         args: ["-c", "python -m ros.processor.insights_engine_consumer"]
         resources:
@@ -180,7 +194,7 @@ objects:
     - name: garbage-collector-processor
       replicas: ${{GARBAGE_COLLECTOR_REPLICA_COUNT}}
       podSpec:
-        image: ${IMAGE}:${IMAGE_TAG}
+        image: ${ROS_BACKEND_IMAGE}:${IMAGE_TAG}
         command: ["bash"]
         args: ["-c", "python -m ros.processor.garbage_collector"]
         resources:
@@ -299,10 +313,16 @@ parameters:
 - description: Replica count for garbage collector pod
   name: GARBAGE_COLLECTOR_REPLICA_COUNT
   value: "1"
-- description: Image NAME
-  name: IMAGE
+- description: Replica count for PCP Metric Generator
+  name: PCP_METRIC_GENERATOR_REPLICA_COUNT
+  value: "1"
+- description: ROS Backend Image Name
+  name: ROS_BACKEND_IMAGE
   required: true
   value: quay.io/cloudservices/ros-backend
+- description: PCP Metric Generator Image Name
+  name: PCP_METRIC_GENERATOR_IMAGE
+  value: quay.io/cloudservices/pcp-metric-generator
 - description: Image tag
   name: IMAGE_TAG
   required: true
