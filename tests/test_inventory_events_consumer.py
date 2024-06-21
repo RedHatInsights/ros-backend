@@ -2,8 +2,13 @@ import pytest
 import json
 from pathlib import Path
 from ros.lib.app import app
+from ros.extensions import cache
 from ros.processor.inventory_events_consumer import InventoryEventsConsumer
 from tests.helpers.db_helper import db_get_host
+from ros.lib.config import CACHE_KEYWORD_FOR_DELETED_SYSTEM
+
+cache.init_app(app)
+
 
 PERFORMANCE_RECORD = {'total_cpus': 1, 'instance_type': 't2.micro', 'mem.physmem': 825152.0,
                       'mem.util.used': 663245.405, 'kernel.all.cpu.user': 0.003, 'kernel.all.cpu.sys': 0.001,
@@ -103,11 +108,54 @@ def test_host_update_event_no_cp(inventory_event_consumer, inventory_event_messa
         assert updated_system.display_name != updated_display_name
 
 
-def test_host_delete_event(inventory_event_consumer, db_setup):
-    msg = {"type": "delete", "insights_id": "677fb960-e164-48a4-929f-59e2d917b444",
+def test_host_delete_event(inventory_event_consumer, inventory_event_message, db_setup, mocker):
+    mocker.patch.object(
+        inventory_event_consumer,
+        'process_system_details',
+        side_effect=inventory_event_consumer.process_system_details,
+        autospec=True
+    )
+    inventory_event_message['type'] = 'created'
+    inventory_event_consumer.host_create_update_events(inventory_event_message)
+
+    msg = {"type": "delete",
+           "insights_id": "677fb960-e164-48a4-929f-59e2d917b444",
            "id": "ee0b9978-fe1b-4191-8408-cbadbd47f7a2",
-           "account": '0000001',
-           'org_id': '000001'}
+           "account": '0000001', 'org_id': '000001'}
     inventory_event_consumer.host_delete_event(msg)
+
+    with app.app_context():
+        cached_deleted_sys = cache.get(
+            f"{msg['org_id']}{CACHE_KEYWORD_FOR_DELETED_SYSTEM}{msg['id']}"
+        )
+        assert cached_deleted_sys == 1
+
     host = db_get_host(msg['id'])
     assert host is None
+
+
+def test_recreate_remove_cached_key(inventory_event_consumer, inventory_event_message, db_setup, mocker):
+    msg = {"type": "delete",
+           "insights_id": "677fb960-e164-48a4-929f-59e2d917b444",
+           "id": "ee0b9978-fe1b-4191-8408-cbadbd47f7a2",
+           "account": '0000001', 'org_id': '000001'}
+    with app.app_context():
+        cached_sys_key = cache.get(
+            f"{msg['org_id']}{CACHE_KEYWORD_FOR_DELETED_SYSTEM}{msg['id']}"
+        )
+        assert cached_sys_key == 1
+
+    mocker.patch.object(
+        inventory_event_consumer,
+        'process_system_details',
+        side_effect=inventory_event_consumer.process_system_details,
+        autospec=True
+    )
+    inventory_event_message['type'] = 'created'
+    inventory_event_consumer.host_create_update_events(inventory_event_message)
+
+    with app.app_context():
+        cached_sys_key = cache.get(
+            f"{msg['org_id']}{CACHE_KEYWORD_FOR_DELETED_SYSTEM}{msg['id']}"
+        )
+        assert cached_sys_key is None

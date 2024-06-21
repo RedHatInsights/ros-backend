@@ -166,6 +166,9 @@ class InventoryEventsConsumer:
                         f"{self.prefix} - Refreshed system {system.inventory_id} ({system.id}) "
                         f"belonging to account: {account.account} ({account.id}) and org_id: {account.org_id}"
                     )
+                    self.expired_del_cache_if_exists(
+                        host['id'], account.org_id
+                    )
             else:
                 try:
                     account = get_or_create(
@@ -195,6 +198,9 @@ class InventoryEventsConsumer:
                         f"{self.prefix} - Refreshed system {system.inventory_id} ({system.id}) "
                         f"belonging to account: {account.account} ({account.id}) and org_id: {account.org_id}"
                     )
+                    self.expired_del_cache_if_exists(
+                        host['id'], account.org_id
+                    )
                 except Exception as err:
                     processor_requests_failures.labels(
                         reporter=self.reporter, org_id=account.org_id
@@ -204,6 +210,13 @@ class InventoryEventsConsumer:
                         f"{self.prefix} - Unable to add system {host['id']} to DB "
                         f"belonging to account: {account.account} and org_id: {account.org_id} - {err}"
                     )
+
+    def expired_del_cache_if_exists(self, host_id, org_id):
+        with app.app_context():
+            cache_key = (f"{org_id}{CACHE_KEYWORD_FOR_DELETED_SYSTEM}"
+                         f'{host_id}')
+            if cache.get(cache_key):
+                cache.delete(cache_key)
 
 
 if __name__ == "__main__":

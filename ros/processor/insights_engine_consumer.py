@@ -102,7 +102,7 @@ class InsightsEngineConsumer:
                 if cache.get(cache_key):
                     LOG.info(
                         f"{self.prefix} - Received a msg for deleted system "
-                        f" with inventory id: {host['id']}.Hence, rejecting a msg."
+                        f"with inventory id: {host['id']}. Hence, rejecting a msg."
                     )
                     return
                 performance_record = get_performance_profile(
