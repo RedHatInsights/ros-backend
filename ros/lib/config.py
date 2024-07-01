@@ -142,6 +142,10 @@ DAYS_UNTIL_STALE = int(os.getenv("DAYS_UNTIL_STALE", '45'))
 CW_LOGGING_FORMAT = '%(asctime)s - %(levelname)s  - %(funcName)s - %(message)s'
 ROS_PROCESSOR_PORT = int(os.getenv("ROS_PROCESSOR_PORT", "8000"))
 ROS_API_PORT = int(os.getenv("ROS_API_PORT", "8000"))
+# Timeout in seconds to set against keys of deleted systems in a cache
+CACHE_TIMEOUT_FOR_DELETED_SYSTEM = int(
+    os.getenv("CACHE_TIMEOUT_FOR_DELETED_SYSTEM", "3600"))
+CACHE_KEYWORD_FOR_DELETED_SYSTEM = '_del_'
 
 
 def kafka_auth_config(connection_object=None):

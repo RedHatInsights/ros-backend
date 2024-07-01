@@ -1,11 +1,16 @@
 import json
 from ros.lib import consume, produce
 from ros.lib.app import app
-from ros.extensions import db
+from ros.extensions import db, cache
 from datetime import datetime, timezone
 from confluent_kafka import KafkaException
 from ros.lib.models import RhAccount, System
-from ros.lib.config import ENGINE_RESULT_TOPIC, METRICS_PORT, get_logger
+from ros.lib.config import (
+    ENGINE_RESULT_TOPIC,
+    METRICS_PORT,
+    get_logger,
+    CACHE_KEYWORD_FOR_DELETED_SYSTEM
+)
 from ros.processor.process_archive import get_performance_profile
 from ros.processor.event_producer import new_suggestion_event
 from ros.lib.cw_logging import commence_cw_log_streaming, threadctx
@@ -82,31 +87,41 @@ class InsightsEngineConsumer:
                 self.consumer.commit()
 
     def handle_msg(self, msg):
-        if system_allowed_in_ros(msg, self.reporter):
-            host = msg["input"]["host"]
-            platform_metadata = msg["input"]["platform_metadata"]
-            system_metadata = msg["results"]["system"]["metadata"]
+        with app.app_context():
+            if system_allowed_in_ros(msg, self.reporter):
+                host = msg["input"]["host"]
+                platform_metadata = msg["input"]["platform_metadata"]
+                system_metadata = msg["results"]["system"]["metadata"]
 
-            threadctx.request_id = platform_metadata.get('request_id')
-            threadctx.account = platform_metadata.get('account')
-            threadctx.org_id = platform_metadata.get('org_id')
+                threadctx.request_id = platform_metadata.get('request_id')
+                threadctx.account = platform_metadata.get('account')
+                threadctx.org_id = platform_metadata.get('org_id')
 
-            performance_record = get_performance_profile(
-                platform_metadata['url'],
-                platform_metadata.get('org_id'),
-                host['id'],
-                custom_prefix=self.prefix
-            )
+                cache_key = (f"{platform_metadata.get('org_id')}"
+                             f"{CACHE_KEYWORD_FOR_DELETED_SYSTEM}{host['id']}")
+                if cache.get(cache_key):
+                    LOG.info(
+                        f"{self.prefix} - Received a msg for deleted system "
+                        f"with inventory id: {host['id']}. Hence, rejecting a msg."
+                    )
+                    return
+                performance_record = get_performance_profile(
+                    platform_metadata['url'],
+                    platform_metadata.get('org_id'),
+                    host['id'],
+                    custom_prefix=self.prefix
+                )
 
-            reports = []
-            if msg["results"]["reports"] \
-                    and isinstance(msg["results"]["reports"], list):
-                reports = msg["results"]["reports"]
-            ros_reports = [
-                report for report in reports
-                if 'ros_instance_evaluation' in report["rule_id"]
-            ]
-            self.process_report(host, platform_metadata, ros_reports, system_metadata, performance_record)
+                reports = []
+                if msg["results"]["reports"] \
+                        and isinstance(msg["results"]["reports"], list):
+                    reports = msg["results"]["reports"]
+                ros_reports = [
+                    report for report in reports
+                    if 'ros_instance_evaluation' in report["rule_id"]
+                ]
+                self.process_report(host, platform_metadata, ros_reports,
+                                    system_metadata, performance_record)
 
     def process_report(self, host, platform_metadata, reports, system_metadata, performance_record):
         """create/update system and performance_profile based on reports data."""
@@ -235,7 +250,8 @@ class InsightsEngineConsumer:
                 ).inc()
                 LOG.error(
                     f"{self.prefix} - Unable to add system {host['id']} to DB "
-                    f"belonging to account: {account.account} and org_id: {account.org_id} - {err}"
+                    f"belonging to account: {account.account} "
+                    f"and org_id: {account.org_id} - {repr(err)}"
                 )
 
     def trigger_notification(
@@ -255,6 +271,7 @@ class InsightsEngineConsumer:
 
 if __name__ == "__main__":
     start_http_server(int(METRICS_PORT))
+    cache.init_app(app)
     commence_cw_log_streaming('ros-processor')
     processor = InsightsEngineConsumer()
     processor.run()
