@@ -134,13 +134,12 @@ def test_host_delete_event(inventory_event_consumer, inventory_event_message, db
 def test_recreate_remove_cached_key(inventory_event_consumer, inventory_event_message, db_setup, redis_setup, mocker):
     msg = {"type": "delete",
            "insights_id": "677fb960-e164-48a4-929f-59e2d917b444",
-           "id": "ee0b9978-fe1b-4191-8408-cbadbd47f7a2",
-           "account": '0000001', 'org_id': '000001'}
+           "id": "bb0b9978-fe1b-4191-8408-cbadbd47f7a3",
+           "account": '0000002', 'org_id': '000002'}
+    cached_skey = f"{msg['org_id']}{CACHE_KEYWORD_FOR_DELETED_SYSTEM}{msg['id']}"
     with app.app_context():
-        cached_sys_key = cache.get(
-            f"{msg['org_id']}{CACHE_KEYWORD_FOR_DELETED_SYSTEM}{msg['id']}"
-        )
-        assert cached_sys_key == 1
+        cache.set(cached_skey, 1)
+        assert cache.get(cached_skey) == 1
 
     mocker.patch.object(
         inventory_event_consumer,
@@ -149,10 +148,13 @@ def test_recreate_remove_cached_key(inventory_event_consumer, inventory_event_me
         autospec=True
     )
     inventory_event_message['type'] = 'created'
+    inventory_event_message['host']['id'] = 'bb0b9978-fe1b-4191-8408-cbadbd47f7a3'
+    inventory_event_message['host']['account'] = '0000002'
+    inventory_event_message['host']['org_id'] = '000002'
+    inventory_event_message['platform_metadata']['account'] = '0000002'
+    inventory_event_message['platform_metadata']['org_id'] = '000002'
     inventory_event_consumer.host_create_update_events(inventory_event_message)
 
     with app.app_context():
-        cached_sys_key = cache.get(
-            f"{msg['org_id']}{CACHE_KEYWORD_FOR_DELETED_SYSTEM}{msg['id']}"
-        )
-        assert cached_sys_key is None
+        cached_sys_val = cache.get(cached_skey)
+        assert cached_sys_val is None
