@@ -44,10 +44,6 @@ jobs:
           KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
           KAFKA_ZOOKEEPER_CONNECT: zookeeper:32181
           KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
-      redis:
-        image: quay.io/cloudservices/redis-ephemeral:6
-        ports:
-          - "6379:6379"
 
     steps:
     - uses: actions/checkout@v2

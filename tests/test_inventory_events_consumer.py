@@ -7,8 +7,6 @@ from ros.processor.inventory_events_consumer import InventoryEventsConsumer
 from tests.helpers.db_helper import db_get_host
 from ros.lib.config import CACHE_KEYWORD_FOR_DELETED_SYSTEM
 
-cache.init_app(app)
-
 
 PERFORMANCE_RECORD = {'total_cpus': 1, 'instance_type': 't2.micro', 'mem.physmem': 825152.0,
                       'mem.util.used': 663245.405, 'kernel.all.cpu.user': 0.003, 'kernel.all.cpu.sys': 0.001,
@@ -30,7 +28,7 @@ def inventory_event_consumer():
     return InventoryEventsConsumer()
 
 
-def test_process_system_details(inventory_event_consumer, inventory_event_message, db_setup):
+def test_process_system_details(inventory_event_consumer, inventory_event_message, db_setup, redis_setup):
     inventory_event_message['type'] = 'created'
     inventory_event_consumer.process_system_details(inventory_event_message)
     with app.app_context():
@@ -38,7 +36,7 @@ def test_process_system_details(inventory_event_consumer, inventory_event_messag
         assert str(host.inventory_id) == inventory_event_message['host']['id']
 
 
-def test_host_create_events(inventory_event_consumer, inventory_event_message, db_setup, mocker):
+def test_host_create_events(inventory_event_consumer, inventory_event_message, db_setup, redis_setup, mocker):
     mocker.patch.object(
         inventory_event_consumer,
         'process_system_details',
@@ -60,7 +58,7 @@ def test_host_create_events(inventory_event_consumer, inventory_event_message, d
                inventory_event_message['host']['groups']
 
 
-def test_host_update_events(inventory_event_consumer, inventory_event_message, db_setup, mocker):
+def test_host_update_events(inventory_event_consumer, inventory_event_message, db_setup, redis_setup, mocker):
     mocker.patch.object(
         inventory_event_consumer,
         'process_system_details',
@@ -85,7 +83,7 @@ def test_host_update_events(inventory_event_consumer, inventory_event_message, d
         assert updated_system.groups == []
 
 
-def test_host_update_event_no_cp(inventory_event_consumer, inventory_event_message, db_setup, mocker):
+def test_host_update_event_no_cp(inventory_event_consumer, inventory_event_message, db_setup, redis_setup, mocker):
     mocker.patch.object(
         inventory_event_consumer,
         'process_system_details',
@@ -108,7 +106,7 @@ def test_host_update_event_no_cp(inventory_event_consumer, inventory_event_messa
         assert updated_system.display_name != updated_display_name
 
 
-def test_host_delete_event(inventory_event_consumer, inventory_event_message, db_setup, mocker):
+def test_host_delete_event(inventory_event_consumer, inventory_event_message, db_setup, redis_setup, mocker):
     mocker.patch.object(
         inventory_event_consumer,
         'process_system_details',
@@ -123,7 +121,6 @@ def test_host_delete_event(inventory_event_consumer, inventory_event_message, db
            "id": "ee0b9978-fe1b-4191-8408-cbadbd47f7a2",
            "account": '0000001', 'org_id': '000001'}
     inventory_event_consumer.host_delete_event(msg)
-
     with app.app_context():
         cached_deleted_sys = cache.get(
             f"{msg['org_id']}{CACHE_KEYWORD_FOR_DELETED_SYSTEM}{msg['id']}"
@@ -134,7 +131,7 @@ def test_host_delete_event(inventory_event_consumer, inventory_event_message, db
     assert host is None
 
 
-def test_recreate_remove_cached_key(inventory_event_consumer, inventory_event_message, db_setup, mocker):
+def test_recreate_remove_cached_key(inventory_event_consumer, inventory_event_message, db_setup, redis_setup, mocker):
     msg = {"type": "delete",
            "insights_id": "677fb960-e164-48a4-929f-59e2d917b444",
            "id": "ee0b9978-fe1b-4191-8408-cbadbd47f7a2",
