@@ -63,7 +63,7 @@ def test_handle_msg(engine_result_message, engine_consumer, mocker, performance_
     engine_consumer.process_report.assert_called_once()
 
 
-def test_process_report_idle(engine_result_message, engine_consumer, db_setup, performance_record, redis_client):
+def test_process_report_idle(engine_result_message, engine_consumer, db_setup, performance_record):
     engine_result_message = engine_result_message("insights-engine-result-idle.json")
     host = engine_result_message["input"]["host"]
     ros_reports = [engine_result_message["results"]["reports"][7]]
@@ -83,7 +83,7 @@ def test_process_report_idle(engine_result_message, engine_consumer, db_setup, p
 
 
 def test_process_report_under_pressure(engine_result_message, engine_consumer,
-                                       db_setup, performance_record, redis_client):
+                                       db_setup, performance_record):
     engine_result_message = engine_result_message("insights-engine-result-under-pressure.json")
     host = engine_result_message["input"]["host"]
     ros_reports = [engine_result_message["results"]["reports"][7]]
@@ -102,7 +102,7 @@ def test_process_report_under_pressure(engine_result_message, engine_consumer,
             .performance_record == performance_record
 
 
-def test_process_report_no_pcp(engine_result_message, engine_consumer, db_setup, performance_record, redis_client):
+def test_process_report_no_pcp(engine_result_message, engine_consumer, db_setup, performance_record):
     engine_result_message = engine_result_message("insights-engine-result-no-pcp.json")
     host = engine_result_message["input"]["host"]
     ros_reports = [engine_result_message["results"]["reports"][7]]
@@ -123,7 +123,7 @@ def test_process_report_no_pcp(engine_result_message, engine_consumer, db_setup,
         assert performance_utilization == sample_performance_util_no_pcp
 
 
-def test_process_report_undersized(engine_result_message, engine_consumer, db_setup, performance_record, redis_client):
+def test_process_report_undersized(engine_result_message, engine_consumer, db_setup, performance_record):
     engine_result_message = engine_result_message("insights-engine-result-undersized.json")
     host = engine_result_message["input"]["host"]
     ros_reports = [engine_result_message["results"]["reports"][7]]
@@ -142,7 +142,7 @@ def test_process_report_undersized(engine_result_message, engine_consumer, db_se
             .performance_record == performance_record
 
 
-def test_process_report_optimized(engine_result_message, engine_consumer, db_setup, performance_record, redis_client):
+def test_process_report_optimized(engine_result_message, engine_consumer, db_setup, performance_record):
     engine_result_message = engine_result_message("insights-engine-result-optimized.json")
     host = engine_result_message["input"]["host"]
     ros_reports = []
@@ -163,7 +163,7 @@ def test_process_report_optimized(engine_result_message, engine_consumer, db_set
             .performance_record == performance_record
 
 
-def test_system_properties(engine_result_message, engine_consumer, db_setup, performance_record, redis_client):
+def test_system_properties(engine_result_message, engine_consumer, db_setup, performance_record):
     engine_result_message = engine_result_message("insights-engine-result-idle.json")
     host = engine_result_message["input"]["host"]
     ros_reports = [engine_result_message["results"]["reports"][7]]
@@ -175,7 +175,7 @@ def test_system_properties(engine_result_message, engine_consumer, db_setup, per
     assert data.groups == host['groups']
 
 
-def test_history_record_creation(engine_result_message, engine_consumer, db_setup, performance_record, redis_client):
+def test_history_record_creation(engine_result_message, engine_consumer, db_setup, performance_record):
     engine_result_message = engine_result_message("insights-engine-result-idle.json")
     host = engine_result_message["input"]["host"]
     ros_reports = [engine_result_message["results"]["reports"][7]]
@@ -191,7 +191,7 @@ def test_history_record_creation(engine_result_message, engine_consumer, db_setu
         assert history_rec_count == 1
 
 
-def test_substate_updates(engine_result_message, engine_consumer, db_setup, performance_record, redis_client):
+def test_substate_updates(engine_result_message, engine_consumer, db_setup, performance_record):
     engine_result_message = engine_result_message("insights-engine-result-under-pressure.json")
     host = engine_result_message["input"]["host"]
     ros_reports = [engine_result_message["results"]["reports"][7]]
@@ -215,7 +215,7 @@ def test_substate_updates(engine_result_message, engine_consumer, db_setup, perf
         assert system_record.memory_states == ['MEMORY_UNDERSIZED', 'MEMORY_UNDERSIZED_BY_PRESSURE']
 
 
-def test_process_report_psi_enabled(engine_result_message, engine_consumer, db_setup, performance_record, redis_client):
+def test_process_report_psi_enabled(engine_result_message, engine_consumer, db_setup, performance_record):
     engine_result_message = engine_result_message("insights-engine-result-idle.json")
     host = engine_result_message["input"]["host"]
     ros_reports = [engine_result_message["results"]["reports"][7]]
@@ -228,7 +228,7 @@ def test_process_report_psi_enabled(engine_result_message, engine_consumer, db_s
     assert psi_enabled is True
 
 
-def test_notification(engine_result_message, engine_consumer, db_setup, performance_record, redis_client):
+def test_notification(engine_result_message, engine_consumer, db_setup, performance_record):
     engine_result_message = engine_result_message("insights-engine-result-under-pressure.json")
     host = engine_result_message["input"]["host"]
     platform_metadata = engine_result_message["input"]["platform_metadata"]

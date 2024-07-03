@@ -28,7 +28,7 @@ def inventory_event_consumer():
     return InventoryEventsConsumer()
 
 
-def test_process_system_details(inventory_event_consumer, inventory_event_message, db_setup, redis_client):
+def test_process_system_details(inventory_event_consumer, inventory_event_message, db_setup):
     inventory_event_message['type'] = 'created'
     inventory_event_consumer.process_system_details(inventory_event_message)
     with app.app_context():
@@ -36,7 +36,7 @@ def test_process_system_details(inventory_event_consumer, inventory_event_messag
         assert str(host.inventory_id) == inventory_event_message['host']['id']
 
 
-def test_host_create_events(inventory_event_consumer, inventory_event_message, db_setup, redis_client, mocker):
+def test_host_create_events(inventory_event_consumer, inventory_event_message, db_setup, mocker):
     mocker.patch.object(
         inventory_event_consumer,
         'process_system_details',
@@ -58,7 +58,7 @@ def test_host_create_events(inventory_event_consumer, inventory_event_message, d
                inventory_event_message['host']['groups']
 
 
-def test_host_update_events(inventory_event_consumer, inventory_event_message, db_setup, redis_client, mocker):
+def test_host_update_events(inventory_event_consumer, inventory_event_message, db_setup, mocker):
     mocker.patch.object(
         inventory_event_consumer,
         'process_system_details',
@@ -83,7 +83,7 @@ def test_host_update_events(inventory_event_consumer, inventory_event_message, d
         assert updated_system.groups == []
 
 
-def test_host_update_event_no_cp(inventory_event_consumer, inventory_event_message, db_setup, redis_client, mocker):
+def test_host_update_event_no_cp(inventory_event_consumer, inventory_event_message, db_setup, mocker):
     mocker.patch.object(
         inventory_event_consumer,
         'process_system_details',
