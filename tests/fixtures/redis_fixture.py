@@ -6,5 +6,5 @@ redis = create_redis_fixture()
 
 
 @pytest.fixture(scope="function")
-def redis_setup(redis):
+def redis_client(redis):
     yield Redis(**redis.pmr_credentials.as_redis_kwargs())
