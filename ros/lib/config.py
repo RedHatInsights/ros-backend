@@ -144,7 +144,7 @@ ROS_PROCESSOR_PORT = int(os.getenv("ROS_PROCESSOR_PORT", "8000"))
 ROS_API_PORT = int(os.getenv("ROS_API_PORT", "8000"))
 # Timeout in seconds to set against keys of deleted systems in a cache
 CACHE_TIMEOUT_FOR_DELETED_SYSTEM = int(
-    os.getenv("CACHE_TIMEOUT_FOR_DELETED_SYSTEM", "3600"))
+    os.getenv("CACHE_TIMEOUT_FOR_DELETED_SYSTEM", "86400"))
 CACHE_KEYWORD_FOR_DELETED_SYSTEM = '_del_'
 
 
