@@ -2,7 +2,8 @@
 
 set -exv
 
-IMAGE_NAME="quay.io/cloudservices/ros-backend"
+ROS_BACKEND_IMAGE_NAME="quay.io/cloudservices/ros-backend"
+PCP_METRIC_GENERATOR_IMAGE_NAME="quay.io/cloudservices/pcp-metric-generator"
 IMAGE_TAG=$(git rev-parse --short=7 HEAD)
 ADDITIONAL_TAGS="qa latest"
 SECURITY_COMPLIANCE_TAG="sc-$(date +%Y%m%d)-$(git rev-parse --short=7 HEAD)"
@@ -33,20 +34,23 @@ DOCKER_CONF="$TMP_JOB_DIR/.docker"
 mkdir -p "$DOCKER_CONF"
 docker --config="$DOCKER_CONF" login -u="$QUAY_USER" -p="$QUAY_TOKEN" quay.io
 docker --config="$DOCKER_CONF" login -u="$RH_REGISTRY_USER" -p="$RH_REGISTRY_TOKEN" registry.redhat.io
-docker --config="$DOCKER_CONF" build -t "${IMAGE_NAME}:${IMAGE_TAG}" .
+docker --config="$DOCKER_CONF" build -t "${ROS_BACKEND_IMAGE_NAME}:${IMAGE_TAG}" --target=img-ros-backend .
+docker --config="$DOCKER_CONF" build -t "${PCP_METRIC_GENERATOR_IMAGE_NAME}:${IMAGE_TAG}" --target=img-pcp-metric-generator .
 
 
 if [[ "$GIT_BRANCH" == "origin/security-compliance" ]]; then
-    docker --config="$DOCKER_CONF" tag "${IMAGE_NAME}:${IMAGE_TAG}" "${IMAGE_NAME}:${SECURITY_COMPLIANCE_TAG}"
-    docker --config="$DOCKER_CONF" push "${IMAGE_NAME}:${SECURITY_COMPLIANCE_TAG}"
+    docker --config="$DOCKER_CONF" tag "${ROS_BACKEND_IMAGE_NAME}:${IMAGE_TAG}" "${ROS_BACKEND_IMAGE_NAME}:${SECURITY_COMPLIANCE_TAG}"
+    docker --config="$DOCKER_CONF" push "${ROS_BACKEND_IMAGE_NAME}:${SECURITY_COMPLIANCE_TAG}"
 elif [[ $GIT_BRANCH == *"hotfix"* ]]; then
-    docker --config="$DOCKER_CONF" push "${IMAGE_NAME}:${IMAGE_TAG}"
-    docker --config="$DOCKER_CONF" tag "${IMAGE_NAME}:${IMAGE_TAG}" "${IMAGE_NAME}:${HOTFIX_CVE_TAG}"
-    docker --config="$DOCKER_CONF" push "${IMAGE_NAME}:${HOTFIX_CVE_TAG}"
+    docker --config="$DOCKER_CONF" push "${ROS_BACKEND_IMAGE_NAME}:${IMAGE_TAG}"
+    docker --config="$DOCKER_CONF" tag "${ROS_BACKEND_IMAGE_NAME}:${IMAGE_TAG}" "${ROS_BACKEND_IMAGE_NAME}:${HOTFIX_CVE_TAG}"
+    docker --config="$DOCKER_CONF" push "${ROS_BACKEND_IMAGE_NAME}:${HOTFIX_CVE_TAG}"
 else
-    docker --config="$DOCKER_CONF" push "${IMAGE_NAME}:${IMAGE_TAG}"
+    docker --config="$DOCKER_CONF" push "${ROS_BACKEND_IMAGE_NAME}:${IMAGE_TAG}"
+    docker --config="$DOCKER_CONF" push "${PCP_METRIC_GENERATOR_IMAGE_NAME}:${IMAGE_TAG}"
+
     for ADDITIONAL_TAG in $ADDITIONAL_TAGS; do
-        docker --config="$DOCKER_CONF" tag "${IMAGE_NAME}:${IMAGE_TAG}" "${IMAGE_NAME}:${ADDITIONAL_TAG}"
-        docker --config="$DOCKER_CONF" push "${IMAGE_NAME}:${ADDITIONAL_TAG}"
+        docker --config="$DOCKER_CONF" tag "${ROS_BACKEND_IMAGE_NAME}:${IMAGE_TAG}" "${ROS_BACKEND_IMAGE_NAME}:${ADDITIONAL_TAG}"
+        docker --config="$DOCKER_CONF" push "${ROS_BACKEND_IMAGE_NAME}:${ADDITIONAL_TAG}"
     done
 fi
