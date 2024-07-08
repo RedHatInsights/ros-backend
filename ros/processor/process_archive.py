@@ -8,7 +8,7 @@ from insights import extract, rule, run, make_metadata
 from insights.parsers.pmlog_summary import PmLogSummary
 from insights.parsers.lscpu import LsCPU
 from insights.parsers.aws_instance_id import AWSInstanceIdDoc
-from insights.parsers.azure_instance_type import AzureInstanceType
+from insights.parsers.azure_instance import AzureInstanceType
 from insights.core import dr
 from ros.lib.config import INSIGHTS_EXTRACT_LOGLEVEL
 from ros.processor.metrics import (archive_downloaded_success,
