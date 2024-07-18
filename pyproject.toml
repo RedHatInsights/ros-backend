@@ -37,6 +37,8 @@ pytest = "~=7.2.0"
 sqlalchemy-utils = "*"
 pytest-mock = "*"
 pytest-cov = "*"
+pytest_mock_resources = "*"
+python-on-whales = "*"
 
 [build-system]
 requires = ["poetry-core"]

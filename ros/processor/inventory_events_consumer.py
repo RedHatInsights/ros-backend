@@ -1,13 +1,21 @@
 import json
+import os
+import sys
+from prometheus_client import start_http_server
 from ros.lib import consume
 from ros.lib.app import app
-from ros.extensions import db
+from ros.extensions import db, cache
 from ros.lib.utils import get_or_create, system_allowed_in_ros, update_system_record, is_platform_metadata_check_pass
 from confluent_kafka import KafkaException
 from ros.lib.models import RhAccount, System
-from ros.lib.config import INVENTORY_EVENTS_TOPIC, METRICS_PORT, get_logger
+from ros.lib.config import (
+    INVENTORY_EVENTS_TOPIC,
+    METRICS_PORT,
+    get_logger,
+    CACHE_TIMEOUT_FOR_DELETED_SYSTEM,
+    CACHE_KEYWORD_FOR_DELETED_SYSTEM
+)
 from ros.lib.cw_logging import commence_cw_log_streaming, threadctx
-from prometheus_client import start_http_server
 from ros.processor.metrics import (processor_requests_success,
                                    processor_requests_failures,
                                    kafka_failures)
@@ -53,10 +61,10 @@ class InventoryEventsConsumer:
             org_id = None
             try:
                 msg = json.loads(msg.value().decode("utf-8"))
+                # SEE under consoledot documentation > services > inventory
+                # where there is a section called event_interface to get
+                # what keys present in event message.
                 event_type = msg['type']
-                threadctx.request_id = msg["platform_metadata"].get('request_id')
-                threadctx.account = msg["platform_metadata"].get('account')
-                threadctx.org_id = msg["platform_metadata"].get('org_id')
                 if event_type == 'delete':
                     account = msg['account']
                     host_id = msg['id']
@@ -65,13 +73,16 @@ class InventoryEventsConsumer:
                     account = msg['host']['account']
                     host_id = msg['host']['id']
                     org_id = msg['host'].get('org_id')
+                threadctx.request_id = msg.get('request_id')
+                threadctx.account = account
+                threadctx.org_id = org_id
 
                 if event_type in self.event_type_map.keys():
                     handler = self.event_type_map[event_type]
                     handler(msg)
                 else:
                     LOG.info(
-                        f"{self.prefix} - Event Handling is not found for event {event_type}"
+                        f"{self.prefix} - Unknown event of type {event_type}"
                     )
             except json.decoder.JSONDecodeError:
                 kafka_failures.labels(reporter=self.reporter).inc()
@@ -82,9 +93,12 @@ class InventoryEventsConsumer:
                 processor_requests_failures.labels(
                     reporter=self.reporter, org_id=org_id
                 ).inc()
+                _exc_type, _exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                 LOG.error(
-                    f"{self.prefix} - An error occurred during message processing: {repr(err)} "
-                    f"in the system {host_id} created from account: {account} and org_id: {org_id}"
+                    f"{self.prefix} - An error occurred: {repr(err)}"
+                    f" in {fname} at {exc_tb.tb_lineno} for a system {host_id}"
+                    f" from account: {account} & org_id: {org_id}"
                 )
             finally:
                 self.consumer.commit()
@@ -109,6 +123,11 @@ class InventoryEventsConsumer:
                 ).inc()
                 LOG.info(
                     f"{self.prefix} - Deleted system with inventory id: {host_id}"
+                )
+                cache_key = (f"{msg['org_id']}{CACHE_KEYWORD_FOR_DELETED_SYSTEM}"
+                             f'{host_id}')
+                cache.set(
+                    cache_key, 1, timeout=CACHE_TIMEOUT_FOR_DELETED_SYSTEM
                 )
 
     def host_create_update_events(self, msg):
@@ -147,6 +166,9 @@ class InventoryEventsConsumer:
                         f"{self.prefix} - Refreshed system {system.inventory_id} ({system.id}) "
                         f"belonging to account: {account.account} ({account.id}) and org_id: {account.org_id}"
                     )
+                    self.expired_del_cache_if_exists(
+                        host['id'], account.org_id
+                    )
             else:
                 try:
                     account = get_or_create(
@@ -176,6 +198,9 @@ class InventoryEventsConsumer:
                         f"{self.prefix} - Refreshed system {system.inventory_id} ({system.id}) "
                         f"belonging to account: {account.account} ({account.id}) and org_id: {account.org_id}"
                     )
+                    self.expired_del_cache_if_exists(
+                        host['id'], account.org_id
+                    )
                 except Exception as err:
                     processor_requests_failures.labels(
                         reporter=self.reporter, org_id=account.org_id
@@ -186,9 +211,17 @@ class InventoryEventsConsumer:
                         f"belonging to account: {account.account} and org_id: {account.org_id} - {err}"
                     )
 
+    def expired_del_cache_if_exists(self, host_id, org_id):
+        with app.app_context():
+            cache_key = (f"{org_id}{CACHE_KEYWORD_FOR_DELETED_SYSTEM}"
+                         f'{host_id}')
+            if cache.get(cache_key):
+                cache.delete(cache_key)
+
 
 if __name__ == "__main__":
     start_http_server(int(METRICS_PORT))
+    cache.init_app(app)
     commence_cw_log_streaming('ros-processor')
     processor = InventoryEventsConsumer()
     processor.run()

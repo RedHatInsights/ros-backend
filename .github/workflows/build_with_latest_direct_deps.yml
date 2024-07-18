@@ -108,6 +108,8 @@ jobs:
         pytest-mock = "*"
         pytest-cov = "*"
         logstash_formatter = "*"
+        pytest_mock_resources = "*"
+        python-on-whales = "*"
         
         [build-system]
         requires = ["poetry-core"]

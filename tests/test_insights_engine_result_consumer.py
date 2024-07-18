@@ -51,7 +51,7 @@ def engine_consumer():
     return InsightsEngineConsumer()
 
 
-def test_handle_msg(engine_result_message, engine_consumer, mocker, performance_record):
+def test_handle_msg(engine_result_message, engine_consumer, mocker, performance_record, redis_client):
     engine_result_message = engine_result_message("insights-engine-result-idle.json")
     mocker.patch(
         'ros.processor.insights_engine_consumer.get_performance_profile',
@@ -82,7 +82,8 @@ def test_process_report_idle(engine_result_message, engine_consumer, db_setup, p
             .performance_record == performance_record
 
 
-def test_process_report_under_pressure(engine_result_message, engine_consumer, db_setup, performance_record):
+def test_process_report_under_pressure(engine_result_message, engine_consumer,
+                                       db_setup, performance_record):
     engine_result_message = engine_result_message("insights-engine-result-under-pressure.json")
     host = engine_result_message["input"]["host"]
     ros_reports = [engine_result_message["results"]["reports"][7]]
