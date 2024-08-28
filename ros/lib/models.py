@@ -132,6 +132,8 @@ class RhAccount(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     account = db.Column(db.Text, nullable=True)
     org_id = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     __table_args__ = (
         db.UniqueConstraint('org_id'),
         db.CheckConstraint('NOT(org_id IS NULL)'),
