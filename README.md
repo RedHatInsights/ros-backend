@@ -151,3 +151,4 @@ Note - Before running the above commands make sure kafka and db-host-inventory c
 
 
 For local dev setup, please remember to use the x-rh-identity header encoded from your account number and org_id, the one used while running `make insights-upload-data` and `make ros-upload-data` commands.
+
