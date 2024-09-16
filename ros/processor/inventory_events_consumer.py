@@ -65,6 +65,7 @@ class InventoryEventsConsumer:
                 # where there is a section called event_interface to get
                 # what keys present in event message.
                 event_type = msg['type']
+                metadata = msg['metadata']
                 if event_type == 'delete':
                     account = msg['account']
                     host_id = msg['id']
@@ -73,7 +74,10 @@ class InventoryEventsConsumer:
                     account = msg['host']['account']
                     host_id = msg['host']['id']
                     org_id = msg['host'].get('org_id')
-                threadctx.request_id = msg.get('request_id')
+
+                threadctx.request_id = None
+                if metadata is not None and isinstance(metadata, dict):
+                    threadctx.request_id = metadata.get('request_id')
                 threadctx.account = account
                 threadctx.org_id = org_id
 
