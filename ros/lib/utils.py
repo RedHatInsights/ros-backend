@@ -362,7 +362,7 @@ def system_allowed_in_ros(msg, reporter):
                 msg.get('type') == 'updated'
                 and is_platform_metadata_check_pass(msg)
         ):
-            return is_valid_cloud_provider(cloud_provider)
+            return is_valid_cloud_provider(cloud_provider) and is_valid_operating_system(operating_system)
         is_ros = msg["platform_metadata"].get("is_ros")
     return validate_ros_payload(is_ros, cloud_provider, operating_system)
 
