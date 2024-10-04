@@ -5,7 +5,7 @@ from prometheus_client import start_http_server
 from ros.lib import consume
 from ros.lib.app import app
 from ros.extensions import db, cache
-from ros.lib.utils import get_or_create, system_allowed_in_ros, update_system_record, is_platform_metadata_check_pass
+from ros.lib.utils import get_or_create, system_allowed_in_ros, update_system_record
 from confluent_kafka import KafkaException
 from ros.lib.models import RhAccount, System
 from ros.lib.config import (
@@ -149,16 +149,22 @@ class InventoryEventsConsumer:
         host = msg['host']
         with app.app_context():
             # 'platform_metadata' field not included when the host is updated via the API.
-            if (msg.get('type') == 'updated' and is_platform_metadata_check_pass(msg)):
+            if (msg.get('type') == 'updated'):
                 system_fields = {
                     "inventory_id": host['id'],
                     "display_name": host['display_name'],
                     "fqdn": host['fqdn'],
-                    "cloud_provider": host['system_profile']['cloud_provider'],
                     "stale_timestamp": host['stale_timestamp'],
-                    "operating_system": host['system_profile'].get('operating_system'),
                     "groups": host.get('groups', [])
                 }
+
+                operating_system = host['system_profile'].get('operating_system')
+                cloud_provider = host['system_profile'].get('cloud_provider')
+                if (operating_system is not None):
+                    system_fields.update({"operating_system": operating_system})
+                if (cloud_provider is not None):
+                    system_fields.update({"cloud_provider": cloud_provider})
+
                 system = update_system_record(db.session, **system_fields)
                 if system is not None:
                     db.session.commit()
