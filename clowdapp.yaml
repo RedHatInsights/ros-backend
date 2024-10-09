@@ -302,7 +302,7 @@ parameters:
 - description: Image NAME
   name: IMAGE
   required: true
-  value: quay.io/cloudservices/ros-backend
+  value: quay.io/redhat-services-prod/insights-management-tenant/insights-resource-optimization/ros-backend
 - description: Image tag
   name: IMAGE_TAG
   required: true
