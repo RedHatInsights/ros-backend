@@ -5,9 +5,9 @@ name: (Non blocking) Test on latest indirect Python dependencies
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, pcp-zeroconf ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, pcp-zeroconf ]
 
 jobs:
   build:

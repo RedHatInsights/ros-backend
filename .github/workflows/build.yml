@@ -5,9 +5,9 @@ name: (Blocking) Test without updating any packages
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, pcp-zeroconf ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, pcp-zeroconf ]
 
 jobs:
   build:
