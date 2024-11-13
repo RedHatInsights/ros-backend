@@ -133,7 +133,6 @@ Note - Before running the above commands make sure kafka and db-host-inventory c
       "fqdn": "string",
       "display_name": "string",
       "inventory_id": "string",
-      "account": "string",
       "org_id": "string",
       "number_of_suggestions": 0,
       "state": "string",
