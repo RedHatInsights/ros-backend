@@ -7,6 +7,7 @@ IMAGE_TAG=$(git rev-parse --short=7 HEAD)
 ADDITIONAL_TAGS="qa latest"
 SECURITY_COMPLIANCE_TAG="sc-$(date +%Y%m%d)-$(git rev-parse --short=7 HEAD)"
 HOTFIX_CVE_TAG="hotfix-$(git rev-parse --short=7 HEAD)"
+PCP_ZEROCONF_TAG="pcp-zeroconf-$(git rev-parse --short=7 HEAD)"
 
 if [[ -z "$QUAY_USER" || -z "$QUAY_TOKEN" ]]; then
     echo "QUAY_USER and QUAY_TOKEN must be set"
@@ -43,6 +44,10 @@ elif [[ $GIT_BRANCH == *"hotfix"* ]]; then
     docker --config="$DOCKER_CONF" push "${IMAGE_NAME}:${IMAGE_TAG}"
     docker --config="$DOCKER_CONF" tag "${IMAGE_NAME}:${IMAGE_TAG}" "${IMAGE_NAME}:${HOTFIX_CVE_TAG}"
     docker --config="$DOCKER_CONF" push "${IMAGE_NAME}:${HOTFIX_CVE_TAG}"
+elif [[ $GIT_BRANCH == *"pcp-zeroconf"* ]]; then
+    docker --config="$DOCKER_CONF" push "${IMAGE_NAME}:${IMAGE_TAG}"
+    docker --config="$DOCKER_CONF" tag "${IMAGE_NAME}:${IMAGE_TAG}" "${IMAGE_NAME}:${PCP_ZEROCONF_TAG}"
+    docker --config="$DOCKER_CONF" push "${IMAGE_NAME}:${PCP_ZEROCONF_TAG}"
 else
     docker --config="$DOCKER_CONF" push "${IMAGE_NAME}:${IMAGE_TAG}"
     for ADDITIONAL_TAG in $ADDITIONAL_TAGS; do
