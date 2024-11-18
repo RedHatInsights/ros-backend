@@ -1369,17 +1369,20 @@ typing-extensions = ">=4.6.0,<4.7.0 || >4.7.0"
 
 [[package]]
 name = "pydash"
-version = "6.0.2"
+version = "8.0.4"
 description = "The kitchen sink of Python utility libraries for doing \"stuff\" in a functional way. Based on the Lo-Dash Javascript library."
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "pydash-6.0.2-py3-none-any.whl", hash = "sha256:6d3ce5cbbc8ca3533c12782ac201c2ec756d1e1703ec3efc88f2b95d1ed2bb31"},
-    {file = "pydash-6.0.2.tar.gz", hash = "sha256:35caa588e01d293713655e0870544d25128cd414c5e19477a0d63adc2b2ca03e"},
+    {file = "pydash-8.0.4-py3-none-any.whl", hash = "sha256:59d0c9ca0d22b4f8bcfab01bfe2e89b49f4c9e9fa75961caf156094670260999"},
+    {file = "pydash-8.0.4.tar.gz", hash = "sha256:a33fb17b4b06c617da5c57c711605d2dc8723311ee5388c8371f87cd44bf4112"},
 ]
 
+[package.dependencies]
+typing-extensions = ">3.10,<4.6.0 || >4.6.0"
+
 [package.extras]
-dev = ["Sphinx", "black", "build", "coverage", "docformatter", "flake8", "flake8-black", "flake8-bugbear", "flake8-isort", "importlib-metadata (<5)", "invoke", "isort", "pylint", "pytest", "pytest-cov", "sphinx-rtd-theme", "tox", "twine", "wheel"]
+dev = ["build", "coverage", "furo", "invoke", "mypy", "pytest", "pytest-cov", "pytest-mypy-testing", "ruff", "sphinx", "sphinx-autodoc-typehints", "tox", "twine", "wheel"]
 
 [[package]]
 name = "pyflakes"
@@ -1987,4 +1990,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "a65304bad43331c964ba935d5c2de051c6751fa5d85d398f8d171ff6d2b424e7"
+content-hash = "6cbaa23a39671bad83988baf1a1cc638fc24c69657e755a5ac83557d8712079a"
