@@ -141,6 +141,7 @@ GARBAGE_COLLECTION_INTERVAL = int(
 DAYS_UNTIL_STALE = int(os.getenv("DAYS_UNTIL_STALE", '45'))
 CW_LOGGING_FORMAT = '%(asctime)s - %(levelname)s  - %(funcName)s - %(message)s'
 ROS_PROCESSOR_PORT = int(os.getenv("ROS_PROCESSOR_PORT", "8000"))
+ROS_PCP_PROCESSOR_PORT = int(os.getenv("ROS_PCP_PROCESSOR_PORT", "8000"))
 ROS_API_PORT = int(os.getenv("ROS_API_PORT", "8000"))
 # Timeout in seconds to set against keys of deleted systems in a cache
 CACHE_TIMEOUT_FOR_DELETED_SYSTEM = int(
