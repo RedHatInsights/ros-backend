@@ -17,10 +17,8 @@ ENV VIRTUAL_ENV=/app_root/src \
     PATH="/app_root/src/bin:$POETRY_HOME/bin:$PATH"
 
 WORKDIR /app_root/src
-COPY pyproject.toml poetry.lock manage.py seed.py gunicorn.conf.py ./
+COPY pyproject.toml poetry.lock gunicorn.conf.py ./
 COPY ros ros
-COPY migrations migrations
-COPY seed.d seed.d
 
 RUN python -m venv $VIRTUAL_ENV && \
     $VIRTUAL_ENV/bin/pip install --upgrade pip==$PYTHON_PIP_VERSION setuptools wheel && \

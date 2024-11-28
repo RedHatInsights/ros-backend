@@ -2,236 +2,19 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: ros-backend
+  name: ros-backend-pcp-zeroconf
 objects:
 - apiVersion: cloud.redhat.com/v1alpha1
   kind: ClowdApp
   metadata:
-    name: ros-backend
+    name: ros-backend-pcp-zeroconf
   spec:
     envName: ${ENV_NAME}
     featureFlags: true
     dependencies:
     - host-inventory
     - rbac
-    - engine
     deployments:
-    - name: api
-      replicas: ${{API_REPLICA_COUNT}}
-      webServices:
-        public:
-          enabled: true
-          apiPath: ros
-      podSpec:
-        image: ${IMAGE}:${IMAGE_TAG}
-        command: ["sh"]
-        args: ["-c", "export FLASK_APP=manage.py && poetry run flask db upgrade && poetry run flask seed && poetry run gunicorn ros.api.main:app"]
-        resources:
-          requests:
-            cpu: ${CPU_REQUEST_ROSRHEL}
-            memory: ${MEMORY_REQUEST_ROSRHEL}
-          limits:
-            cpu: ${CPU_LIMIT_ROSRHEL}
-            memory: ${MEMORY_LIMIT_ROSRHEL}
-        livenessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /api/ros/v1/status
-            port: 8000
-            scheme: HTTP
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          successThreshold: 1
-          timeoutSeconds: 3
-        readinessProbe:
-          httpGet:
-            path: /api/ros/v1/status
-            port: 8000
-            scheme: HTTP
-          initialDelaySeconds: 3
-          periodSeconds: 10
-          successThreshold: 1
-          failureThreshold: 3
-          timeoutSeconds: 3
-        env:
-          - name: PATH_PREFIX
-            value: /api
-          - name: CLOWDER_ENABLED
-            value: ${CLOWDER_ENABLED}
-          - name: ENABLE_RBAC
-            value: "${ENABLE_RBAC}"
-          - name: DB_POOL_SIZE
-            value: ${DB_POOL_SIZE}
-          - name: DB_MAX_OVERFLOW
-            value: ${DB_MAX_OVERFLOW}
-          - name: UNLEASH_URL
-            value: ${UNLEASH_URL}
-          - name: UNLEASH_TOKEN
-            valueFrom:
-              secretKeyRef:
-                name: ${UNLEASH_SECRET_NAME}
-                key: CLIENT_ACCESS_TOKEN
-                optional: true
-          - name: BYPASS_UNLEASH
-            value: ${BYPASS_UNLEASH}
-
-    - name: inventory-events-processor
-      replicas: ${{INVENTORY_PROCESSOR_REPLICA_COUNT}}
-      podSpec:
-        image: ${IMAGE}:${IMAGE_TAG}
-        command: ["bash"]
-        args: ["-c", "python -m ros.processor.inventory_events_consumer"]
-        resources:
-          requests:
-            cpu: ${CPU_REQUEST_ROSRHEL}
-            memory: ${MEMORY_REQUEST_ROSRHEL}
-          limits:
-            cpu: ${CPU_LIMIT_ROSRHEL}
-            memory: ${MEMORY_LIMIT_ROSRHEL}
-        livenessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /
-            port: 9000
-            scheme: HTTP
-          initialDelaySeconds: 10
-          periodSeconds: 30
-          successThreshold: 1
-          timeoutSeconds: 3
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 9000
-            scheme: HTTP
-          initialDelaySeconds: 10
-          periodSeconds: 30
-          successThreshold: 1
-          failureThreshold: 3
-          timeoutSeconds: 3
-        env:
-          - name: CLOWDER_ENABLED
-            value: ${CLOWDER_ENABLED}
-          - name: DB_POOL_SIZE
-            value: ${DB_POOL_SIZE}
-          - name: DB_MAX_OVERFLOW
-            value: ${DB_MAX_OVERFLOW}
-          - name: UNLEASH_URL
-            value: ${UNLEASH_URL}
-          - name: UNLEASH_TOKEN
-            valueFrom:
-              secretKeyRef:
-                name: ${UNLEASH_SECRET_NAME}
-                key: CLIENT_ACCESS_TOKEN
-                optional: true
-          - name: BYPASS_UNLEASH
-            value: ${BYPASS_UNLEASH}
-
-    - name: engine-result-processor
-      replicas: ${{ENGINE_PROCESSOR_REPLICA_COUNT}}
-      podSpec:
-        image: ${IMAGE}:${IMAGE_TAG}
-        command: ["bash"]
-        args: ["-c", "python -m ros.processor.insights_engine_consumer"]
-        resources:
-          requests:
-            cpu: ${CPU_REQUEST_ROSRHEL}
-            memory: ${MEMORY_REQUEST_ROSRHEL}
-          limits:
-            cpu: ${CPU_LIMIT_ROSRHEL}
-            memory: ${MEMORY_LIMIT_ROSRHEL}
-        livenessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /
-            port: 9000
-            scheme: HTTP
-          initialDelaySeconds: 10
-          periodSeconds: 30
-          successThreshold: 1
-          timeoutSeconds: 3
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 9000
-            scheme: HTTP
-          initialDelaySeconds: 10
-          periodSeconds: 30
-          successThreshold: 1
-          failureThreshold: 3
-          timeoutSeconds: 3
-        env:
-          - name: CLOWDER_ENABLED
-            value: ${CLOWDER_ENABLED}
-          - name: DB_POOL_SIZE
-            value: ${DB_POOL_SIZE}
-          - name: DB_MAX_OVERFLOW
-            value: ${DB_MAX_OVERFLOW}
-          - name: UNLEASH_URL
-            value: ${UNLEASH_URL}
-          - name: UNLEASH_TOKEN
-            valueFrom:
-              secretKeyRef:
-                name: ${UNLEASH_SECRET_NAME}
-                key: CLIENT_ACCESS_TOKEN
-                optional: true
-          - name: BYPASS_UNLEASH
-            value: ${BYPASS_UNLEASH}
-
-    - name: garbage-collector-processor
-      replicas: ${{GARBAGE_COLLECTOR_REPLICA_COUNT}}
-      podSpec:
-        image: ${IMAGE}:${IMAGE_TAG}
-        command: ["bash"]
-        args: ["-c", "python -m ros.processor.garbage_collector"]
-        resources:
-          requests:
-            cpu: ${CPU_REQUEST_ROSRHEL}
-            memory: ${MEMORY_REQUEST_ROSRHEL}
-          limits:
-            cpu: ${CPU_LIMIT_ROSRHEL}
-            memory: ${MEMORY_LIMIT_ROSRHEL}
-        livenessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /
-            port: 9000
-            scheme: HTTP
-          initialDelaySeconds: 10
-          periodSeconds: 30
-          successThreshold: 1
-          timeoutSeconds: 3
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 9000
-            scheme: HTTP
-          initialDelaySeconds: 10
-          periodSeconds: 30
-          successThreshold: 1
-          failureThreshold: 3
-          timeoutSeconds: 3
-        env:
-          - name: CLOWDER_ENABLED
-            value: ${CLOWDER_ENABLED}
-          - name: GARBAGE_COLLECTION_INTERVAL
-            value: ${GARBAGE_COLLECTION_INTERVAL}
-          - name: DAYS_UNTIL_STALE
-            value: ${DAYS_UNTIL_STALE}
-          - name: DB_POOL_SIZE
-            value: ${DB_POOL_SIZE}
-          - name: DB_MAX_OVERFLOW
-            value: ${DB_MAX_OVERFLOW}
-          - name: UNLEASH_URL
-            value: ${UNLEASH_URL}
-          - name: UNLEASH_TOKEN
-            valueFrom:
-              secretKeyRef:
-                name: ${UNLEASH_SECRET_NAME}
-                key: CLIENT_ACCESS_TOKEN
-                optional: true
-          - name: BYPASS_UNLEASH
-            value: ${BYPASS_UNLEASH}
-  
     - name: pcp-generator
       replicas: ${{PCP_GENERATOR_REPLICA_COUNT}}
       podSpec:
@@ -259,8 +42,6 @@ objects:
         partitions: 1
       - topicName: platform.notifications.ingress
         partitions: 1
-    testing:
-      iqePlugin: ros
 
 parameters:
 - description: Enable rbac needs to be "True" or "False"
@@ -269,25 +50,13 @@ parameters:
 - description : ClowdEnvironment name
   name: ENV_NAME
   required: true
-- description: Replica count for api pod
-  name: API_REPLICA_COUNT
-  value: "1"
-- description: Replica count for inventory processor pod
-  name: INVENTORY_PROCESSOR_REPLICA_COUNT
-  value: "1"
-- description: Replica count for engine processor pod
-  name: ENGINE_PROCESSOR_REPLICA_COUNT
-  value: "1"
-- description: Replica count for garbage collector pod
-  name: GARBAGE_COLLECTOR_REPLICA_COUNT
-  value: "1"
 - description: Replica count for pcp generator
   name: PCP_GENERATOR_REPLICA_COUNT
   value: "1"
 - description: Image NAME
   name: IMAGE
   required: true
-  value: quay.io/repository/cloudservices/ros-backend
+  value: quay.io/cloudservices/ros-backend
 - description: Image tag
   name: IMAGE_TAG
   required: true
@@ -314,27 +83,6 @@ parameters:
 - description: Is clowder enabled
   name: CLOWDER_ENABLED
   value: "True"
-- description: The interval at which garbage collection should run (in seconds)
-  name: GARBAGE_COLLECTION_INTERVAL
-  value: "86400"
-- description: Number of days after which data is considered to be outdated
-  name: DAYS_UNTIL_STALE
-  value: "45"
-- description: Host for the EAN to OrgId translator.
-  name: TENANT_TRANSLATOR_HOST
-  required: true
-  value: 'gateway.3scale-dev.svc.cluster.local'
-- description: Port for the EAN to OrgId translator.
-  name: TENANT_TRANSLATOR_PORT
-  value: '8892'
-- name: PROMETHEUS_PUSHGATEWAY
-  value: "localhost"
-- name: POPULATOR_LOG_FORMAT
-  value: cloudwatch 
-- name: DB_POOL_SIZE
-  value: "20"
-- name: DB_MAX_OVERFLOW
-  value: "20"
 
 # Feature flags
 - description: Unleash secret name
