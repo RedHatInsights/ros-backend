@@ -231,7 +231,23 @@ objects:
                 optional: true
           - name: BYPASS_UNLEASH
             value: ${BYPASS_UNLEASH}
-
+  
+    - name: pcp-generator
+      replicas: ${{PCP_GENERATOR_REPLICA_COUNT}}
+      podSpec:
+        image: ${IMAGE}:${IMAGE_TAG}
+        command: ["bash"]
+        args: ["-c", "python -m ros.processor.pcp_generator"]
+        resources:
+          requests:
+            cpu: ${CPU_REQUEST_ROSRHEL}
+            memory: ${MEMORY_REQUEST_ROSRHEL}
+          limits:
+            cpu: ${CPU_LIMIT_ROSRHEL}
+            memory: ${MEMORY_LIMIT_ROSRHEL}
+        env:
+          - name: CLOWDER_ENABLED
+            value: ${CLOWDER_ENABLED}
     database:
       name: ros
       version: 13
@@ -245,40 +261,6 @@ objects:
         partitions: 1
     testing:
       iqePlugin: ros
-
-    jobs:
-    - name: org-id-populator
-      podSpec:
-        image: quay.io/cloudservices/tenant-utils:latest
-        command:
-          - ./org-id-column-populator
-          - -C
-          - -a
-          - account
-          - -o
-          - org_id
-          - -t
-          - rh_accounts
-          - --ean-translator-addr
-          - http://${TENANT_TRANSLATOR_HOST}:${TENANT_TRANSLATOR_PORT}
-          - --prometheus-push-addr
-          - ${PROMETHEUS_PUSHGATEWAY}
-        env:
-          - name: TENANT_TRANSLATOR_HOST
-            value: ${TENANT_TRANSLATOR_HOST}
-          - name: TENANT_TRANSLATOR_PORT
-            value: ${TENANT_TRANSLATOR_PORT}
-          - name: LOG_FORMAT
-            value: ${POPULATOR_LOG_FORMAT}
-          - name: LOG_BATCH_FREQUENCY
-            value: '1s'
-        resources:
-          limits:
-            cpu: 300m
-            memory: 1Gi
-          requests:
-            cpu: 50m
-            memory: 512Mi
 
 parameters:
 - description: Enable rbac needs to be "True" or "False"
@@ -299,10 +281,13 @@ parameters:
 - description: Replica count for garbage collector pod
   name: GARBAGE_COLLECTOR_REPLICA_COUNT
   value: "1"
+- description: Replica count for pcp generator
+  name: PCP_GENERATOR_REPLICA_COUNT
+  value: "1"
 - description: Image NAME
   name: IMAGE
   required: true
-  value: quay.io/redhat-services-prod/insights-management-tenant/insights-resource-optimization/ros-backend
+  value: quay.io/repository/cloudservices/ros-backend
 - description: Image tag
   name: IMAGE_TAG
   required: true
