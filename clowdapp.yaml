@@ -10,10 +10,6 @@ objects:
     name: ros-backend-pcp-zeroconf
   spec:
     envName: ${ENV_NAME}
-    featureFlags: true
-    dependencies:
-    - host-inventory
-    - rbac
     deployments:
     - name: pcp-generator
       replicas: ${{PCP_GENERATOR_REPLICA_COUNT}}
@@ -31,9 +27,6 @@ objects:
         env:
           - name: CLOWDER_ENABLED
             value: ${CLOWDER_ENABLED}
-    database:
-      name: ros
-      version: 13
     inMemoryDb: true
     kafkaTopics:
       - topicName: platform.inventory.events
