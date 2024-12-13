@@ -94,25 +94,6 @@ files = [
 ]
 
 [[package]]
-name = "attrs"
-version = "24.2.0"
-description = "Classes Without Boilerplate"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "attrs-24.2.0-py3-none-any.whl", hash = "sha256:81921eb96de3191c8258c199618104dd27ac608d9366f5e35d011eae1867ede2"},
-    {file = "attrs-24.2.0.tar.gz", hash = "sha256:5cfb1b9148b5b086569baec03f20d7b6bf3bcacc9a42bebf87ffaaca362f6346"},
-]
-
-[package.extras]
-benchmark = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pympler", "pytest (>=4.3.0)", "pytest-codspeed", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
-cov = ["cloudpickle", "coverage[toml] (>=5.3)", "hypothesis", "mypy (>=1.11.1)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
-dev = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pre-commit", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
-docs = ["cogapp", "furo", "myst-parser", "sphinx", "sphinx-notfound-page", "sphinxcontrib-towncrier", "towncrier (<24.7)"]
-tests = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
-tests-mypy = ["mypy (>=1.11.1)", "pytest-mypy-plugins"]
-
-[[package]]
 name = "blinker"
 version = "1.9.0"
 description = "Fast, simple object-to-object and broadcast signaling"
@@ -805,20 +786,20 @@ files = [
 
 [[package]]
 name = "insights-core"
-version = "3.4.23"
+version = "3.4.27"
 description = "Insights Core is a data collection and analysis framework"
 optional = false
 python-versions = "*"
 files = [
-    {file = "insights_core-3.4.23-py3-none-any.whl", hash = "sha256:342f155af29ec02267041dec2473d12922ab47564dcd2fa306f33fb1e2311f51"},
-    {file = "insights_core-3.4.23.tar.gz", hash = "sha256:190bfc40c726b74d2b8720153d7bfca256552198197e3db0788966666e24b744"},
+    {file = "insights_core-3.4.27-py3-none-any.whl", hash = "sha256:08e065fbe4887681a43ee2d23bbc1b296248b05306a9a4d529c8622962a9fc6a"},
+    {file = "insights_core-3.4.27.tar.gz", hash = "sha256:7dc1d0298fc2ce69f19b3eea0d419928fdb35adef643b6777a474bf94627eebb"},
 ]
 
 [package.dependencies]
 cachecontrol = [
     {version = "*"},
-    {version = "*", extras = ["redis"]},
     {version = "*", extras = ["filecache"]},
+    {version = "*", extras = ["redis"]},
 ]
 defusedxml = "*"
 jinja2 = {version = "*", markers = "python_version > \"2.7\""}
@@ -1448,24 +1429,23 @@ files = [
 
 [[package]]
 name = "pytest"
-version = "7.2.2"
+version = "7.4.4"
 description = "pytest: simple powerful testing with Python"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pytest-7.2.2-py3-none-any.whl", hash = "sha256:130328f552dcfac0b1cec75c12e3f005619dc5f874f0a06e8ff7263f0ee6225e"},
-    {file = "pytest-7.2.2.tar.gz", hash = "sha256:c99ab0c73aceb050f68929bc93af19ab6db0558791c6a0715723abe9d0ade9d4"},
+    {file = "pytest-7.4.4-py3-none-any.whl", hash = "sha256:b090cdf5ed60bf4c45261be03239c2c1c22df034fbffe691abe93cd80cea01d8"},
+    {file = "pytest-7.4.4.tar.gz", hash = "sha256:2cf0005922c6ace4a3e2ec8b4080eb0d9753fdc93107415332f50ce9e7994280"},
 ]
 
 [package.dependencies]
-attrs = ">=19.2.0"
 colorama = {version = "*", markers = "sys_platform == \"win32\""}
 iniconfig = "*"
 packaging = "*"
 pluggy = ">=0.12,<2.0"
 
 [package.extras]
-testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "xmlschema"]
+testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
 
 [[package]]
 name = "pytest-cov"
@@ -2042,4 +2022,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "6cbaa23a39671bad83988baf1a1cc638fc24c69657e755a5ac83557d8712079a"
+content-hash = "8fe0d4e43e248694d6ef92b158e1212e690bf409cc4a182e3e815c362404f344"
