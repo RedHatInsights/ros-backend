@@ -4,6 +4,7 @@ from ros.lib.cw_logging import commence_cw_log_streaming
 from ros.processor.inventory_events_consumer import InventoryEventsConsumer
 from ros.processor.insights_engine_consumer import InsightsEngineConsumer
 from ros.processor.garbage_collector import GarbageCollector
+from ros.processor.suggestions_engine import SuggestionsEngine
 from prometheus_client import start_http_server
 import threading
 from ros.lib.config import METRICS_PORT, ROS_PROCESSOR_PORT
@@ -19,6 +20,13 @@ def process_engine_results():
 def events_processor():
     processor = InventoryEventsConsumer()
     processor.processor_name = 'events-processor'
+    PROCESSOR_INSTANCES.append(processor)
+    processor.run()
+
+
+def suggestions_engine_processor():
+    processor = SuggestionsEngine()
+    processor.processor_name = 'suggestions-engine-processor'
     PROCESSOR_INSTANCES.append(processor)
     processor.run()
 
@@ -42,12 +50,15 @@ if __name__ == "__main__":
     events = threading.Thread(name='events-processor', target=events_processor)
     collector = threading.Thread(name='garbage-collector', target=garbage_collector)
     threadmonitor = threading.Thread(name='thread-monitor', target=thread_monitor)
+    suggestions_engine = threading.Thread(name='suggestions-engine', target=suggestions_engine_processor)
     events.start()
     engine_results.start()
+    suggestions_engine.start()
     collector.start()
     threadmonitor.start()
     start_http_server(int(METRICS_PORT))
     # Wait for threads to finish
     events.join()
     engine_results.join()
+    suggestions_engine.join()
     collector.join()
