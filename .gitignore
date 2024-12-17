@@ -134,6 +134,7 @@ cython_debug/
 
 scripts/minio-conf/
 scripts/minio-data/
+temp
 
 ## Pycharm ##
 
