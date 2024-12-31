@@ -24,9 +24,9 @@ def events_processor():
     processor.run()
 
 
-def suggestions_engine_processor():
+def suggestions_engine():
     processor = SuggestionsEngine()
-    processor.processor_name = 'suggestions-engine-processor'
+    processor.processor_name = 'suggestions-engine'
     PROCESSOR_INSTANCES.append(processor)
     processor.run()
 
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     events = threading.Thread(name='events-processor', target=events_processor)
     collector = threading.Thread(name='garbage-collector', target=garbage_collector)
     threadmonitor = threading.Thread(name='thread-monitor', target=thread_monitor)
-    suggestions_engine = threading.Thread(name='suggestions-engine', target=suggestions_engine_processor)
+    suggestions_engine = threading.Thread(name='suggestions-engine', target=suggestions_engine)
     events.start()
     engine_results.start()
     suggestions_engine.start()
