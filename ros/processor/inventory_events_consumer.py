@@ -13,7 +13,8 @@ from ros.lib.config import (
     METRICS_PORT,
     get_logger,
     CACHE_TIMEOUT_FOR_DELETED_SYSTEM,
-    CACHE_KEYWORD_FOR_DELETED_SYSTEM
+    CACHE_KEYWORD_FOR_DELETED_SYSTEM,
+    GROUP_ID
 )
 from ros.lib.cw_logging import commence_cw_log_streaming, threadctx
 from ros.processor.metrics import (processor_requests_success,
@@ -28,7 +29,7 @@ class InventoryEventsConsumer:
 
     def __init__(self):
         """Create Inventory Events Consumer."""
-        self.consumer = consume.init_consumer(INVENTORY_EVENTS_TOPIC)
+        self.consumer = consume.init_consumer(INVENTORY_EVENTS_TOPIC, GROUP_ID)
 
         self.event_type_map = {
             'delete': self.host_delete_event,

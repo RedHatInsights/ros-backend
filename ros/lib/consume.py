@@ -1,8 +1,8 @@
 from confluent_kafka import Consumer
-from ros.lib.config import kafka_auth_config, GROUP_ID
+from ros.lib.config import kafka_auth_config
 
 
-def init_consumer(kafka_topic):
+def init_consumer(kafka_topic, GROUP_ID):
     connection_object = {
         'group.id': GROUP_ID,
         'enable.auto.commit': False
