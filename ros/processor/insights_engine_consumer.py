@@ -9,7 +9,8 @@ from ros.lib.config import (
     ENGINE_RESULT_TOPIC,
     METRICS_PORT,
     get_logger,
-    CACHE_KEYWORD_FOR_DELETED_SYSTEM
+    CACHE_KEYWORD_FOR_DELETED_SYSTEM,
+    GROUP_ID
 )
 from ros.processor.process_archive import get_performance_profile
 from ros.processor.event_producer import new_suggestion_event
@@ -41,7 +42,7 @@ def topmost_candidate_from_rule_hit(reports, state_key):
 class InsightsEngineConsumer:
     def __init__(self):
         """Create Engine Consumer."""
-        self.consumer = consume.init_consumer(ENGINE_RESULT_TOPIC)
+        self.consumer = consume.init_consumer(ENGINE_RESULT_TOPIC, GROUP_ID)
 
         self.prefix = 'PROCESSING ENGINE RESULTS'
         self.reporter = 'INSIGHTS ENGINE'
