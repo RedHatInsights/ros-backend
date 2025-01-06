@@ -2,10 +2,15 @@ import json
 import requests
 from http import HTTPStatus
 from ros.lib import consume
+from insights import extract
 from ros.lib.config import get_logger
 from tempfile import NamedTemporaryFile
 from prometheus_client import start_http_server
-from ros.lib.config import INVENTORY_EVENTS_TOPIC, METRICS_PORT
+from ros.lib.config import (
+    INVENTORY_EVENTS_TOPIC,
+    METRICS_PORT,
+    GROUP_ID_SUGGESTIONS_ENGINE
+)
 
 
 logging = get_logger(__name__)
@@ -13,7 +18,7 @@ logging = get_logger(__name__)
 
 class SuggestionsEngine:
     def __init__(self):
-        self.consumer = consume.init_consumer(INVENTORY_EVENTS_TOPIC)
+        self.consumer = consume.init_consumer(INVENTORY_EVENTS_TOPIC, GROUP_ID_SUGGESTIONS_ENGINE)
         self.service = 'SUGGESTIONS_ENGINE'
         self.event = None
 
@@ -30,30 +35,11 @@ class SuggestionsEngine:
         if not is_pcp_collected(platform_metadata):
             return
 
-        archiveURL = platform_metadata.get('url')
-
-        logging.info(f"{self.service} - {self.event} - Downloading the report for system {host.get('id')}.")
-
-        response = requests.get(archiveURL, timeout=10)
-
-        if response.status_code != HTTPStatus.OK:
-            logging.error(
-                f"{self.service} - {self.event} - Unable to download the report for system {host.get('id')}. "
-                f"ERROR - {response.reason}"
-            )
-        else:
-            with NamedTemporaryFile(delete=True) as tempfile:
-                tempfile.write(response.content)
-                logging.info(
-                    f"{self.service} - {self.event} - Downloaded the report successfully for system {host.get('id')}"
-                )
-                tempfile.flush()
-
-    def handle_delete(self, payload):
-        pass
+        archive_URL = platform_metadata.get('url')
+        download_and_extract(self.service, self.event, archive_URL, host, org_id=host.get('org_id'))
 
     def run(self):
-        logging.info(f"{self.service} - Processor is running. Awaiting msgs.")
+        logging.info(f"{self.service} - Engine is running. Awaiting msgs.")
         try:
             while True:
                 message = self.consumer.poll(timeout=1.0)
@@ -64,12 +50,10 @@ class SuggestionsEngine:
                     payload = json.loads(message.value().decode('utf-8'))
                     event_type = payload['type']
 
-                    if 'delete' == event_type:
-                        self.handle_delete(payload)
-                    elif 'created' == event_type or 'updated' == event_type:
+                    if 'created' == event_type or 'updated' == event_type:
                         self.handle_create_update(payload)
-                    else:
-                        logging.warning(f"{self.service} - {self.event} - Unknown message type: %s, {event_type}")
+                        self.consumer.commit()
+
                 except json.JSONDecodeError as error:
                     logging.error(f"{self.service} - {self.event} - Failed to decode message: {error}")
                 except Exception as error:
@@ -78,6 +62,27 @@ class SuggestionsEngine:
             logging.error(f"{self.service} - {self.event} - error: {error}")
         finally:
             self.consumer.close()
+
+
+def download_and_extract(service, event, archive_URL, host, org_id):
+    logging.info(f"{service} - {event} - Downloading the report for system {host.get('id')}.")
+
+    response = requests.get(archive_URL, timeout=10)
+
+    if response.status_code != HTTPStatus.OK:
+        logging.error(
+            f"{service} - {event} - Unable to download the report for system {host.get('id')}. "
+            f"ERROR - {response.reason}"
+        )
+    else:
+        with NamedTemporaryFile(delete=True) as tempfile:
+            tempfile.write(response.content)
+            logging.info(
+                f"{service} - {event} - Downloaded the report successfully for system {host.get('id')}"
+            )
+            tempfile.flush()
+            with extract(tempfile.name) as extract_dir:
+                return extract_dir.tmp_dir
 
 
 def is_pcp_collected(platform_metadata):
