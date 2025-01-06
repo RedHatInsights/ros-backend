@@ -71,7 +71,7 @@ jobs:
       run: |
         echo "`cat <<EOF
         [tool.poetry]
-        name = "ros-backend"
+        name = "ros"
         version = "2.4.0"
         description = "Backend for Resource Optimization"
         readme = "README.md"
