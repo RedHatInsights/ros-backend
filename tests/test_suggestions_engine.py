@@ -1,13 +1,16 @@
 import unittest
 import logging
-from unittest.mock import Mock
-from ros.processor.suggestions_engine import SuggestionsEngine, is_pcp_collected
+from unittest.mock import patch
+from ros.processor.suggestions_engine import (
+    SuggestionsEngine,
+    is_pcp_collected,
+    download_and_extract
+)
 
 
 class TestSuggestionsEngine(unittest.TestCase):
     def setUp(self):
         self.engine = SuggestionsEngine()
-        self.mock_consumer = Mock()
 
     def test_handle_create_update_missing_data(self):
         payload_create = {'type': 'create'}
@@ -40,6 +43,52 @@ class TestSuggestionsEngine(unittest.TestCase):
 
         invalid_metadata = {'is_ros_v2': False, 'is_pcp_raw_data_collected': False}
         self.assertFalse(is_pcp_collected(invalid_metadata))
+
+
+class TestDownloadAndExtract(unittest.TestCase):
+
+    @patch("ros.processor.suggestions_engine.extract")
+    @patch("ros.processor.suggestions_engine.NamedTemporaryFile")
+    @patch("ros.processor.suggestions_engine.requests.get")
+    def test_download_and_extract_successful(self, mock_get, mock_tempfile, mock_extract):
+        mock_get.return_value.status_code = 200
+        mock_get.return_value.content = b"dummy data"
+
+        mock_tempfile.return_value.__enter__.return_value.name = "tempfile.tar.gz"
+
+        mock_extract.return_value.__enter__.return_value.tmp_dir = "extracted_dir"
+
+        extract_dir = download_and_extract(
+            service="TestService",
+            event="TestEvent",
+            archive_URL="http://example.com/archive.tar.gz",
+            host={"id": "test_host"},
+            org_id="123"
+        )
+
+        mock_get.assert_called_once_with("http://example.com/archive.tar.gz", timeout=10)
+        mock_tempfile.return_value.__enter__.assert_called_once()
+        mock_extract.assert_called_once()
+        self.assertEqual(extract_dir, "extracted_dir")
+
+    @patch('ros.processor.suggestions_engine.extract')
+    @patch('ros.processor.suggestions_engine.requests.get')
+    def test_download_and_extract_failure(self, mock_get, mock_extract):
+        mock_get.return_value.status_code = 404
+        mock_get.return_value.reason = "Not Found"
+
+        mock_extract.return_value.__enter__.return_value.tmp_dir = "extracted_dir"
+
+        extract_dir = download_and_extract(
+            service="TestService",
+            event="TestEvent",
+            archive_URL="http://example.com/archive.tar.gz",
+            host={"id": "test_host"},
+            org_id="123"
+        )
+
+        mock_get.assert_called_once_with("http://example.com/archive.tar.gz", timeout=10)
+        self.assertIsNone(extract_dir)
 
 
 if __name__ == '__main__':
