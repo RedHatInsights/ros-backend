@@ -97,7 +97,7 @@ Note - Before running the above commands make sure kafka and db-host-inventory c
 
 ## Available API endpoints
 
-Our REST API documentation can be found at /api/ros. You may access the raw OpenAPI definition [here](https://raw.githubusercontent.com/RedHatInsights/ros-backend/refs/heads/main/ros/openapi/openapi.json).
+Resource Optimization REST API documentation can be found at `/api/ros`. It is accessible at raw OpenAPI definition [here](https://raw.githubusercontent.com/RedHatInsights/ros-backend/refs/heads/main/ros/openapi/openapi.json).
 On a local instance it can be accessed on http://localhost:8000/api/ros/v1/openapi.json.
 
 For local development setup, remember to use the `x-rh-identity` header encoded from account number and org_id, the one used while running `make insights-upload-data` command.
