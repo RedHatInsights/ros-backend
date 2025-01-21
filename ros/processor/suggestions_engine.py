@@ -1,19 +1,38 @@
+import os
 import json
-import requests
+import shutil
+import subprocess
 from http import HTTPStatus
-from ros.lib import consume
-from insights import extract
-from ros.lib.config import get_logger
+from contextlib import contextmanager
 from tempfile import NamedTemporaryFile
+
+import requests
+from insights import extract
 from prometheus_client import start_http_server
+
+from ros.lib import consume
 from ros.lib.config import (
-    INVENTORY_EVENTS_TOPIC,
+    get_logger,
     METRICS_PORT,
-    GROUP_ID_SUGGESTIONS_ENGINE
+    INVENTORY_EVENTS_TOPIC,
+    GROUP_ID_SUGGESTIONS_ENGINE,
 )
 
 
 logging = get_logger(__name__)
+
+PCP_METRICS = [
+        'disk.dev.total',
+        'hinv.ncpu',
+        'kernel.all.cpu.idle',
+        'kernel.all.pressure.cpu.some.avg',
+        'kernel.all.pressure.io.full.avg',
+        'kernel.all.pressure.io.some.avg',
+        'kernel.all.pressure.memory.full.avg',
+        'kernel.all.pressure.memory.some.avg',
+        'mem.physmem',
+        'mem.util.available',
+]
 
 
 class SuggestionsEngine:
@@ -36,7 +55,17 @@ class SuggestionsEngine:
             return
 
         archive_URL = platform_metadata.get('url')
-        download_and_extract(self.service, self.event, archive_URL, host, org_id=host.get('org_id'))
+        with download_and_extract(
+                self.service,
+                self.event,
+                archive_URL,
+                host,
+                org_id=host.get('org_id')
+        ) as ext_dir:
+            extracted_dir = ext_dir.tmp_dir
+            index_file_path = get_index_file_path(self.service, self.event, host, extracted_dir)
+            if index_file_path is not None:
+                run_pcp_commands(self.service, self.event, index_file_path, host, platform_metadata.get('request_id'))
 
     def run(self):
         logging.info(f"{self.service} - Engine is running. Awaiting msgs.")
@@ -64,25 +93,119 @@ class SuggestionsEngine:
             self.consumer.close()
 
 
+def find_root_directory(directory, target_file):
+    """
+    Recursively search for the target file in the given directory - to get root directory of an archive.
+    """
+    for dirpath, dirnames, filenames in os.walk(directory):
+        if target_file in filenames:
+            return dirpath
+
+    return None
+
+
+def get_index_file_path(service, event, host, extracted_dir):
+    extracted_dir_root = find_root_directory(extracted_dir, "insights_archive.txt")
+
+    if not extracted_dir_root:
+        logging.error(
+            f"{service} - {event} - insights_archive.txt not found in the extracted dir for system {host.get('id')}."
+        )
+        return None
+
+    pmlogger_dir = os.path.join(extracted_dir_root, "data/var/log/pcp/pmlogger/")
+
+    index_files = [
+        file for file in os.listdir(pmlogger_dir) if file.endswith(".index")
+    ]
+    index_file_path = os.path.join(pmlogger_dir, index_files[0])
+
+    return index_file_path
+
+
+def create_output_dir(request_id):
+    output_dir = f"/tmp/pmlogextract-output-{request_id}/"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    return output_dir
+
+
+def run_pcp_commands(service, event, host, index_file_path, request_id):
+    try:
+        sanitized_request_id = request_id.replace("/", "_")
+        output_dir = create_output_dir(sanitized_request_id)
+
+        pmlogextract_command = [
+            "pmlogextract",
+            "-c",
+            "ros/lib/pcp_extract_config",
+            index_file_path,
+            output_dir
+        ]
+        try:
+            subprocess.run(pmlogextract_command, check=True)
+            logging.info(f"{service} - {event} - Successfully ran pmlogextract command for system {host.get('id')}.")
+        except subprocess.CalledProcessError as error:
+            logging.error(
+                f"{service} - {event} - Error running pmlogextract command for system {host.get('id')}: {error}"
+            )
+            return
+
+        pmlogsummary_command = [
+            "pmlogsummary",
+            "-f",
+            output_dir,
+            *PCP_METRICS
+        ]
+        try:
+            subprocess.run(pmlogsummary_command, check=True)
+            logging.info(f"{service} - {event} - Successfully ran pmlogsummary command for system {host.get('id')}.")
+        except subprocess.CalledProcessError as error:
+            logging.error(
+                f"{service} - {event} - Error running pmlogsummary command for system {host.get('id')}: {error}"
+            )
+            return
+
+    except Exception as error:
+        logging.error(
+            f"{service} - {event} - Unexpected error during PCP command execution for system {host.get('id')}: {error}"
+        )
+    finally:
+        try:
+            if os.path.exists(output_dir):
+                shutil.rmtree(output_dir)
+                logging.info(f"{service} - {event} - Cleaned up output directory for system {host.get('id')}.")
+        except Exception as error:
+            logging.error(
+                f"{service} - {event} - Error cleaning up the output directory for system {host.get('id')}: {error}"
+            )
+
+
+@contextmanager
 def download_and_extract(service, event, archive_URL, host, org_id):
     logging.info(f"{service} - {event} - Downloading the report for system {host.get('id')}.")
 
-    response = requests.get(archive_URL, timeout=10)
+    try:
+        response = requests.get(archive_URL, timeout=10)
 
-    if response.status_code != HTTPStatus.OK:
-        logging.error(
-            f"{service} - {event} - Unable to download the report for system {host.get('id')}. "
-            f"ERROR - {response.reason}"
-        )
-    else:
-        with NamedTemporaryFile(delete=True) as tempfile:
-            tempfile.write(response.content)
-            logging.info(
-                f"{service} - {event} - Downloaded the report successfully for system {host.get('id')}"
+        if response.status_code != HTTPStatus.OK:
+            logging.error(
+                f"{service} - {event} - Unable to download the report for system {host.get('id')}. "
+                f"ERROR - {response.reason}"
             )
-            tempfile.flush()
-            with extract(tempfile.name) as extract_dir:
-                return extract_dir.tmp_dir
+            yield None
+        else:
+            with NamedTemporaryFile(delete=True) as tempfile:
+                tempfile.write(response.content)
+                logging.info(
+                    f"{service} - {event} - Downloaded the report successfully for system {host.get('id')}"
+                )
+                tempfile.flush()
+                with extract(tempfile.name) as extract_dir:
+                    yield extract_dir
+    except Exception as e:
+        logging.error(f"{service} - {event} - Error occurred during download and extraction: {str(e)}")
 
 
 def is_pcp_collected(platform_metadata):
