@@ -1,0 +1,10 @@
+disk.dev.total
+hinv.ncpu
+kernel.all.cpu.idle
+kernel.all.pressure.cpu.some.avg
+kernel.all.pressure.io.full.avg
+kernel.all.pressure.io.some.avg
+kernel.all.pressure.memory.full.avg
+kernel.all.pressure.memory.some.avg
+mem.physmem
+mem.util.available
