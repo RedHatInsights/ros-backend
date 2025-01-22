@@ -149,10 +149,11 @@ class TestCreateOutputDir(unittest.TestCase):
     @patch("ros.processor.suggestions_engine.os.path.exists")
     def test_create_output_dir(self, mock_path_exists, mock_makedirs):
         request_id = "12345"
+        host = {"id": "test_host"}
         mock_path_exists.return_value = False
         mock_makedirs.return_value = None
 
-        output_dir = create_output_dir(request_id)
+        output_dir = create_output_dir(request_id, host)
 
         mock_makedirs.assert_called_once_with(output_dir)
         self.assertEqual(output_dir, "/tmp/pmlogextract-output-12345/")
