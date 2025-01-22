@@ -65,7 +65,7 @@ class SuggestionsEngine:
             extracted_dir = ext_dir.tmp_dir
             index_file_path = get_index_file_path(self.service, self.event, host, extracted_dir)
             if index_file_path is not None:
-                run_pcp_commands(self.service, self.event, index_file_path, host, platform_metadata.get('request_id'))
+                run_pcp_commands(self.service, self.event, host, index_file_path, platform_metadata.get('request_id'))
 
     def run(self):
         logging.info(f"{self.service} - Engine is running. Awaiting msgs.")
@@ -123,10 +123,12 @@ def get_index_file_path(service, event, host, extracted_dir):
     return index_file_path
 
 
-def create_output_dir(request_id):
+def create_output_dir(request_id, host):
     output_dir = f"/tmp/pmlogextract-output-{request_id}/"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
+
+    logging.debug(f"Successfully created output_dir for system {host.get('id')}: {output_dir}")
 
     return output_dir
 
@@ -134,7 +136,7 @@ def create_output_dir(request_id):
 def run_pcp_commands(service, event, host, index_file_path, request_id):
     try:
         sanitized_request_id = request_id.replace("/", "_")
-        output_dir = create_output_dir(sanitized_request_id)
+        output_dir = create_output_dir(sanitized_request_id, host)
 
         pmlogextract_command = [
             "pmlogextract",
@@ -143,27 +145,31 @@ def run_pcp_commands(service, event, host, index_file_path, request_id):
             index_file_path,
             output_dir
         ]
+
+        logging.info(f"{service} - {event} - Running pmlogextract command for system {host.get('id')}.")
         try:
             subprocess.run(pmlogextract_command, check=True)
             logging.info(f"{service} - {event} - Successfully ran pmlogextract command for system {host.get('id')}.")
         except subprocess.CalledProcessError as error:
             logging.error(
-                f"{service} - {event} - Error running pmlogextract command for system {host.get('id')}: {error}"
+                f"{service} - {event} - Error running pmlogextract command for system {host.get('id')}: {error.stdout}"
             )
             return
 
         pmlogsummary_command = [
             "pmlogsummary",
             "-f",
-            output_dir,
+            os.path.join(output_dir, ".index"),
             *PCP_METRICS
         ]
+
+        logging.info(f"{service} - {event} - Running pmlogsummary command for system {host.get('id')}.")
         try:
-            subprocess.run(pmlogsummary_command, check=True)
+            subprocess.run(pmlogsummary_command, check=True, capture_output=True, text=True)
             logging.info(f"{service} - {event} - Successfully ran pmlogsummary command for system {host.get('id')}.")
         except subprocess.CalledProcessError as error:
             logging.error(
-                f"{service} - {event} - Error running pmlogsummary command for system {host.get('id')}: {error}"
+                f"{service} - {event} - Error running pmlogsummary command for system {host.get('id')}: {error.stdout}"
             )
             return
 
@@ -204,8 +210,8 @@ def download_and_extract(service, event, archive_URL, host, org_id):
                 tempfile.flush()
                 with extract(tempfile.name) as extract_dir:
                     yield extract_dir
-    except Exception as e:
-        logging.error(f"{service} - {event} - Error occurred during download and extraction: {str(e)}")
+    except Exception as error:
+        logging.error(f"{service} - {event} - Error occurred during download and extraction: {error}")
 
 
 def is_pcp_collected(platform_metadata):
