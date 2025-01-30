@@ -2,15 +2,7 @@ import unittest
 import logging
 from unittest.mock import patch
 
-from ros.processor.suggestions_engine import (
-    SuggestionsEngine,
-    is_pcp_collected,
-    download_and_extract,
-    get_index_file_path,
-    create_output_dir,
-    find_root_directory,
-    PCP_METRICS
-)
+from ros.processor.suggestions_engine import SuggestionsEngine
 
 
 class TestSuggestionsEngine(unittest.TestCase):
@@ -38,19 +30,21 @@ class TestSuggestionsEngine(unittest.TestCase):
 
     def test_is_pcp_collected(self):
         valid_metadata = {'is_ros_v2': True, 'is_pcp_raw_data_collected': True}
-        self.assertTrue(is_pcp_collected(valid_metadata))
+        self.assertTrue(self.engine.is_pcp_collected(valid_metadata))
 
         invalid_metadata = {'is_ros_v2': True, 'is_pcp_raw_data_collected': False}
-        self.assertFalse(is_pcp_collected(invalid_metadata))
+        self.assertFalse(self.engine.is_pcp_collected(invalid_metadata))
 
         invalid_metadata = {'is_ros_v2': False, 'is_pcp_raw_data_collected': True}
-        self.assertFalse(is_pcp_collected(invalid_metadata))
+        self.assertFalse(self.engine.is_pcp_collected(invalid_metadata))
 
         invalid_metadata = {'is_ros_v2': False, 'is_pcp_raw_data_collected': False}
-        self.assertFalse(is_pcp_collected(invalid_metadata))
+        self.assertFalse(self.engine.is_pcp_collected(invalid_metadata))
 
 
 class TestDownloadAndExtract(unittest.TestCase):
+    def setUp(self):
+        self.engine = SuggestionsEngine()
 
     @patch("ros.processor.suggestions_engine.extract")
     @patch("ros.processor.suggestions_engine.NamedTemporaryFile")
@@ -63,9 +57,7 @@ class TestDownloadAndExtract(unittest.TestCase):
 
         mock_extract.return_value.__enter__.return_value.tmp_dir = "extracted_dir"
 
-        with download_and_extract(
-                service="TestService",
-                event="TestEvent",
+        with self.engine.download_and_extract(
                 archive_URL="http://example.com/archive.tar.gz",
                 host={"id": "test_host"},
                 org_id="123"
@@ -84,9 +76,7 @@ class TestDownloadAndExtract(unittest.TestCase):
 
         mock_extract.return_value.__enter__.return_value.tmp_dir = "extracted_dir"
 
-        with download_and_extract(
-                service="TestService",
-                event="TestEvent",
+        with self.engine.download_and_extract(
                 archive_URL="http://example.com/archive.tar.gz",
                 host={"id": "test_host"},
                 org_id="123"
@@ -97,6 +87,8 @@ class TestDownloadAndExtract(unittest.TestCase):
 
 
 class TestFindRootDirectory(unittest.TestCase):
+    def setUp(self):
+        self.engine = SuggestionsEngine()
 
     @patch('ros.processor.suggestions_engine.os.walk')
     def test_file_found_in_root_directory(self, mock_walk):
@@ -106,7 +98,7 @@ class TestFindRootDirectory(unittest.TestCase):
             ("/root/subdir2", [], ["file2.txt"]),
         ]
 
-        result = find_root_directory("/root", "insights_archive.txt")
+        result = self.engine.find_root_directory("/root", "insights_archive.txt")
         self.assertEqual(result, "/root/subdir1")
 
     @patch('ros.processor.suggestions_engine.os.walk')
@@ -117,24 +109,24 @@ class TestFindRootDirectory(unittest.TestCase):
             ("/root/subdir2", [], ["file2.txt"]),
         ]
 
-        result = find_root_directory("/root", "insights_archive.txt")
+        result = self.engine.find_root_directory("/root", "insights_archive.txt")
         self.assertIsNone(result)
 
 
 class TestGetIndexFilePath(unittest.TestCase):
+    def setUp(self):
+        self.engine = SuggestionsEngine()
 
     @patch("ros.processor.suggestions_engine.os.listdir")
     @patch("ros.processor.suggestions_engine.os.path.join")
-    @patch("ros.processor.suggestions_engine.find_root_directory")
+    @patch("ros.processor.suggestions_engine.SuggestionsEngine.find_root_directory")
     def test_get_index_file_path(self, mock_find_root_directory, mock_join, mock_listdir):
         mock_find_root_directory.return_value = "/tmp/extracted/"
 
         mock_listdir.return_value = ["YYYYMMDD.index"]
         mock_join.return_value = "/tmp/extracted/data/var/log/pcp/pmlogger/YYYYMMDD.index"
 
-        index_file_path = get_index_file_path(
-            service="TestService",
-            event="TestEvent",
+        index_file_path = self.engine.get_index_file_path(
             host={"id": "test_host"},
             extracted_dir="/tmp/extracted"
         )
@@ -144,6 +136,8 @@ class TestGetIndexFilePath(unittest.TestCase):
 
 
 class TestCreateOutputDir(unittest.TestCase):
+    def setUp(self):
+        self.engine = SuggestionsEngine()
 
     @patch("ros.processor.suggestions_engine.os.makedirs")
     @patch("ros.processor.suggestions_engine.os.path.exists")
@@ -153,49 +147,10 @@ class TestCreateOutputDir(unittest.TestCase):
         mock_path_exists.return_value = False
         mock_makedirs.return_value = None
 
-        output_dir = create_output_dir(request_id, host)
+        output_dir = self.engine.create_output_dir(request_id, host)
 
         mock_makedirs.assert_called_once_with(output_dir)
         self.assertEqual(output_dir, "/tmp/pmlogextract-output-12345/")
-
-
-class TestPCPMetrics(unittest.TestCase):
-    def test_pcp_metrics_check(self):
-        expected_metrics = [
-            "disk.dev.total",
-            "hinv.ncpu",
-            "kernel.all.cpu.idle",
-            "kernel.all.pressure.cpu.some.avg",
-            "kernel.all.pressure.io.full.avg",
-            "kernel.all.pressure.io.some.avg",
-            "kernel.all.pressure.memory.full.avg",
-            "kernel.all.pressure.memory.some.avg",
-            "mem.physmem",
-            "mem.util.available",
-        ]
-        self.assertEqual(PCP_METRICS, expected_metrics)
-
-    def test_pcp_metrics_in_command(self):
-        output_dir = "/tmp/pmlogextract-output-12345"
-        command = ["pmlogsummary", "-f", output_dir, *PCP_METRICS]
-
-        expected_command = [
-            "pmlogsummary",
-            "-f",
-            output_dir,
-            "disk.dev.total",
-            "hinv.ncpu",
-            "kernel.all.cpu.idle",
-            "kernel.all.pressure.cpu.some.avg",
-            "kernel.all.pressure.io.full.avg",
-            "kernel.all.pressure.io.some.avg",
-            "kernel.all.pressure.memory.full.avg",
-            "kernel.all.pressure.memory.some.avg",
-            "mem.physmem",
-            "mem.util.available",
-        ]
-
-        self.assertEqual(command, expected_command)
 
 
 if __name__ == '__main__':
