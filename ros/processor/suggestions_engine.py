@@ -140,6 +140,7 @@ class SuggestionsEngine:
 
         try:
             response = requests.get(archive_URL, timeout=10)
+            self.consumer.commit()
 
             if response.status_code != HTTPStatus.OK:
                 logging.error(
@@ -208,8 +209,7 @@ class SuggestionsEngine:
                     logging.error(f"{self.service} - {self.event} - Failed to decode message: {error}")
                 except Exception as error:
                     logging.error(f"{self.service} - {self.event} - Error processing message: {error}")
-                finally:
-                    self.consumer.commit()
+
         except Exception as error:
             logging.error(f"{self.service} - {self.event} - error: {error}")
         finally:
