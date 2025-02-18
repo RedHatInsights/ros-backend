@@ -1,14 +1,14 @@
-FROM registry.access.redhat.com/ubi8/ubi-minimal
+FROM registry.access.redhat.com/ubi9/ubi-minimal
 
 ARG PYTHON_PIP_VERSION=23.3
 
 RUN microdnf install \
     --disableplugin=subscription-manager \
-    --nodocs -y python311 tar gzip gcc python3.11-devel libpq-devel
+    --nodocs -y python3.11 tar gzip gcc python3.11-devel libpq-devel
 
 # Install poetry in separate virtual env
 ENV POETRY_HOME=/opt/poetry
-RUN python -m venv $POETRY_HOME &&\
+RUN python3.11 -m venv $POETRY_HOME &&\
     $POETRY_HOME/bin/pip install --upgrade pip==$PYTHON_PIP_VERSION setuptools wheel && \
     $POETRY_HOME/bin/pip install poetry
 
@@ -22,7 +22,7 @@ COPY ros ros
 COPY migrations migrations
 COPY seed.d seed.d
 
-RUN python -m venv $VIRTUAL_ENV && \
+RUN python3.11 -m venv $VIRTUAL_ENV && \
     $VIRTUAL_ENV/bin/pip install --upgrade pip==$PYTHON_PIP_VERSION setuptools wheel && \
     poetry install
 
