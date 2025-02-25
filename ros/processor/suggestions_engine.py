@@ -9,6 +9,12 @@ from tempfile import NamedTemporaryFile
 import requests
 from insights import extract
 from prometheus_client import start_http_server
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_fixed,
+    retry_if_exception_type
+)
 
 from ros.lib import consume
 from ros.lib.config import (
@@ -28,6 +34,7 @@ class SuggestionsEngine:
         self.service = 'SUGGESTIONS_ENGINE'
         self.event = None
 
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(2), retry=retry_if_exception_type(subprocess.TimeoutExpired))
     def run_pmlogextract(self, host, index_file_path, output_dir):
         """Run the pmlogextract command."""
 
@@ -41,10 +48,13 @@ class SuggestionsEngine:
 
         logging.debug(f"{self.service} - {self.event} - Running pmlogextract command for system {host.get('id')}.")
         try:
-            subprocess.run(pmlogextract_command, check=True)
+            subprocess.run(pmlogextract_command, check=True, timeout=60)
             logging.debug(
                 f"{self.service} - {self.event} - Successfully ran pmlogextract command for system {host.get('id')}."
             )
+        except subprocess.TimeoutExpired:
+            logging.warning(f"{self.service} - {self.event} - Timeout running pmlogextract for {host.get('id')}.")
+            raise
         except subprocess.CalledProcessError as error:
             logging.error(
                 f"{self.service} - {self.event} - Error running pmlogextract command for system {host.get('id')}:"
@@ -52,6 +62,7 @@ class SuggestionsEngine:
             )
             raise
 
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(2), retry=retry_if_exception_type(subprocess.TimeoutExpired))
     def run_pmlogsummary(self, host, output_dir):
         """Run the pmlogsummary command."""
 
@@ -63,10 +74,13 @@ class SuggestionsEngine:
 
         logging.debug(f"{self.service} - {self.event} - Running pmlogsummary command for system {host.get('id')}.")
         try:
-            subprocess.run(pmlogsummary_command, check=True, text=True, capture_output=True)
+            subprocess.run(pmlogsummary_command, check=True, text=True, capture_output=True, timeout=60)
             logging.debug(
                 f"{self.service} - {self.event} - Successfully ran pmlogsummary command for system {host.get('id')}."
             )
+        except subprocess.TimeoutExpired:
+            logging.warning(f"{self.service} - {self.event} - Timeout running pmlogsummary for {host.get('id')}.")
+            raise
         except subprocess.CalledProcessError as error:
             logging.error(
                 f"{self.service} - {self.event} - Error running pmlogsummary command for system {host.get('id')}:"
