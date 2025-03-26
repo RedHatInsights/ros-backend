@@ -32,7 +32,9 @@ services:
                        cub kafka-ready -b kafka:29092 1 20 && \
                        kafka-topics --create --if-not-exists --topic platform.inventory.events --bootstrap-server kafka:29092 && \
                        kafka-topics --create --if-not-exists --topic platform.upload.announce --bootstrap-server kafka:29092 && \
-                       kafka-topics --create --if-not-exists --topic platform.engine.results --bootstrap-server kafka:29092'"
+                       kafka-topics --create --if-not-exists --topic platform.engine.results --bootstrap-server kafka:29092 && \
+                       kafka-topics --create --if-not-exists --topic ros.events --bootstrap-server kafka:29092'"
+
     depends_on:
       - kafka
   minio:
