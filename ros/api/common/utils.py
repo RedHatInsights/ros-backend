@@ -29,8 +29,8 @@ def validate_rating_data(func):
             422: "is invalid choice of input for rating."
         }
         return (
-            f"'{value}' { errors.get(error_code, 'Invalid') }"
-            f" Possible values - { *allowed_choices, }"
+            f"'{value}' {errors.get(error_code, 'Invalid')}"
+            f" Possible values - {*allowed_choices, }"
         )
 
     def check_for_rating(data):
