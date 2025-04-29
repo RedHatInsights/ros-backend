@@ -16,7 +16,7 @@ from tenacity import (
     retry_if_exception_type
 )
 
-from ros.lib import consume
+from ros.lib import consume, produce
 from ros.lib.config import (
     get_logger,
     METRICS_PORT,
@@ -28,6 +28,8 @@ from ros.rules.rules_engine import (
     report,
     report_metadata
 )
+from ros.processor.event_producer import produce_report_processor_event
+
 
 logging = get_logger(__name__)
 
@@ -35,6 +37,7 @@ logging = get_logger(__name__)
 class SuggestionsEngine:
     def __init__(self):
         self.consumer = consume.init_consumer(INVENTORY_EVENTS_TOPIC, GROUP_ID_SUGGESTIONS_ENGINE)
+        self.producer = produce.init_producer()
         self.service = 'SUGGESTIONS_ENGINE'
         self.event = None
 
@@ -178,10 +181,10 @@ class SuggestionsEngine:
         except Exception as error:
             logging.error(f"{self.service} - {self.event} - Error occurred during download and extraction: {error}")
 
-    def is_pcp_collected(self, platform_metadata):
+    def get_ros_pcp_status(self, platform_metadata):
         return (
-            platform_metadata.get('is_ros_v2') and
-            platform_metadata.get('is_pcp_raw_data_collected')
+            platform_metadata.get('is_ros_v2', False),
+            platform_metadata.get('is_pcp_raw_data_collected', False)
         )
 
     def handle_create_update(self, payload):
@@ -189,12 +192,21 @@ class SuggestionsEngine:
 
         platform_metadata = payload.get('platform_metadata')
         host = payload.get('host')
+        is_ros_enabled, is_pcp_collected = self.get_ros_pcp_status(platform_metadata)
 
         if platform_metadata is None or host is None:
             logging.info(f"{self.service} - {self.event} - Missing host or/and platform_metadata field(s).")
             return
 
-        if not self.is_pcp_collected(platform_metadata):
+        if not is_ros_enabled:
+            return
+
+        if not is_pcp_collected:
+            logging.debug(
+                f"{self.service} - {self.event} - Triggering an event for system {host.get('id')}"
+            )
+            self.consumer.commit()
+            produce_report_processor_event(payload, platform_metadata, self.producer)
             return
 
         archive_URL = platform_metadata.get('url')
