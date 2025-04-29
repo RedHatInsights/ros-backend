@@ -24,6 +24,8 @@ from ros.lib.config import (
     GROUP_ID_SUGGESTIONS_ENGINE,
 )
 
+from ros.processor.rules.rules_engine import run_rules, report, report_metadata
+
 
 logging = get_logger(__name__)
 
@@ -63,7 +65,7 @@ class SuggestionsEngine:
             raise
 
     @retry(stop=stop_after_attempt(3), wait=wait_fixed(2), retry=retry_if_exception_type(subprocess.TimeoutExpired))
-    def run_pmlogsummary(self, host, output_dir):
+    def run_pmlogsummary(self, host, output_dir, extracted_dir_root):
         """Run the pmlogsummary command."""
 
         pmlogsummary_command = [
@@ -74,10 +76,12 @@ class SuggestionsEngine:
 
         logging.debug(f"{self.service} - {self.event} - Running pmlogsummary command for system {host.get('id')}.")
         try:
-            subprocess.run(pmlogsummary_command, check=True, text=True, capture_output=True, timeout=60)
+            pmlogsummary_output = open(extracted_dir_root + "/" + "pmlogsummary", 'w')
+            subprocess.run(pmlogsummary_command, check=True, text=True, timeout=60, stdout=pmlogsummary_output)
             logging.debug(
                 f"{self.service} - {self.event} - Successfully ran pmlogsummary command for system {host.get('id')}."
             )
+            print(extracted_dir_root)
         except subprocess.TimeoutExpired:
             logging.warning(f"{self.service} - {self.event} - Timeout running pmlogsummary for {host.get('id')}.")
             raise
@@ -97,16 +101,15 @@ class SuggestionsEngine:
 
         return output_dir
 
-    def run_pcp_commands(self, host, index_file_path, request_id):
+    def run_pcp_commands(self, host, index_file_path, request_id, extracted_dir_root):
         sanitized_request_id = request_id.replace("/", "_")
         output_dir = self.create_output_dir(sanitized_request_id, host)
 
         self.run_pmlogextract(host, index_file_path, output_dir)
 
-        self.run_pmlogsummary(host, output_dir)
+        self.run_pmlogsummary(host, output_dir, extracted_dir_root)
 
         logging.info(f"{self.service} - {self.event} - Successfully ran pcp commands for system {host.get('id')}.")
-
         try:
             if os.path.exists(output_dir):
                 shutil.rmtree(output_dir)
@@ -129,9 +132,7 @@ class SuggestionsEngine:
 
         return None
 
-    def get_index_file_path(self, host, extracted_dir):
-        extracted_dir_root = self.find_root_directory(extracted_dir, "insights_archive.txt")
-
+    def get_index_file_path(self, host, extracted_dir_root):
         if not extracted_dir_root:
             logging.error(
                 f"{self.service} - {self.event} -"
@@ -200,9 +201,14 @@ class SuggestionsEngine:
                 org_id=host.get('org_id')
         ) as ext_dir:
             extracted_dir = ext_dir.tmp_dir
-            index_file_path = self.get_index_file_path(host, extracted_dir)
+            extracted_dir_root = self.find_root_directory(extracted_dir, "insights_archive.txt")
+            index_file_path = self.get_index_file_path(host, extracted_dir_root)
             if index_file_path is not None:
-                self.run_pcp_commands(host, index_file_path, platform_metadata.get('request_id'))
+                self.run_pcp_commands(host, index_file_path, platform_metadata.get('request_id'), extracted_dir_root)
+                rules_execution_output = run_rules(extracted_dir_root)
+                rules = [report_metadata, report]
+                for r in rules:
+                    print(rules_execution_output[r])
 
     def run(self):
         logging.info(f"{self.service} - Engine is running. Awaiting msgs.")
