@@ -10,7 +10,8 @@ class TestSuggestionsEngine(unittest.TestCase):
         self.engine = SuggestionsEngine()
 
     def test_handle_create_update_missing_data(self):
-        payload_create = {'type': 'create'}
+        payload_create = {'type': 'create', 'platform_metadata':
+                          {'is_ros_v2': False, 'is_pcp_raw_data_collected': False}}
         payload_update = {'type': 'updated', 'platform_metadata': {}}
 
         with self.assertLogs(logging.getLogger(), level='INFO') as log:
@@ -28,18 +29,18 @@ class TestSuggestionsEngine(unittest.TestCase):
             )
             self.assertIn(expected_log_message, log.output)
 
-    def test_is_pcp_collected(self):
-        valid_metadata = {'is_ros_v2': True, 'is_pcp_raw_data_collected': True}
-        self.assertTrue(self.engine.is_pcp_collected(valid_metadata))
+    def test_get_ros_pcp_status(self):
+        platform_metadata = {'is_ros_v2': True, 'is_pcp_raw_data_collected': False}
+        assert self.engine.get_ros_pcp_status(platform_metadata) == (True, False)
 
-        invalid_metadata = {'is_ros_v2': True, 'is_pcp_raw_data_collected': False}
-        self.assertFalse(self.engine.is_pcp_collected(invalid_metadata))
+        platform_metadata = {'is_ros_v2': True, 'is_pcp_raw_data_collected': True}
+        assert self.engine.get_ros_pcp_status(platform_metadata) == (True, True)
 
-        invalid_metadata = {'is_ros_v2': False, 'is_pcp_raw_data_collected': True}
-        self.assertFalse(self.engine.is_pcp_collected(invalid_metadata))
+        platform_metadata = {'is_ros_v2': False, 'is_pcp_raw_data_collected': True}
+        assert self.engine.get_ros_pcp_status(platform_metadata) == (False, True)
 
-        invalid_metadata = {'is_ros_v2': False, 'is_pcp_raw_data_collected': False}
-        self.assertFalse(self.engine.is_pcp_collected(invalid_metadata))
+        platform_metadata = {'is_ros_v2': False, 'is_pcp_raw_data_collected': False}
+        assert self.engine.get_ros_pcp_status(platform_metadata) == (False, False)
 
 
 class TestDownloadAndExtract(unittest.TestCase):
