@@ -431,7 +431,7 @@ def get_rbac_mock_file(filename):
 
 
 def mock_enable_rbac(mocker):
-    mocker.patch('ros.lib.rbac_interface.ENABLE_RBAC', return_value=True)
+    mocker.patch('ros.lib.rbac_interface.ENABLE_RBAC', new_callable=lambda: True)
 
 
 def mock_rbac(json_data, mocker):
