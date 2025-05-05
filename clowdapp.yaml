@@ -15,6 +15,7 @@ objects:
     - host-inventory
     - rbac
     - engine
+    - kessel-inventory
     deployments:
     - name: api
       replicas: ${{API_REPLICA_COUNT}}
@@ -72,6 +73,31 @@ objects:
                 name: ${UNLEASH_SECRET_NAME}
                 key: CLIENT_ACCESS_TOKEN
                 optional: true
+          - name: BYPASS_UNLEASH
+            value: ${BYPASS_UNLEASH}
+          - name: ENABLE_KESSEL
+            value: ${KESSEL_ENABLED}
+          - name: KESSEL_SVC_URL
+            value: ${KESSEL_URL}
+          - name: KESSEL_AUTH_ENABLED
+            value: ${KESSEL_AUTH_ENABLED}
+          - name: KESSEL_AUTH_OIDC_ISSUER
+            value: ${KESSEL_AUTH_OIDC_ISSUER}/protocol/openid-connect/token
+          - name: KESSEL_INSECURE
+            value: ${KESSEL_INSECURE}
+          # This is not done yet, however config can go
+          - name: KESSEL_AUTH_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: service-account-for-ros
+                key: client-id
+                optional: true
+          - name: CM_KESSEL_AUTH_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: service-account-for-ros
+                key: client-secret
+                optional: true
 
     - name: inventory-events-processor
       replicas: ${{INVENTORY_PROCESSOR_REPLICA_COUNT}}
@@ -121,6 +147,32 @@ objects:
                 name: ${UNLEASH_SECRET_NAME}
                 key: CLIENT_ACCESS_TOKEN
                 optional: true
+          - name: BYPASS_UNLEASH
+            value: ${BYPASS_UNLEASH}
+          - name: ENABLE_KESSEL
+            value: ${KESSEL_ENABLED}
+          - name: KESSEL_SVC_URL
+            value: ${KESSEL_URL}
+          - name: KESSEL_AUTH_ENABLED
+            value: ${KESSEL_AUTH_ENABLED}
+          - name: KESSEL_AUTH_OIDC_ISSUER
+            value: ${KESSEL_AUTH_OIDC_ISSUER}/protocol/openid-connect/token
+          - name: KESSEL_INSECURE
+            value: ${KESSEL_INSECURE}
+          # This is not done yet, however config can go
+          - name: KESSEL_AUTH_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: service-account-for-ros
+                key: client-id
+                optional: true
+          - name: CM_KESSEL_AUTH_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: service-account-for-ros
+                key: client-secret
+                optional: true
+
 
     - name: engine-result-processor
       replicas: ${{ENGINE_PROCESSOR_REPLICA_COUNT}}
@@ -169,6 +221,31 @@ objects:
               secretKeyRef:
                 name: ${UNLEASH_SECRET_NAME}
                 key: CLIENT_ACCESS_TOKEN
+                optional: true
+          - name: BYPASS_UNLEASH
+            value: ${BYPASS_UNLEASH}
+          - name: ENABLE_KESSEL
+            value: ${KESSEL_ENABLED}
+          - name: KESSEL_SVC_URL
+            value: ${KESSEL_URL}
+          - name: KESSEL_AUTH_ENABLED
+            value: ${KESSEL_AUTH_ENABLED}
+          - name: KESSEL_AUTH_OIDC_ISSUER
+            value: ${KESSEL_AUTH_OIDC_ISSUER}/protocol/openid-connect/token
+          - name: KESSEL_INSECURE
+            value: ${KESSEL_INSECURE}
+          # This is not done yet, however config can go
+          - name: KESSEL_AUTH_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: service-account-for-ros
+                key: client-id
+                optional: true
+          - name: CM_KESSEL_AUTH_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: service-account-for-ros
+                key: client-secret
                 optional: true
 
     - name: garbage-collector-processor
@@ -222,6 +299,31 @@ objects:
               secretKeyRef:
                 name: ${UNLEASH_SECRET_NAME}
                 key: CLIENT_ACCESS_TOKEN
+                optional: true
+          - name: BYPASS_UNLEASH
+            value: ${BYPASS_UNLEASH}
+          - name: ENABLE_KESSEL
+            value: ${KESSEL_ENABLED}
+          - name: KESSEL_SVC_URL
+            value: ${KESSEL_URL}
+          - name: KESSEL_AUTH_ENABLED
+            value: ${KESSEL_AUTH_ENABLED}
+          - name: KESSEL_AUTH_OIDC_ISSUER
+            value: ${KESSEL_AUTH_OIDC_ISSUER}/protocol/openid-connect/token
+          - name: KESSEL_INSECURE
+            value: ${KESSEL_INSECURE}
+          # This is not done yet, however config can go
+          - name: KESSEL_AUTH_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: service-account-for-ros
+                key: client-id
+                optional: true
+          - name: CM_KESSEL_AUTH_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: service-account-for-ros
+                key: client-secret
                 optional: true
 
     database:
@@ -344,6 +446,15 @@ parameters:
   value: "20"
 - name: DB_MAX_OVERFLOW
   value: "20"
+- name: KESSEL_ENABLED
+  value: "false"
+- name: KESSEL_URL
+  value: kessel-inventory-api:9000
+- name: KESSEL_AUTH_ENABLED
+  value: "false"
+- name: KESSEL_AUTH_OIDC_ISSUER
+- name: KESSEL_INSECURE
+  value: "true"
 
 # Feature flags
 - description: Unleash secret name

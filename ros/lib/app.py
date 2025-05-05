@@ -2,7 +2,7 @@ from flask import Flask
 from ros.extensions import db
 from .config import DB_URI, DB_POOL_SIZE, DB_MAX_OVERFLOW
 from flask import request
-from .rbac_interface import ensure_has_permission
+from ros.lib.check_permission import check_permission
 from .config import get_logger
 from flask_migrate import Migrate
 
@@ -30,7 +30,7 @@ app = create_app()
 @app.before_request
 def ensure_rbac():
     if request.endpoint not in ['status', 'prometheus_metrics', 'openapispec']:
-        ensure_has_permission(
+        check_permission(
             permissions=["ros:*:*", "ros:*:read"],
             application="ros,inventory",
             app_name="ros",
