@@ -134,6 +134,7 @@ PATH_PREFIX = os.getenv("PATH_PREFIX", "/api")
 APP_NAME = os.getenv("APP_NAME", "ros")
 INSIGHTS_EXTRACT_LOGLEVEL = os.getenv("INSIGHTS_EXTRACT_LOGLEVEL", "ERROR")
 ENABLE_RBAC = str_to_bool(os.getenv("ENABLE_RBAC", "False"))
+ENABLE_KESSEL = str_to_bool(os.getenv("ENABLE_KESSEL", "False"))
 # Time interval after which garbage collector is involved to check for outdated data.
 GARBAGE_COLLECTION_INTERVAL = int(
     os.getenv("GARBAGE_COLLECTION_INTERVAL", '86400')

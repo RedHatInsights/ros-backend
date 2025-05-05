@@ -1,11 +1,14 @@
+from base64 import b64decode
 from urllib.parse import urljoin
 from http import HTTPStatus
 from flask_restful import abort
-from .config import RBAC_SVC_URL, ENABLE_RBAC, TLS_CA_PATH
+from .config import RBAC_SVC_URL, ENABLE_RBAC, TLS_CA_PATH, ENABLE_KESSEL
 import requests
 import json
 from ros.lib.config import get_logger
 from flask import request
+
+from .kessel import KesselClient, ObjectType, Resource, Allowed
 
 RBAC_SVC_ENDPOINT = "/api/rbac/v1/access/?application=%s"
 AUTH_HEADER_NAME = "X-RH-IDENTITY"
@@ -77,22 +80,45 @@ def query_rbac(application, auth_key, logger):
     return rbac_result
 
 
+def query_kessel(auth_key):
+    token = json.loads(b64decode(auth_key).decode("utf-8"))
+    username = token.get("identity", {}).get("user", {}).get("username")
+    client = KesselClient("127.0.0.1:9081")
+
+    ros_read_analysis = client.default_workspace_check("ros_read_analysis", Resource.principal(username))
+
+    if ros_read_analysis is Allowed.TRUE:
+        workspaces = [w.resource_id for w in client.get_resources(ObjectType.workspace(), "inventory_host_view", Resource.principal(username))]
+    else:
+        workspaces = []
+
+    return {
+        "ros_can_read": ros_read_analysis,
+        "host_groups": set(workspaces)
+    }
+
+
 def ensure_has_permission(**kwargs):
     """
     Ensure permission exists. kwargs needs to contain:
     permissions, application, app_name, request, logger
     """
 
-    if not ENABLE_RBAC:
+    if not ENABLE_RBAC and not ENABLE_KESSEL:
         return
 
     auth_key = request.headers.get('X-RH-IDENTITY')
 
-    rbac_response = query_rbac(kwargs["application"], auth_key, kwargs["logger"])
-
     if _is_mgmt_url(request.path):
         return  # allow request
-    if auth_key:
+
+    if not auth_key:
+        abort(
+            HTTPStatus.BAD_REQUEST, message="Identity not found in request"
+        )
+
+    if ENABLE_RBAC:
+        rbac_response = query_rbac(kwargs["application"], auth_key, kwargs["logger"])
         perms = [perm["permission"] for perm in rbac_response["data"]]
         if perms:
             for p in perms:
@@ -109,11 +135,21 @@ def ensure_has_permission(**kwargs):
             HTTPStatus.FORBIDDEN,
             message='User does not have correct permissions to access the service'
         )
-    else:
-        # if no auth_key
-        abort(
-            HTTPStatus.BAD_REQUEST, message="Identity not found in request"
-        )
+
+    if ENABLE_KESSEL:
+        kessel_response = query_kessel(auth_key)
+        if kessel_response["host_groups"]:
+            host_groups = kessel_response["host_groups"]
+            setattr(request, host_group_attr, host_groups)
+            LOG.info(f"User has host groups {host_groups}")
+        else:
+            abort(
+                HTTPStatus.FORBIDDEN,
+                message='User does not have correct permissions to access the service'
+            )
+
+        # Set admin to false - Kessel will return exactly the workspaces we have access to
+        setattr(request, access_all_systems, False)
 
 
 def _is_mgmt_url(path):
