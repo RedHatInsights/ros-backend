@@ -65,6 +65,7 @@ if CLOWDER_ENABLED:
         if endpoint.app == "rbac":
             RBAC_SVC_URL = f"{build_endpoint_url(endpoint)}"
             break
+        # Todo: Load Kessel app from clowdapp
 
     CW_ENABLED = True if LoadedConfig.logging.cloudwatch else False  # CloudWatch/Kibana Logging
     if CW_ENABLED is True:
@@ -108,6 +109,9 @@ else:
     RBAC_HOST = os.getenv("RBAC_HOST", "localhost")
     RBAC_PORT = os.getenv("RBAC_PORT", "8114")
     RBAC_SVC_URL = os.getenv("RBAC_SVC_URL", f"http://{RBAC_HOST}:{RBAC_PORT}/")
+    KESSEL_HOST = os.getenv("KESSEL_HOST", "localhost")
+    KESSEL_PORT = os.getenv("KESSEL_PORT", "9081")
+    KESSEL_SVC_URL = os.getenv("KESSEL_SVC_URL", f"{KESSEL_HOST}:{KESSEL_PORT}")
     NOTIFICATIONS_TOPIC = os.getenv("NOTIFICATIONS_TOPIC", "platform.notifications.ingress")
     ROS_EVENTS_TOPIC = os.getenv("ROS_EVENTS_TOPIC", "ros.events")
     TLS_CA_PATH = os.getenv("TLS_CA_PATH", None)
@@ -136,6 +140,7 @@ PATH_PREFIX = os.getenv("PATH_PREFIX", "/api")
 APP_NAME = os.getenv("APP_NAME", "ros")
 INSIGHTS_EXTRACT_LOGLEVEL = os.getenv("INSIGHTS_EXTRACT_LOGLEVEL", "ERROR")
 ENABLE_RBAC = str_to_bool(os.getenv("ENABLE_RBAC", "False"))
+ENABLE_KESSEL = str_to_bool(os.getenv("ENABLE_KESSEL", "False"))
 # Time interval after which garbage collector is involved to check for outdated data.
 GARBAGE_COLLECTION_INTERVAL = int(
     os.getenv("GARBAGE_COLLECTION_INTERVAL", '86400')

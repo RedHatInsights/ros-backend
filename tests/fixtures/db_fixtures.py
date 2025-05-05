@@ -18,6 +18,7 @@ def auth_token():
             "user": {
                 "username": "tuser@redhat.com",
                 "email": "tuser@redhat.com",
+                "user_id": "12345",
                 "first_name": "test",
                 "last_name": "user",
                 "is_active": True,
