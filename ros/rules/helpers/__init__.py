@@ -28,7 +28,7 @@ def one_or_more(items=None):
 
 class Ec2LinuxPrices(dict):
     """
-    Pricing informaiton of EC2 Instance for Linux get from:
+    Pricing information of EC2 Instance.
     - https://raw.githubusercontent.com/apache/libcloud/trunk/contrib/scrape-ec2-prices.py
     """
     def __init__(self, json_files='ec2_instance_pricing.json'):
