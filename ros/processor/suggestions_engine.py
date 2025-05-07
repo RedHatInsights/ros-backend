@@ -15,7 +15,6 @@ from tenacity import (
     wait_fixed,
     retry_if_exception_type
 )
-
 from ros.lib import consume
 from ros.lib.config import (
     get_logger,
@@ -23,9 +22,7 @@ from ros.lib.config import (
     INVENTORY_EVENTS_TOPIC,
     GROUP_ID_SUGGESTIONS_ENGINE,
 )
-
-from ros.processor.rules.rules_engine import run_rules, report, report_metadata
-
+from ros.rules.rules_engine import run_rules, report, report_metadata
 
 logging = get_logger(__name__)
 
@@ -52,7 +49,8 @@ class SuggestionsEngine:
         try:
             subprocess.run(pmlogextract_command, check=True, timeout=60)
             logging.debug(
-                f"{self.service} - {self.event} - Successfully ran pmlogextract command for system {host.get('id')}."
+                f"{self.service} - {self.event} - \
+                Successfully ran pmlogextract command for system {host.get('id')}."
             )
         except subprocess.TimeoutExpired:
             logging.warning(f"{self.service} - {self.event} - Timeout running pmlogextract for {host.get('id')}.")
@@ -76,12 +74,12 @@ class SuggestionsEngine:
 
         logging.debug(f"{self.service} - {self.event} - Running pmlogsummary command for system {host.get('id')}.")
         try:
-            pmlogsummary_output = open(extracted_dir_root + "/" + "pmlogsummary", 'w')
-            subprocess.run(pmlogsummary_command, check=True, text=True, timeout=60, stdout=pmlogsummary_output)
-            logging.debug(
-                f"{self.service} - {self.event} - Successfully ran pmlogsummary command for system {host.get('id')}."
-            )
-            print(extracted_dir_root)
+            with open(extracted_dir_root + "/" + "pmlogsummary", 'w') as pmlogsummary_output:
+                subprocess.run(pmlogsummary_command, check=True, text=True, timeout=60, stdout=pmlogsummary_output)
+                logging.debug(
+                    f"{self.service} - {self.event} - \
+                    Successfully ran pmlogsummary command for system {host.get('id')}."
+                )
         except subprocess.TimeoutExpired:
             logging.warning(f"{self.service} - {self.event} - Timeout running pmlogsummary for {host.get('id')}.")
             raise
