@@ -29,19 +29,6 @@ class TestSuggestionsEngine(unittest.TestCase):
             )
             self.assertIn(expected_log_message, log.output)
 
-    def test_get_ros_pcp_status(self):
-        platform_metadata = {'is_ros_v2': True, 'is_pcp_raw_data_collected': False}
-        assert self.engine.get_ros_pcp_status(platform_metadata) == (True, False)
-
-        platform_metadata = {'is_ros_v2': True, 'is_pcp_raw_data_collected': True}
-        assert self.engine.get_ros_pcp_status(platform_metadata) == (True, True)
-
-        platform_metadata = {'is_ros_v2': False, 'is_pcp_raw_data_collected': True}
-        assert self.engine.get_ros_pcp_status(platform_metadata) == (False, True)
-
-        platform_metadata = {'is_ros_v2': False, 'is_pcp_raw_data_collected': False}
-        assert self.engine.get_ros_pcp_status(platform_metadata) == (False, False)
-
 
 class TestDownloadAndExtract(unittest.TestCase):
     def setUp(self):

@@ -31,7 +31,7 @@ get-all-suggested-instance-types:
 	curl -v -H "Content-Type: application/json"  -H "x-rh-identity: ${b64_identity}" "localhost:${ROS_API_PORT}/api/ros/v1/suggested_instance_types" | python -m json.tool
 
 produce-no-pcp-message:
-	kcat -b localhost:9092 -t platform.inventory.events -P scripts/no_pcp_message.json
+	kcat -b localhost:9092 -t platform.inventory.events -P sample-files/no_pcp_raw_message.json
 
 listen-report-processor-event:
 	kcat -b localhost:29092 -t ros.events -C -o end
