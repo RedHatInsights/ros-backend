@@ -121,14 +121,13 @@ class TestGetIndexFilePath(unittest.TestCase):
     @patch("ros.processor.suggestions_engine.os.path.join")
     @patch("ros.processor.suggestions_engine.SuggestionsEngine.find_root_directory")
     def test_get_index_file_path(self, mock_find_root_directory, mock_join, mock_listdir):
-        mock_find_root_directory.return_value = "/tmp/extracted/"
 
         mock_listdir.return_value = ["YYYYMMDD.index"]
         mock_join.return_value = "/var/tmp/extracted/data/var/log/pcp/pmlogger/YYYYMMDD.index"
 
         index_file_path = self.engine.get_index_file_path(
             host={"id": "test_host"},
-            extracted_dir="/tmp/extracted"
+            extracted_dir_root="/tmp/extracted"
         )
 
         mock_listdir.assert_called_once_with("/var/tmp/extracted/data/var/log/pcp/pmlogger/YYYYMMDD.index")
