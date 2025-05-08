@@ -181,27 +181,20 @@ class SuggestionsEngine:
         except Exception as error:
             logging.error(f"{self.service} - {self.event} - Error occurred during download and extraction: {error}")
 
-    def get_ros_pcp_status(self, platform_metadata):
-        return (
-            platform_metadata.get('is_ros_v2', False),
-            platform_metadata.get('is_pcp_raw_data_collected', False)
-        )
-
     def handle_create_update(self, payload):
         self.event = "Update event" if payload.get('type') == 'updated' else "Create event"
 
         platform_metadata = payload.get('platform_metadata')
         host = payload.get('host')
-        is_ros_enabled, is_pcp_collected = self.get_ros_pcp_status(platform_metadata)
 
         if platform_metadata is None or host is None:
             logging.info(f"{self.service} - {self.event} - Missing host or/and platform_metadata field(s).")
             return
 
-        if not is_ros_enabled:
+        if not platform_metadata.get('is_ros_v2', False):
             return
 
-        if not is_pcp_collected:
+        if not platform_metadata.get('is_pcp_raw_data_collected', False):
             logging.debug(
                 f"{self.service} - {self.event} - Triggering an event for system {host.get('id')}"
             )
