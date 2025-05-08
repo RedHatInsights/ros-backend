@@ -10,7 +10,8 @@ class TestSuggestionsEngine(unittest.TestCase):
         self.engine = SuggestionsEngine()
 
     def test_handle_create_update_missing_data(self):
-        payload_create = {'type': 'create'}
+        payload_create = {'type': 'create', 'platform_metadata':
+                          {'is_ros_v2': False, 'is_pcp_raw_data_collected': False}}
         payload_update = {'type': 'updated', 'platform_metadata': {}}
 
         with self.assertLogs(logging.getLogger(), level='INFO') as log:
@@ -27,19 +28,6 @@ class TestSuggestionsEngine(unittest.TestCase):
                 "Missing host or/and platform_metadata field(s)."
             )
             self.assertIn(expected_log_message, log.output)
-
-    def test_is_pcp_collected(self):
-        valid_metadata = {'is_ros_v2': True, 'is_pcp_raw_data_collected': True}
-        self.assertTrue(self.engine.is_pcp_collected(valid_metadata))
-
-        invalid_metadata = {'is_ros_v2': True, 'is_pcp_raw_data_collected': False}
-        self.assertFalse(self.engine.is_pcp_collected(invalid_metadata))
-
-        invalid_metadata = {'is_ros_v2': False, 'is_pcp_raw_data_collected': True}
-        self.assertFalse(self.engine.is_pcp_collected(invalid_metadata))
-
-        invalid_metadata = {'is_ros_v2': False, 'is_pcp_raw_data_collected': False}
-        self.assertFalse(self.engine.is_pcp_collected(invalid_metadata))
 
 
 class TestDownloadAndExtract(unittest.TestCase):

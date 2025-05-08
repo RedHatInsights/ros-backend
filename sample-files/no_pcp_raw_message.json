@@ -1,0 +1,21 @@
+{
+  "type": "created",
+  "timestamp": "2025-04-11T13:58:54.509083+00:00",
+  "platform_metadata": {
+    "request_id": "a1b2c3",
+    "is_ros_v2": true,
+    "is_pcp_raw_data_collected": false
+  },
+  "metadata": {
+    "request_id": "a1b2c3"
+  },
+  "host": {
+    "id": "123123",
+    "account": "32",
+    "org_id": "4312",
+    "display_name": "test",
+    "fqdn": "test.org",
+    "insights_id": "abc123",
+    "reporter": "puptoo"
+  }
+}
