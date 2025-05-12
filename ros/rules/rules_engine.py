@@ -42,7 +42,6 @@ LINKS = {
 # ---------------------------------------------------------------------------
 # Utilities
 # ---------------------------------------------------------------------------
-Ec2Prices = Ec2LinuxPrices(json_files='ec2_instance_pricing.json')
 CloudInstance = namedtuple('CloudInstance', ['provider', 'type', 'mic', 'region'])
 
 
@@ -374,9 +373,9 @@ def find_solution(cm, cpu, mem, io, idle, psi):
     err_key, states = readable_evalution(ret)
     if err_key and solution:
         solution_w_price = list()
-        cur_price = Ec2Prices.get(cm.type, {}).get(cm.region, 0)
+        cur_price = Ec2LinuxPrices().get(cm.type, {}).get(cm.region, 0)
         for can in solution:
-            price = Ec2Prices.get(can, {}).get(cm.region)
+            price = Ec2LinuxPrices().get(can, {}).get(cm.region)
             if err_key in (ERROR_KEY_IDLE, ERROR_KEY_OVERSIZED):
                 # When IDLE/OVERSIZED, skip the candidates more expansive than the current
                 solution_w_price.append((can, price)) if price <= cur_price else None
