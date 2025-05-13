@@ -1,29 +1,34 @@
-# Standard library imports
 from math import isclose
 from functools import reduce
 from collections import namedtuple, defaultdict
 
-# Insights core functionality
-from insights import run as insights_run, SkipComponent, add_filter
-from insights.core.plugins import make_metadata, make_fail, rule, condition, parser
-from insights.core.spec_factory import SpecSet, simple_file
+from insights import (
+    run as insights_run,
+    SkipComponent,
+    add_filter
+)
 
-# System information parsers
+from insights.core.plugins import (
+    make_metadata,
+    make_fail,
+    rule,
+    condition,
+    parser
+)
+
+from insights.core.spec_factory import SpecSet, simple_file
 from insights.parsers.lscpu import LsCPU
 from insights.parsers.cmdline import CmdLine
 from insights.parsers.insights_client_conf import InsightsClientConf
 from insights.parsers.pmlog_summary import PmLogSummaryBase
-
-# Cloud service parsers and tools
 from insights.parsers.azure_instance import AzureInstanceType
 from insights.parsers.aws_instance_id import AWSInstanceIdDoc
 from insights.combiners.cloud_provider import CloudProvider
 
-# ROS specific imports
-from ros.rules.combiners.rhel_release import RhelRelease
-from ros.rules.helpers import Ec2LinuxPrices
+from .combiners.rhel_release import RhelRelease
+from .helpers import Ec2LinuxPrices
 from ros.lib.aws_instance_types import INSTANCE_TYPES as EC2_INSTANCE_TYPES
-from ros.rules.helpers.rules_data import RosThresholds, RosKeys
+from .helpers.rules_data import RosThresholds, RosKeys
 
 add_filter(InsightsClientConf, ['ros_collect'])
 ERROR_KEY_NO_DATA = "NO_PCP_DATA"

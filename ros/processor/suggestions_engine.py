@@ -15,6 +15,7 @@ from tenacity import (
     wait_fixed,
     retry_if_exception_type
 )
+
 from ros.lib import consume
 from ros.lib.config import (
     get_logger,
@@ -22,7 +23,12 @@ from ros.lib.config import (
     INVENTORY_EVENTS_TOPIC,
     GROUP_ID_SUGGESTIONS_ENGINE,
 )
-from ros.rules.rules_engine import run_rules, report, report_metadata
+
+from ros.rules.rules_engine import (
+    run_rules,
+    report,
+    report_metadata
+)
 
 logging = get_logger(__name__)
 
