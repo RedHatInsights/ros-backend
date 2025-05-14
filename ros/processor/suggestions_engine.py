@@ -23,7 +23,6 @@ from ros.lib.config import (
     INVENTORY_EVENTS_TOPIC,
     GROUP_ID_SUGGESTIONS_ENGINE,
 )
-
 from ros.rules.rules_engine import (
     run_rules,
     report,

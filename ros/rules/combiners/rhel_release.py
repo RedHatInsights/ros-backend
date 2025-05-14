@@ -11,11 +11,8 @@ The `LsCPU` parser is an optional condition to this combiner for the favor of
 getting the `Architecture` of the host.
 
 """
-# Insights core functionality
 from insights import SkipComponent
 from insights.core.plugins import combiner
-
-# System parsers
 from insights.parsers.lscpu import LsCPU
 from insights.parsers.redhat_release import RedhatRelease
 from insights.parsers.uname import Uname
