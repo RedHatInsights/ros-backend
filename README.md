@@ -87,14 +87,6 @@ poetry install
 poetry run pytest --cov=ros tests
 ```
 
-## Running Inventory API with xjoin pipeline
-To run full inventory api with xjoin , run the following command:
-```bash
-docker-compose up insights-inventory-web xjoin
-make configure-xjoin 
-```
-Note - Before running the above commands make sure kafka and db-host-inventory containers are up and running.
-
 ## Available API endpoints
 
 Resource Optimization REST API documentation can be found at `/api/ros`. It is accessible at raw OpenAPI definition [here](https://raw.githubusercontent.com/RedHatInsights/ros-backend/refs/heads/main/ros/openapi/openapi.json).

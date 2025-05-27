@@ -4,7 +4,6 @@ help:
 	@echo "--- Commands for local development ---"
 	@echo "insights-upload-data                    upload data to local ingress service for ROS processing"
 	@echo "api-get-hosts                           get list of systems"
-	@echo "configure-xjoin                         configure xjoin"
 	@echo "get-all-suggested-instance-types        get all suggested instance types"
 	@echo "produce-no-pcp-message			produce no pcp message to the HBI topic"
 	@echo "listen-report-processor-event	        listens to ros.events topic"
@@ -23,9 +22,6 @@ insights-upload-data:
 
 api-get-hosts:
 	curl -v -H "Content-Type: application/json"  -H "x-rh-identity: ${b64_identity}" "localhost:${ROS_API_PORT}/api/ros/v1/systems?order_by=max_io&order_how=DESC" | python -m json.tool
-
-configure-xjoin:
-	@./scripts/xjoin-config/configure-xjoin.sh
 
 get-all-suggested-instance-types:
 	curl -v -H "Content-Type: application/json"  -H "x-rh-identity: ${b64_identity}" "localhost:${ROS_API_PORT}/api/ros/v1/suggested_instance_types" | python -m json.tool
