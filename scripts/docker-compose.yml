@@ -91,8 +91,8 @@ services:
       POSTGRES_DB: postgres
     ports:
       - "15432:5432"
-  db-host-inventory:
-    image: debezium/postgres
+  db-inventory:
+    image: postgres
     restart: always
     environment:
       POSTGRES_PASSWORD: insights
@@ -101,29 +101,30 @@ services:
     ports:
       - "15433:5432"
 
-  insights-inventory-mq: &inventory
+  insights-inventory-mq:
     image: quay.io/cloudservices/insights-inventory:latest
-    restart: always
-    command: "make upgrade_db run_inv_mq_service"
+    command: bash -c 'sleep 10 && make upgrade_db && make run_inv_mq_service'
+    entrypoint: ''
     environment:
       - APP_NAME=inventory
       - PATH_PREFIX=api
       - INVENTORY_DB_USER=insights
       - INVENTORY_DB_PASS=insights
-      - INVENTORY_DB_HOST=db-host-inventory
+      - INVENTORY_DB_HOST=db-inventory
       - INVENTORY_DB_NAME=insights
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - PAYLOAD_TRACKER_ENABLED=false
-      - XJOIN_GRAPHQL_URL=http://xjoin:4000/graphql
       - prometheus_multiproc_dir=/tmp
     depends_on:
        - kafka-create-topics
-       - db-host-inventory
+       - db-inventory
        - puptoo
+    restart: on-failure
 
   insights-inventory-web:
-    <<: *inventory
-    command: "make upgrade_db run_inv_web_service"
+    image: quay.io/cloudservices/insights-inventory:latest
+    command: bash -c 'sleep 10 && make upgrade_db && python run_gunicorn.py'
+    entrypoint: ''
     depends_on:
       - insights-inventory-mq
     ports:
@@ -176,72 +177,20 @@ services:
   #   ports:
   #     - 8000:8000
   # logging and Monitoring
-  grafana:
-      ports:
-          - 3001:3000
-      container_name: grafana
-      environment:
-          - GF_SERVER_ROOT_URL=http://grafana.server.name
-          - GF_SECURITY_ADMIN_PASSWORD=secret
-      image: grafana/grafana
-  prometheus:
-      container_name: example-prometheus
-      ports:
-          - 9090:9090
-      extra_hosts:
-          - "host.docker.internal:host-gateway"
-      volumes:
-          - ./prometheus.yml:/etc/prometheus/prometheus.yml
-      image: prom/prometheus
-  debezium:
-    image: quay.io/cloudservices/xjoin-kafka-connect-strimzi
-    restart: always
-    entrypoint: /opt/kafka/kafka_connect_run.sh
-    volumes:
-      - ./xjoin-config/log4j.properties/:/opt/kafka/custom-config/log4j.properties:Z
-    environment:
-      - KAFKA_CONNECT_BOOTSTRAP_SERVERS=kafka:29092
-      - KAFKA_CONNECT_METRICS_ENABLED=false
-      - STRIMZI_KAFKA_GC_LOG_ENABLED=false
-      - |
-        KAFKA_CONNECT_CONFIGURATION=
-        offset.storage.topic=connect-cluster-offsets
-        value.converter=org.apache.kafka.connect.json.JsonConverter
-        config.storage.topic=connect-cluster-configs
-        key.converter=org.apache.kafka.connect.json.JsonConverter
-        group.id=connect-cluster
-        status.storage.topic=connect-cluster-status
-        config.storage.replication.factor=1
-        connector.client.config.override.policy=All
-        offset.storage.replication.factor=1
-        status.storage.replication.factor=1
-    depends_on:
-      - kafka
-      - db-host-inventory
-    ports:
-      - 8083:8083
-  elasticsearch:
-    restart: always
-    image: elasticsearch:7.10.1
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    environment:
-      - xpack.security.enabled=false
-      - discovery.type=single-node
-      - bootstrap.memory_lock=true
-      - cluster.routing.allocation.disk.threshold_enabled=false
-  xjoin:
-    image: quay.io/cloudservices/xjoin-search:latest
-    restart: always
-    environment:
-      - LOG_LEVEL=debug
-      - LOG_PRETTY=false
-      - NODE_ENV=development
-      - ES_NODES=http://elasticsearch:9200
-      - HOSTS_INDEX=xjoin.inventory
-    ports:
-      - 4000:4000
-    depends_on:
-      - elasticsearch
-      - debezium
+  # grafana:
+  #     ports:
+  #         - 3001:3000
+  #     container_name: grafana
+  #     environment:
+  #         - GF_SERVER_ROOT_URL=http://grafana.server.name
+  #         - GF_SECURITY_ADMIN_PASSWORD=secret
+  #     image: grafana/grafana
+  # prometheus:
+  #     container_name: example-prometheus
+  #     ports:
+  #         - 9090:9090
+  #     extra_hosts:
+  #         - "host.docker.internal:host-gateway"
+  #     volumes:
+  #         - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  #     image: prom/prometheus
