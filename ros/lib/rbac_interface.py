@@ -82,13 +82,13 @@ def query_rbac(application, auth_key, logger):
 
 def query_kessel(auth_key):
     token = json.loads(b64decode(auth_key).decode("utf-8"))
-    username = token.get("identity", {}).get("user", {}).get("username")
+    user_id = token.get("identity", {}).get("user", {}).get("user_id")
     client = KesselClient(KESSEL_SVC_URL)
 
-    ros_read_analysis = client.default_workspace_check("ros_read_analysis", Resource.principal(username))
+    ros_read_analysis = client.default_workspace_check("ros_read_analysis", Resource.principal(user_id))
 
     if ros_read_analysis is Allowed.TRUE:
-        workspaces = [w.resource_id for w in client.get_resources(ObjectType.workspace(), "inventory_host_view", Resource.principal(username))]
+        workspaces = [w.resource_id for w in client.get_resources(ObjectType.workspace(), "inventory_host_view", Resource.principal(user_id))]
     else:
         workspaces = []
 
