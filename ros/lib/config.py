@@ -64,6 +64,7 @@ if CLOWDER_ENABLED:
         if endpoint.app == "rbac":
             RBAC_SVC_URL = f"{build_endpoint_url(endpoint)}"
             break
+        # Todo: Load Kessel app from clowdapp
 
     CW_ENABLED = True if LoadedConfig.logging.cloudwatch else False  # CloudWatch/Kibana Logging
     if CW_ENABLED is True:
@@ -107,6 +108,9 @@ else:
     RBAC_HOST = os.getenv("RBAC_HOST", "localhost")
     RBAC_PORT = os.getenv("RBAC_PORT", "8114")
     RBAC_SVC_URL = os.getenv("RBAC_SVC_URL", f"http://{RBAC_HOST}:{RBAC_PORT}/")
+    KESSEL_HOST = os.getenv("KESSEL_HOST", "localhost")
+    KESSEL_PORT = os.getenv("KESSEL_PORT", "9081")
+    KESSEL_SVC_URL = os.getenv("KESSEL_SVC_URL", f"{KESSEL_HOST}:{KESSEL_PORT}")
     NOTIFICATIONS_TOPIC = os.getenv("NOTIFICATIONS_TOPIC", "platform.notifications.ingress")
     TLS_CA_PATH = os.getenv("TLS_CA_PATH", None)
     BYPASS_UNLEASH = True

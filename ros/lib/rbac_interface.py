@@ -2,7 +2,7 @@ from base64 import b64decode
 from urllib.parse import urljoin
 from http import HTTPStatus
 from flask_restful import abort
-from .config import RBAC_SVC_URL, ENABLE_RBAC, TLS_CA_PATH, ENABLE_KESSEL
+from .config import RBAC_SVC_URL, ENABLE_RBAC, TLS_CA_PATH, ENABLE_KESSEL, KESSEL_SVC_URL
 import requests
 import json
 from ros.lib.config import get_logger
@@ -83,7 +83,7 @@ def query_rbac(application, auth_key, logger):
 def query_kessel(auth_key):
     token = json.loads(b64decode(auth_key).decode("utf-8"))
     username = token.get("identity", {}).get("user", {}).get("username")
-    client = KesselClient("127.0.0.1:9081")
+    client = KesselClient(KESSEL_SVC_URL)
 
     ros_read_analysis = client.default_workspace_check("ros_read_analysis", Resource.principal(username))
 
