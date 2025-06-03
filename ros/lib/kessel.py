@@ -87,7 +87,7 @@ class KesselClient:
         self.channel = grpc.insecure_channel(host)
         self.stub = inventory_service_pb2_grpc.KesselInventoryServiceStub(self.channel)
 
-    def get_resources(self, object_type: ObjectType, relation: str, subject: Resource, limit: Optional[int]=None, fetch_all = True):
+    def get_resources(self, object_type: ObjectType, relation: str, subject: Resource, limit: int = 20, fetch_all = True):
         response = self._get_resources_internal(object_type, relation, subject, limit=limit)
         while response is not None:
             continuation_token = None
@@ -100,7 +100,7 @@ class KesselClient:
                 response = self._get_resources_internal(object_type, relation, subject, limit=limit, continuation_token=continuation_token)
 
 
-    def _get_resources_internal(self, object_type: ObjectType, relation: str, subject: Resource, limit: Optional[int] = None, continuation_token: Optional[str] = None):
+    def _get_resources_internal(self, object_type: ObjectType, relation: str, subject: Resource, limit: int, continuation_token: Optional[str] = None):
         request = streamed_list_objects_request_pb2.StreamedListObjectsRequest(
             object_type=representation_type_pb2.RepresentationType(
                 resource_type=object_type.resource_type,
