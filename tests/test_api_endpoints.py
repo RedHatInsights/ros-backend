@@ -431,23 +431,23 @@ def get_rbac_mock_file(filename):
 
 
 def mock_enable_rbac(mocker):
-    mocker.patch('ros.lib.rbac_interface.ENABLE_RBAC', new_callable=lambda: True)
+    mocker.patch('ros.lib.ensure_has_permissions.ENABLE_RBAC', new_callable=lambda: True)
 
 
 def mock_rbac(json_data, mocker):
-    mocker.patch('ros.lib.rbac_interface.query_rbac', return_value=json_data)
+    mocker.patch('ros.lib.ensure_has_permissions.query_rbac', return_value=json_data)
 
 
 def mock_disable_rbac(mocker):
-    mocker.patch('ros.lib.rbac_interface.ENABLE_RBAC', new_callable=lambda: False)
+    mocker.patch('ros.lib.ensure_has_permissions.ENABLE_RBAC', new_callable=lambda: False)
 
 
 def mock_enable_kessel(mocker):
-    mocker.patch('ros.lib.rbac_interface.ENABLE_KESSEL', new_callable=lambda: True)
+    mocker.patch('ros.lib.ensure_has_permissions.ENABLE_KESSEL', new_callable=lambda: True)
 
 
 def mock_kessel(json_data, mocker):
-    mocker.patch('ros.lib.rbac_interface.query_kessel', return_value=json_data)
+    mocker.patch('ros.lib.ensure_has_permissions.query_kessel', return_value=json_data)
 
 
 def mock_unleash_hbi_flag_enabled(mocker):
