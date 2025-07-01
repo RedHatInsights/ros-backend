@@ -66,7 +66,7 @@ if CLOWDER_ENABLED:
             RBAC_SVC_URL = f"{build_endpoint_url(endpoint)}"
             break
         # Todo: Load Kessel app from clowdapp
-
+    KESSEL_SVC_URL = os.getenv("KESSEL_URL", default="kessel-inventory-api:9000")
     CW_ENABLED = True if LoadedConfig.logging.cloudwatch else False  # CloudWatch/Kibana Logging
     if CW_ENABLED is True:
         # Available only in k8s namespace, through an app-interface automation
