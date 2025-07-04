@@ -29,7 +29,7 @@ class Resource(ObjectType):
     @staticmethod
     def principal(resource_id: str):
         return Resource(
-            resource_id=resource_id,
+            resource_id=f"redhat/{resource_id}",
             resource_type="principal",
             reporter_type="rbac",
         )

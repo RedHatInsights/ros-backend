@@ -107,7 +107,7 @@ def set_host_groups(rbac_response):
         return  # we can't store any host groups on None
 
     if 'data' not in rbac_response:
-        LOG.info("Warning: The response from RBAC does not contain 'data' list to fetch group details")
+        LOG.warning("Warning: The response from RBAC does not contain 'data' list to fetch group details")
         return
 
     role_list = rbac_response['data']
