@@ -53,7 +53,7 @@ def ensure_has_permission(**kwargs):
             message='User does not have correct permissions to access the service'
         )
 
-    if ENABLE_KESSEL:
+    if ENABLE_KESSEL and not ENABLE_RBAC:
         kessel_response = query_kessel(auth_key)
         if kessel_response["host_groups"]:
             host_groups = kessel_response["host_groups"]
