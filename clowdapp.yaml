@@ -72,8 +72,6 @@ objects:
                 name: ${UNLEASH_SECRET_NAME}
                 key: CLIENT_ACCESS_TOKEN
                 optional: true
-          - name: BYPASS_UNLEASH
-            value: ${BYPASS_UNLEASH}
 
     - name: inventory-events-processor
       replicas: ${{INVENTORY_PROCESSOR_REPLICA_COUNT}}
@@ -123,8 +121,6 @@ objects:
                 name: ${UNLEASH_SECRET_NAME}
                 key: CLIENT_ACCESS_TOKEN
                 optional: true
-          - name: BYPASS_UNLEASH
-            value: ${BYPASS_UNLEASH}
 
     - name: engine-result-processor
       replicas: ${{ENGINE_PROCESSOR_REPLICA_COUNT}}
@@ -174,8 +170,6 @@ objects:
                 name: ${UNLEASH_SECRET_NAME}
                 key: CLIENT_ACCESS_TOKEN
                 optional: true
-          - name: BYPASS_UNLEASH
-            value: ${BYPASS_UNLEASH}
 
     - name: garbage-collector-processor
       replicas: ${{GARBAGE_COLLECTOR_REPLICA_COUNT}}
@@ -229,8 +223,6 @@ objects:
                 name: ${UNLEASH_SECRET_NAME}
                 key: CLIENT_ACCESS_TOKEN
                 optional: true
-          - name: BYPASS_UNLEASH
-            value: ${BYPASS_UNLEASH}
 
     database:
       name: ros
@@ -359,6 +351,3 @@ parameters:
   value: bypass
 - description: Unleash API url
   name: UNLEASH_URL
-- description: disable Unleash (feature flags), defaulting to fallback values
-  name: BYPASS_UNLEASH
-  value: 'false'
