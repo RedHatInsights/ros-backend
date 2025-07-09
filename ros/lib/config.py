@@ -76,8 +76,6 @@ if CLOWDER_ENABLED:
 
     # Feature flags
     unleash = LoadedConfig.featureFlags
-    BYPASS_UNLEASH = True if os.getenv("BYPASS_UNLEASH", default="False").lower() in ["true", "t", "yes",
-                                                                                      "y"] else False
     UNLEASH_CACHE_DIR = os.getenv("UNLEASH_CACHE_DIR", "/tmp/.unleashcache")
     UNLEASH_TOKEN = unleash.clientAccessToken if unleash else None
     UNLEASH_URL = f"{unleash.hostname}:{unleash.port}/api" if unleash else None
@@ -111,7 +109,6 @@ else:
     NOTIFICATIONS_TOPIC = os.getenv("NOTIFICATIONS_TOPIC", "platform.notifications.ingress")
     ROS_EVENTS_TOPIC = os.getenv("ROS_EVENTS_TOPIC", "ros.events")
     TLS_CA_PATH = os.getenv("TLS_CA_PATH", None)
-    BYPASS_UNLEASH = True
     CW_ENABLED = str_to_bool(os.getenv('CW_ENABLED', 'False'))  # CloudWatch/Kibana Logging
     if CW_ENABLED is True:
         AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", None)

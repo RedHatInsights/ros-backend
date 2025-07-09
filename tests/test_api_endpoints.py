@@ -4,7 +4,6 @@ from dateutil import parser
 import json
 from base64 import b64encode
 from ros.api.main import app
-from ros.lib.feature_flags import FLAG_INVENTORY_GROUPS
 from ros.lib.models import db, PerformanceProfile, System
 from tests.helpers.db_helper import db_get_host, db_get_record
 from pathlib import Path
@@ -127,7 +126,6 @@ def test_system_groups(
         mock_enable_rbac(mocker)
         mock_rbac(get_rbac_mock_file("mock_rbac_returns_groups_including_example_group.json"), mocker)
 
-        mock_unleash_hbi_flag_enabled(mocker)
         response_all_systems = client.get(
             '/api/ros/v1/systems',
             headers={"x-rh-identity": auth_token}
@@ -151,7 +149,6 @@ def test_system_group_filter(
     with app.test_client() as client:
         mock_enable_rbac(mocker)
         mock_rbac(get_rbac_mock_file("mock_rbac_returns_groups_including_example_group.json"), mocker)
-        mock_unleash_hbi_flag_enabled(mocker)
         response = client.get(
             '/api/ros/v1/systems?group_name=ros-group-test',
             headers={"x-rh-identity": auth_token}
@@ -438,10 +435,6 @@ def mock_rbac(json_data, mocker):
     mocker.patch('ros.lib.rbac_interface.query_rbac', return_value=json_data)
 
 
-def mock_unleash_hbi_flag_enabled(mocker):
-    mocker.patch('ros.lib.feature_flags.FLAG_FALLBACK_VALUES', return_value={FLAG_INVENTORY_GROUPS: True})
-
-
 def test_systems_rbac_returns_ungrouped_and_example_group(
         auth_token,
         db_setup,
@@ -457,7 +450,6 @@ def test_systems_rbac_returns_ungrouped_and_example_group(
     While filtering based on groups we check if group id we get from are there in the System's group field
     It is expected that we also return systems which are in no groups"""
     with app.test_client() as client:
-        mock_unleash_hbi_flag_enabled(mocker)
         mock_enable_rbac(mocker)
         mock_rbac(get_rbac_mock_file("mock_rbac_returns_groups_including_example_group.json"), mocker)
         response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
@@ -482,7 +474,6 @@ def test_systems_rbac_returns_emtpy_group(
     This is the situation when user has no groups created however groups as features in enabled from inventory
     In this case we can only return the systems which are not included in any of the groups"""
     with app.test_client() as client:
-        mock_unleash_hbi_flag_enabled(mocker)
         mock_enable_rbac(mocker)
         mock_rbac(get_rbac_mock_file("mock_rbac_returns_emtpy_group.json"), mocker)
         response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
@@ -506,7 +497,6 @@ def test_systems_mock_rbac_returns_no_groups(
     This is the use case where for some reason RBAC does not have group.id included(i.e inventory groups disabled)
     In this case we return all the systems because we can't find groups as feature enabled"""
     with app.test_client() as client:
-        mock_unleash_hbi_flag_enabled(mocker)
         mock_enable_rbac(mocker)
         mock_rbac(get_rbac_mock_file("mock_rbac_returns_no_groups.json"), mocker)
         response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
@@ -526,7 +516,6 @@ def test_systems_multiple_inventory_hosts_read_without_ungrouped(
         create_performance_profiles,
         mocker):
     with app.test_client() as client:
-        mock_unleash_hbi_flag_enabled(mocker)
         mock_enable_rbac(mocker)
         # This mocks example and foo groups
         mock_rbac(get_rbac_mock_file("mock_rbac_returns_multiple_read_permissions.json"), mocker)
