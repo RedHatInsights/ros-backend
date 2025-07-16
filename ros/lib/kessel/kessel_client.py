@@ -1,7 +1,5 @@
 from typing import Optional
-import grpc
 from kessel.inventory.v1beta2 import (
-    inventory_service_pb2_grpc,
     streamed_list_objects_request_pb2,
     representation_type_pb2,
     subject_reference_pb2,
@@ -13,7 +11,9 @@ from kessel.inventory.v1beta2 import (
 )
 
 from ros.lib.kessel.dataclasses_and_enum import ObjectType, Resource, UserAllowed
+from ros.lib.kessel.singleton_grpc import get_kessel_stub
 from ros.lib.config import get_logger
+
 
 LOG = get_logger(__name__)
 
@@ -21,22 +21,7 @@ LOG = get_logger(__name__)
 class KesselClient:
 
     def __init__(self, host):
-        # It is recommended [1] that both channel and stub are re-used.
-        # In python [2], using `ChannelOptions.SingleThreadedUnaryStream` could reduce latency, but the API has been
-        # marked experimental for a while.
-        # Note: I tried passing options=ChannelOptions.SingleThreadedUnaryStream but it didn't work. The stack trace
-        #  showed a cython grpc lib. Also tried options=(ChannelOptions.SingleThreadedUnaryStream) and
-        #  options=(ChannelOptions.SingleThreadedUnaryStream,).
-        #
-        # [1] https://grpc.io/docs/guides/performance/
-        # [2] https://grpc.io/docs/guides/performance/#python
-        try:
-            self.channel = grpc.insecure_channel(host)
-        except grpc.RpcError as err:
-            LOG.info(f"Failed to establish grpc connection to {host}: {err}")
-            raise
-
-        self.stub = inventory_service_pb2_grpc.KesselInventoryServiceStub(self.channel)
+        self.stub = get_kessel_stub(host)
 
     def get_resources(
         self,
