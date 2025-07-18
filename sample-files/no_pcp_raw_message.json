@@ -12,10 +12,15 @@
   "host": {
     "id": "123123",
     "account": "32",
-    "org_id": "4312",
+    "org_id": "000001",
     "display_name": "test",
     "fqdn": "test.org",
-    "insights_id": "abc123",
-    "reporter": "puptoo"
+    "stale_timestamp": "2025-04-25T13:58:54.509083+00:00",
+    "reporter": "puptoo",
+    "groups": [],
+    "system_profile": {
+      "operating_system": {"name": "Fedora", "version": "40"},
+      "cloud_provider": "aws"
+    }
   }
 }

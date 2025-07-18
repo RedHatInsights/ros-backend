@@ -199,7 +199,7 @@ class SuggestionsEngine:
                 f"{self.service} - {self.event} - Triggering an event for system {host.get('id')}"
             )
             self.consumer.commit()
-            produce_report_processor_event(payload, platform_metadata, self.producer)
+            produce_report_processor_event(payload, self.producer)
             return
 
         archive_URL = platform_metadata.get('url')
