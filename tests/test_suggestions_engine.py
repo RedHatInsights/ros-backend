@@ -1,8 +1,10 @@
 import unittest
 import logging
 from unittest.mock import patch
+import json
 
 from ros.processor.suggestions_engine import SuggestionsEngine
+from ros.processor.event_producer import no_pcp_raw_payload
 
 
 class TestSuggestionsEngine(unittest.TestCase):
@@ -138,6 +140,39 @@ class TestCreateOutputDir(unittest.TestCase):
 
         mock_makedirs.assert_called_once_with(output_dir)
         self.assertEqual(output_dir, "/var/tmp/pmlogextract-output-12345/")
+
+
+class TestNoPcpRawPayload(unittest.TestCase):
+    def test_valid_payload(self):
+        with open("sample-files/no_pcp_raw_message.json", "r") as f:
+            input_payload = json.load(f)
+
+        expected_output = {
+            "type": "created",
+            "org_id": "000001",
+            "platform_metadata": {
+                "request_id": "a1b2c3",
+                "is_ros_v2": True,
+                "is_pcp_raw_data_collected": False
+            },
+            "id": "123123",
+            "display_name": "test",
+            "fqdn": "test.org",
+            "stale_timestamp": "2025-04-25T13:58:54.509083+00:00",
+            "groups": [],
+            "operating_system": {"name": "Fedora", "version": "40"},
+            "cloud_provider": "aws"
+        }
+
+        self.assertEqual(no_pcp_raw_payload(input_payload), expected_output)
+
+    def test_missing_host(self):
+        with self.assertRaises(AttributeError):
+            no_pcp_raw_payload({
+                "type": "created",
+                "platform_metadata": {"request_id": "a1b2c3"},
+                "host": None
+            })
 
 
 if __name__ == '__main__':

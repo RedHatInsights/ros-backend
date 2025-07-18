@@ -76,14 +76,34 @@ def new_suggestion_event(host, platform_metadata, system_previous_state, system_
     producer.poll()
 
 
-def produce_report_processor_event(payload, platform_metadata, producer):
-    request_id = platform_metadata.get('request_id')
-    bytes_ = json.dumps(payload).encode('utf-8')
+def no_pcp_raw_payload(payload):
     host = payload.get('host')
+
+    payload = {
+        "type": payload.get('type'),
+        "org_id": host.get('org_id'),
+        "platform_metadata": payload.get('platform_metadata'),
+        "id": host.get('id'),
+        "display_name": host.get('display_name'),
+        "fqdn": host.get('fqdn'),
+        "stale_timestamp": host.get('stale_timestamp'),
+        "groups": host.get('groups'),
+        "operating_system": host.get('system_profile').get('operating_system'),
+        "cloud_provider": host.get('system_profile').get('cloud_provider')
+    }
+
+    return payload
+
+
+def produce_report_processor_event(payload, producer):
+    request_id = payload.get('platform_metadata').get('request_id')
+    host = payload.get('host')
+    tailored_payload = no_pcp_raw_payload(payload)
+    bytes_ = json.dumps(tailored_payload).encode('utf-8')
     producer.produce(
         topic=ROS_EVENTS_TOPIC,
         value=bytes_,
-        key=payload.get('id'),
+        key=host.get('id'),
         on_delivery=lambda err, msg: delivery_report(err, msg, host.get('id'), request_id, ROS_EVENTS_TOPIC)
     )
     producer.poll()
