@@ -28,7 +28,7 @@ from ros.rules.rules_engine import (
     report,
     report_metadata
 )
-from ros.processor.event_producer import produce_report_processor_event
+from ros.processor.report_processor_event_producer import produce_report_processor_event
 
 
 logging = get_logger(__name__)

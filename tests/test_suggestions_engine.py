@@ -4,7 +4,7 @@ from unittest.mock import patch
 import json
 
 from ros.processor.suggestions_engine import SuggestionsEngine
-from ros.processor.event_producer import no_pcp_raw_payload
+from ros.processor.report_processor_event_producer import no_pcp_raw_payload
 
 
 class TestSuggestionsEngine(unittest.TestCase):
@@ -173,6 +173,45 @@ class TestNoPcpRawPayload(unittest.TestCase):
                 "platform_metadata": {"request_id": "a1b2c3"},
                 "host": None
             })
+
+    def test_valid_payload_with_none_values(self):
+        input_payload = {
+            "type": "created",
+            "platform_metadata": {
+                "request_id": "a1b2c3",
+                "is_ros_v2": True,
+                "is_pcp_raw_data_collected": False
+            },
+            "host": {
+                "id": "123123",
+                "org_id": "000001",
+                "display_name": None,
+                "fqdn": None,
+                "stale_timestamp": "2025-04-25T13:58:54.509083+00:00",
+                "groups": [],
+                "system_profile": {
+                    "operating_system": {"name": "Fedora", "version": "40"},
+                    "cloud_provider": "aws"
+                }
+            }
+        }
+
+        expected_output = {
+            "type": "created",
+            "org_id": "000001",
+            "platform_metadata": {
+                "request_id": "a1b2c3",
+                "is_ros_v2": True,
+                "is_pcp_raw_data_collected": False
+            },
+            "id": "123123",
+            "stale_timestamp": "2025-04-25T13:58:54.509083+00:00",
+            "groups": [],
+            "operating_system": {"name": "Fedora", "version": "40"},
+            "cloud_provider": "aws",
+        }
+
+        self.assertEqual(no_pcp_raw_payload(input_payload), expected_output)
 
 
 if __name__ == '__main__':
