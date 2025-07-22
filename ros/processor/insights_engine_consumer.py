@@ -13,7 +13,7 @@ from ros.lib.config import (
     GROUP_ID
 )
 from ros.processor.process_archive import get_performance_profile
-from ros.processor.event_producer import new_suggestion_event
+from ros.processor.notification_event_producer import new_suggestion_event
 from ros.lib.cw_logging import commence_cw_log_streaming, threadctx
 from prometheus_client import start_http_server
 from ros.lib.constants import SystemStatesWithKeys

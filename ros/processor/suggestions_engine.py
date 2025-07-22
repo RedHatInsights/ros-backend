@@ -28,7 +28,7 @@ from ros.rules.rules_engine import (
     report,
     report_metadata
 )
-from ros.processor.event_producer import produce_report_processor_event
+from ros.processor.report_processor_event_producer import produce_report_processor_event
 
 
 logging = get_logger(__name__)
@@ -199,7 +199,7 @@ class SuggestionsEngine:
                 f"{self.service} - {self.event} - Triggering an event for system {host.get('id')}"
             )
             self.consumer.commit()
-            produce_report_processor_event(payload, platform_metadata, self.producer)
+            produce_report_processor_event(payload, self.producer)
             return
 
         archive_URL = platform_metadata.get('url')

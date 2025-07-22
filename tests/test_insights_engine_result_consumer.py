@@ -7,7 +7,7 @@ from ros.lib.models import db, PerformanceProfile, PerformanceProfileHistory
 from ros.processor.insights_engine_consumer import InsightsEngineConsumer
 from ros.lib.constants import SystemStatesWithKeys
 from tests.helpers.db_helper import db_get_host, db_get_record
-from ros.processor.event_producer import notification_payload
+from ros.processor.notification_event_producer import notification_payload
 
 
 @pytest.fixture(scope="function")
