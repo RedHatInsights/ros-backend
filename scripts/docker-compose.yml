@@ -10,7 +10,7 @@ services:
       - ZOOKEEPER_CLIENT_PORT=32181
       - ZOOKEEPER_SERVER_ID=1
   kafka:
-    image: confluentinc/cp-kafka
+    image: confluentinc/cp-kafka:7.5.9
     ports:
       - 29092:29092
       - 9092:9092
@@ -25,7 +25,7 @@ services:
       - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
   # Below container is to implement workaround for creating required topics.
   kafka-create-topics:
-    image: confluentinc/cp-kafka
+    image: confluentinc/cp-kafka:7.5.9
     ports:
       - 7777:29092
     command: "bash -c 'echo Waiting for Kafka to be ready... && \
