@@ -57,8 +57,8 @@ docker-compose up ros-processor ros-api
 ```
 
 ### On host machine
-In order to properly run the application from the host machine, you need to have modified your `/etc/hosts` file. Check the
-README.md file in scripts directory.
+In order to properly run the application from the host machine, you may optionally modify your `/etc/hosts` file for convenience. 
+Check the README.md file in scripts directory for details and important networking considerations.
 
 #### Initialize the database
 Run the following commands to execute the db migration scripts.
