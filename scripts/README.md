@@ -3,12 +3,17 @@ Below are the instructions to setup ROS development environment
 
 ## Setup
 
-1. If you want to access the containers from host machine, update /etc/hosts
+1. **Optional**: To access services from your host machine, you can either:
+   - Use the mapped ports: `localhost:9092` (Kafka), `localhost:9000` (Minio)
+   - Or add entries to `/etc/hosts` for convenience (NOT recommended as it breaks container networking):
 
-```
-127.0.0.1       kafka
-127.0.0.1       minio
-```
+   ```
+   # WARNING: Adding these entries will break container-to-container communication
+   # Only use if you specifically need to access services by name from the host
+   # Remove these entries if containers fail to connect to each other
+   127.0.0.1       kafka
+   127.0.0.1       minio
+   ```
 
 3. Clone ros-backend repository.
 ```bash
