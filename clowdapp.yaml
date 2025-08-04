@@ -15,7 +15,6 @@ objects:
     - host-inventory
     - rbac
     - engine
-    - kessel-inventory
     deployments:
     - name: api
       replicas: ${{API_REPLICA_COUNT}}
