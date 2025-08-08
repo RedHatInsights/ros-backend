@@ -66,7 +66,9 @@ def readable_evalution(ret):
         (ERROR_KEY_UNDERSIZED, any, (RosKeys.CPU_UNDERSIZED,
                                      RosKeys.MEMORY_UNDERSIZED,
                                      RosKeys.IO_UNDERSIZED)),
-        (ERROR_KEY_OVERSIZED, all, (RosKeys.CPU_OVERSIZED,
+        # FIXED: CHANGED FROM 'all' TO 'any' - IF ANY RESOURCE IS OVERSIZED,
+        # THE SYSTEM SHOULD BE CLASSIFIED AS OVERSIZED (CONSISTENT WITH UNDERSIZED LOGIC)
+        (ERROR_KEY_OVERSIZED, any, (RosKeys.CPU_OVERSIZED,
                                     RosKeys.MEMORY_OVERSIZED,
                                     RosKeys.IO_OVERSIZED)),
         (ERROR_KEY_UNDER_PRESSURE, any, (RosKeys.CPU_UNDERSIZED_BY_PRESSURE,
