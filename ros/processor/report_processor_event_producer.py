@@ -24,7 +24,7 @@ def no_pcp_raw_payload(payload):
 
 
 def produce_report_processor_event(payload, producer):
-    request_id = payload.get('platform_metadata').get('request_id')
+    request_id = payload.get('metadata').get('request_id')
     host = payload.get('host')
     tailored_payload = no_pcp_raw_payload(payload)
     bytes_ = json.dumps(tailored_payload).encode('utf-8')
