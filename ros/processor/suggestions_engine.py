@@ -221,7 +221,7 @@ class SuggestionsEngine:
     def handle_api_event(self, payload):
         host = payload.get('host')
         logging.debug(
-            f"{self.service} - {self.event} - Triggering an event for system {host.get('id')}"
+            f"{self.service} - {self.event} - Triggering an event for system {host.get('id')}, updated via API"
         )
         self.consumer.commit()
         produce_report_processor_event(payload, self.producer)
