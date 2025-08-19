@@ -3,7 +3,7 @@ from ros.lib.config import ROS_EVENTS_TOPIC
 from ros.lib.produce import delivery_report
 
 
-def no_pcp_raw_payload(payload):
+def api_and_no_pcp_raw_payload(payload):
     host = payload.get('host')
 
     payload = {
@@ -24,9 +24,9 @@ def no_pcp_raw_payload(payload):
 
 
 def produce_report_processor_event(payload, producer):
-    request_id = payload.get('platform_metadata').get('request_id')
+    request_id = payload.get('metadata').get('request_id')
     host = payload.get('host')
-    tailored_payload = no_pcp_raw_payload(payload)
+    tailored_payload = api_and_no_pcp_raw_payload(payload)
     bytes_ = json.dumps(tailored_payload).encode('utf-8')
     producer.produce(
         topic=ROS_EVENTS_TOPIC,

@@ -218,6 +218,27 @@ class SuggestionsEngine:
                 for r in rules:
                     print(rules_execution_output[r])
 
+    def handle_api_event(self, payload):
+        host = payload.get('host')
+        logging.debug(
+            f"{self.service} - {self.event} - Triggering an event for system {host.get('id')}, updated via API"
+        )
+        self.consumer.commit()
+        produce_report_processor_event(payload, self.producer)
+        return
+
+    def process_message(self, message):
+        payload = json.loads(message.value().decode('utf-8'))
+        event_type = payload['type']
+
+        headers = dict(message.headers() or [])
+        producer = headers.get('producer', b'').decode('utf-8')
+
+        if event_type == 'updated' and 'host-inventory-service' in producer:
+            self.handle_api_event(payload)
+        elif event_type in ('created', 'updated'):
+            self.handle_create_update(payload)
+
     def run(self):
         logging.info(f"{self.service} - Engine is running. Awaiting msgs.")
         try:
@@ -227,12 +248,7 @@ class SuggestionsEngine:
                     continue
 
                 try:
-                    payload = json.loads(message.value().decode('utf-8'))
-                    event_type = payload['type']
-
-                    if 'created' == event_type or 'updated' == event_type:
-                        self.handle_create_update(payload)
-
+                    self.process_message(message)
                 except json.JSONDecodeError as error:
                     logging.error(f"{self.service} - {self.event} - Failed to decode message: {error}")
                 except Exception as error:

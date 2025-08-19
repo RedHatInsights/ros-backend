@@ -1,10 +1,10 @@
 import unittest
 import logging
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 import json
 
 from ros.processor.suggestions_engine import SuggestionsEngine
-from ros.processor.report_processor_event_producer import no_pcp_raw_payload
+from ros.processor.report_processor_event_producer import api_and_no_pcp_raw_payload
 
 
 class TestSuggestionsEngine(unittest.TestCase):
@@ -164,11 +164,11 @@ class TestNoPcpRawPayload(unittest.TestCase):
             "cloud_provider": "aws"
         }
 
-        self.assertEqual(no_pcp_raw_payload(input_payload), expected_output)
+        self.assertEqual(api_and_no_pcp_raw_payload(input_payload), expected_output)
 
     def test_missing_host(self):
         with self.assertRaises(AttributeError):
-            no_pcp_raw_payload({
+            api_and_no_pcp_raw_payload({
                 "type": "created",
                 "platform_metadata": {"request_id": "a1b2c3"},
                 "host": None
@@ -211,7 +211,50 @@ class TestNoPcpRawPayload(unittest.TestCase):
             "cloud_provider": "aws",
         }
 
-        self.assertEqual(no_pcp_raw_payload(input_payload), expected_output)
+        self.assertEqual(api_and_no_pcp_raw_payload(input_payload), expected_output)
+
+
+class TestAPIEvent(unittest.TestCase):
+    def setUp(self):
+        self.engine = SuggestionsEngine()
+
+    @patch("ros.processor.suggestions_engine.SuggestionsEngine.handle_api_event")
+    @patch("ros.processor.suggestions_engine.SuggestionsEngine.handle_create_update")
+    def test_handle_api_event(self, mock_create_update, mock_api_event):
+        payload = {
+            "type": "updated",
+            "host": {"id": "host-abc"},
+            "platform_metadata": {}
+        }
+        headers = [('producer', b'host-inventory-service-xyz')]
+
+        message = Mock()
+        message.value.return_value = json.dumps(payload).encode()
+        message.headers.return_value = headers
+
+        self.engine.process_message(message)
+
+        mock_api_event.assert_called_once_with(payload)
+        mock_create_update.assert_not_called()
+
+    @patch("ros.processor.suggestions_engine.SuggestionsEngine.handle_api_event")
+    @patch("ros.processor.suggestions_engine.SuggestionsEngine.handle_create_update")
+    def test_handle_non_api_event(self, mock_create_update, mock_api_event):
+        payload = {
+            "type": "updated",
+            "host": {"id": "host-abc"},
+            "platform_metadata": {}
+        }
+        headers = [('producer', b'service-abc')]
+
+        message = Mock()
+        message.value.return_value = json.dumps(payload).encode()
+        message.headers.return_value = headers
+
+        self.engine.process_message(message)
+
+        mock_create_update.assert_called_once_with(payload)
+        mock_api_event.assert_not_called()
 
 
 if __name__ == '__main__':
