@@ -219,6 +219,7 @@ class SuggestionsEngine:
                     print(rules_execution_output[r])
 
     def handle_api_event(self, payload):
+        self.event = "Update event"
         host = payload.get('host')
         logging.debug(
             f"{self.service} - {self.event} - Triggering an event for system {host.get('id')}, updated via API"
