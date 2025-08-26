@@ -29,5 +29,8 @@ get-all-suggested-instance-types:
 produce-no-pcp-message:
 	kcat -b localhost:9092 -t platform.inventory.events -P sample-files/no_pcp_raw_message.json
 
+produce-api-message:
+	kcat -b localhost:9092 -t platform.inventory.events -P sample-files/api_message.json -H "producer=host-inventory-service"
+
 listen-report-processor-event:
 	kcat -b localhost:29092 -t ros.events -C -o end

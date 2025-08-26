@@ -1,0 +1,24 @@
+{
+  "type": "updated",
+  "timestamp": "2025-04-11T13:58:54.509083+00:00",
+  "platform_metadata": {
+    "b64_identity": ""
+  },
+  "metadata": {
+    "request_id": "a1b2c3"
+  },
+  "host": {
+    "id": "123123",
+    "account": "32",
+    "org_id": "000001",
+    "display_name": "test",
+    "fqdn": "test.org",
+    "stale_timestamp": "2025-04-25T13:58:54.509083+00:00",
+    "reporter": "puptoo",
+    "groups": [],
+    "system_profile": {
+      "operating_system": {"name": "Fedora", "version": "40"},
+      "cloud_provider": "aws"
+    }
+  }
+}
