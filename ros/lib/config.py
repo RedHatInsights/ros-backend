@@ -152,6 +152,7 @@ ROS_API_PORT = int(os.getenv("ROS_API_PORT", "8000"))
 CACHE_TIMEOUT_FOR_DELETED_SYSTEM = int(
     os.getenv("CACHE_TIMEOUT_FOR_DELETED_SYSTEM", "86400"))
 CACHE_KEYWORD_FOR_DELETED_SYSTEM = '_del_'
+POLL_TIMEOUT_SECS = 1.0
 
 
 def kafka_auth_config(connection_object=None):
