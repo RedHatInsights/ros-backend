@@ -76,7 +76,6 @@ class SuggestionsEngine:
 
         pmlogsummary_command = [
             "pmlogsummary",
-            "-F",
             os.path.join(output_dir, ".index")
         ]
 
