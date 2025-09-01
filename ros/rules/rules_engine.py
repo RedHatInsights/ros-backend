@@ -1,6 +1,7 @@
 from math import isclose
 from functools import reduce
 from collections import namedtuple, defaultdict
+import pydash as _
 
 from insights import (
     run as insights_run,
@@ -396,6 +397,57 @@ def find_solution(cm, cpu, mem, io, idle, psi):
     raise SkipComponent
 
 
+@rule([PmLogSummaryRules, LsCPU], cloud_metadata)
+def performance_profile_rules(pmlog_summary, lscpu, cloud_metadata):
+    """
+    Extract comprehensive performance profile from PmLogSummaryRules.
+    Similar to processor/process_archive.py performance_profile but integrated
+    into ROS rules engine and depends on PmLogSummaryRules.
+    """
+    profile = {}
+
+    # Performance metrics from PCP data
+    if pmlog_summary is not None:
+        performance_metrics = [
+            'hinv.ncpu',
+            'mem.physmem',
+            'mem.util.available',
+            'disk.dev.total',
+            'kernel.all.cpu.idle',
+            'kernel.all.pressure.cpu.some.avg',
+            'kernel.all.pressure.io.full.avg',
+            'kernel.all.pressure.io.some.avg',
+            'kernel.all.pressure.memory.full.avg',
+            'kernel.all.pressure.memory.some.avg',
+        ]
+
+        for metric in performance_metrics:
+            if metric in ['hinv.ncpu', 'mem.physmem', 'mem.util.available', 'kernel.all.cpu.idle']:
+                # Extract .val property for basic metrics
+                profile[metric] = _.get(pmlog_summary, f'{metric}.val')
+            else:
+                # Extract full object for complex metrics (PSI)
+                profile[metric] = _.get(pmlog_summary, metric)
+
+    # CPU information from LsCPU
+    profile["total_cpus"] = int(lscpu.info.get('CPUs'))
+
+    # Cloud metadata integration
+    if cloud_metadata:
+        profile["instance_type"] = cloud_metadata.type
+        profile["region"] = cloud_metadata.region
+        profile["cloud_provider"] = cloud_metadata.provider
+    else:
+        profile["instance_type"] = None
+        profile["region"] = None
+        profile["cloud_provider"] = None
+
+    # Return as metadata response
+    metadata_response = make_metadata()
+    metadata_response.update(profile)
+    return metadata_response
+
+
 # ---------------------------------------------------------------------------
 # Rules
 # ---------------------------------------------------------------------------
@@ -426,6 +478,6 @@ def report(rhel, cloud, solution):
 
 
 def run_rules(extracted_dir_root):
-    rules = [report_metadata, report]
+    rules = [report_metadata, report, performance_profile_rules]
     result = insights_run(rules, root=extracted_dir_root)
     return result

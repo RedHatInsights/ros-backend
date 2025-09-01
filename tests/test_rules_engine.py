@@ -564,7 +564,8 @@ class TestRunRules:
         # Mock insights_run return value
         mock_insights_run.return_value = {
             'report_metadata': {'result': 'metadata'},
-            'report': {'result': 'report'}
+            'report': {'result': 'report'},
+            'performance_profile_rules': {'result': 'metadata'},
         }
 
         extracted_dir_root = "/path/to/extracted"
@@ -573,7 +574,7 @@ class TestRunRules:
 
         mock_insights_run.assert_called_once()
         args, kwargs = mock_insights_run.call_args
-        assert len(args[0]) == 2  # Two rules: report_metadata and report
+        assert len(args[0]) == 3  # Three rules: [report_metadata, report, performance_profile_rules
         assert kwargs['root'] == extracted_dir_root
         assert result == mock_insights_run.return_value
 
