@@ -29,8 +29,10 @@ from ros.rules.rules_engine import (
     report_metadata,
     performance_profile_rule
 )
-from ros.processor.report_processor_event_producer import produce_report_processor_event, produce_report_processor_event_pcp_raw_data
-
+from ros.processor.report_processor_event_producer import (
+    produce_report_processor_event,
+    produce_report_processor_event_pcp_raw_data
+)
 
 logging = get_logger(__name__)
 

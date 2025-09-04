@@ -455,8 +455,9 @@ class TestRuleFunctions:
         cpu = (0.5, 1.0)
         mem = (0.7, 700.0)
         io = {"sda": 100.5, "sdb": 200.7}
+        sys_id = "1671dcb3-821c-4a28-8b40-1c735f0c0014"
 
-        result = rules_engine.report_metadata(mock_rhel_release, mock_cloud_instance_aws, psi, cpu, mem, io)
+        result = rules_engine.report_metadata(mock_rhel_release, mock_cloud_instance_aws, psi, cpu, mem, io, sys_id)
 
         # Should return make_metadata result
         assert result is not None
