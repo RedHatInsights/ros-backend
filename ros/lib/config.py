@@ -67,6 +67,11 @@ if CLOWDER_ENABLED:
             break
         # Todo: Load Kessel app from clowdapp
     KESSEL_SVC_URL = os.getenv("KESSEL_URL", default="kessel-inventory-api:9000")
+    # Kessel OAuth 2.0 Authentication
+    KESSEL_OAUTH_CLIENT_ID = os.getenv("KESSEL_OAUTH_CLIENT_ID", "")
+    KESSEL_OAUTH_CLIENT_SECRET = os.getenv("KESSEL_OAUTH_CLIENT_SECRET", "")
+    KESSEL_OAUTH_OIDC_ISSUER = os.getenv("KESSEL_OAUTH_OIDC_ISSUER", "")
+    KESSEL_USE_TLS = str_to_bool(os.getenv("KESSEL_USE_TLS", "True"))  # True for Clowder
     CW_ENABLED = True if LoadedConfig.logging.cloudwatch else False  # CloudWatch/Kibana Logging
     if CW_ENABLED is True:
         # Available only in k8s namespace, through an app-interface automation
@@ -110,6 +115,11 @@ else:
     KESSEL_HOST = os.getenv("KESSEL_HOST", "localhost")
     KESSEL_PORT = os.getenv("KESSEL_PORT", "9081")
     KESSEL_SVC_URL = os.getenv("KESSEL_SVC_URL", f"{KESSEL_HOST}:{KESSEL_PORT}")
+    # Kessel OAuth 2.0 Authentication
+    KESSEL_OAUTH_CLIENT_ID = os.getenv("KESSEL_OAUTH_CLIENT_ID", "")
+    KESSEL_OAUTH_CLIENT_SECRET = os.getenv("KESSEL_OAUTH_CLIENT_SECRET", "")
+    KESSEL_OAUTH_OIDC_ISSUER = os.getenv("KESSEL_OAUTH_OIDC_ISSUER", "")
+    KESSEL_USE_TLS = str_to_bool(os.getenv("KESSEL_USE_TLS", "False"))  # False for local dev
     NOTIFICATIONS_TOPIC = os.getenv("NOTIFICATIONS_TOPIC", "platform.notifications.ingress")
     ROS_EVENTS_TOPIC = os.getenv("ROS_EVENTS_TOPIC", "ros.events")
     TLS_CA_PATH = os.getenv("TLS_CA_PATH", None)
