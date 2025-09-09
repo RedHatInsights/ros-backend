@@ -14,8 +14,13 @@ def query_kessel(auth_key):
         token = json.loads(b64decode(auth_key).decode("utf-8"))
     except json.decoder.JSONDecodeError:
         LOG.error("Unable to decode the auth_key")
+        return {"ros_can_read": UserAllowed.FALSE, "host_groups": set()}
+
     user_id = token.get("identity", {}).get("user", {}).get("user_id")
-    client = KesselClient(KESSEL_SVC_URL)
+    org_id = token.get("identity", {}).get("org_id")
+
+    # Initialize KesselClient with org_id for workspace-based authentication
+    client = KesselClient(KESSEL_SVC_URL, org_id=org_id)
 
     ros_read_analysis = client.default_workspace_check("ros_read_analysis", Resource.principal(user_id))
 
