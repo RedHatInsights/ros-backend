@@ -11,6 +11,9 @@ from ros.lib.config import (
     POLL_TIMEOUT_SECS
 )
 from ros.lib import consume
+from ros.lib.app import app
+from ros.extensions import db
+from ros.lib.models import System
 
 
 logging = get_logger(__name__)
@@ -28,6 +31,34 @@ class SystemEraser:
     def _shutdown(self, signum, frame):
         logging.info(f"{self.service} - Shutdown signal received: {signum}")
         self.running = False
+
+    def delete_system(self, host_id):
+        """Delete system from database where inventory_id matches host_id."""
+        try:
+            with app.app_context():
+                rows_deleted = db.session.execute(
+                    db.delete(System).filter(System.inventory_id == host_id)
+                )
+                db.session.commit()
+
+                if rows_deleted.rowcount > 0:
+                    logging.info(
+                        f"{self.service} - Successfully deleted {rows_deleted.rowcount} system(s) "
+                        f"with inventory_id: {host_id}"
+                    )
+                    return True
+                else:
+                    logging.warning(
+                        f"{self.service} - No system found with inventory_id: {host_id}"
+                    )
+                    return False
+
+        except Exception as error:
+            logging.error(
+                f"{self.service} - {self.event} - Failed to delete system with "
+                f"inventory_id {host_id}: {error}"
+            )
+            return False
 
     def run(self):
         logging.info(f"{self.service} - System Eraser is running. Awaiting msgs.")
@@ -50,6 +81,9 @@ class SystemEraser:
                     logging.debug(
                         f"{self.service} - Received a message for system with inventory_id {host_id}"
                     )
+
+                    # Perform the delete operation
+                    self.delete_system(host_id)
 
                 except json.JSONDecodeError as error:
                     logging.error(f"{self.service} - {self.event} - Failed to decode message: {error}")
