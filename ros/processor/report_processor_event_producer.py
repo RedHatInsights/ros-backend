@@ -143,32 +143,38 @@ def perf_profile_and_rule_payload(report_metadata_output, report_output, report_
     }
 
 
-def produce_report_processor_event_pcp_raw_data(
-    payload, report_metadata_output, report_output, report_perf_profile, producer
+def produce_report_processor_event(
+    payload,
+    producer,
+    report_metadata_output=None,
+    report_output=None,
+    report_perf_profile=None
 ):
+    """
+    Unified method to produce report processor events.
+
+    Args:
+        payload: The base payload containing metadata and host information
+        producer: Kafka producer instance
+        report_metadata_output: Optional metadata from report processing (for PCP data)
+        report_output: Optional main report output with states and recommendations (for PCP data)
+        report_perf_profile: Optional performance profile data (for PCP data)
+    """
     request_id = payload.get('metadata').get('request_id')
     host = payload.get('host')
-    tailored_payload = api_and_no_pcp_raw_payload(payload)
-    perf_profile_and_rule = perf_profile_and_rule_payload(report_metadata_output, report_output, report_perf_profile)
 
-    # Combine both payloads
-    combined_payload = {**tailored_payload, **perf_profile_and_rule}
+    # Start with the basic tailored payload
+    final_payload = api_and_no_pcp_raw_payload(payload)
 
-    bytes_ = json.dumps(combined_payload).encode('utf-8')
-    producer.produce(
-        topic=ROS_EVENTS_TOPIC,
-        value=bytes_,
-        key=host.get('id'),
-        on_delivery=lambda err, msg: delivery_report(err, msg, host.get('id'), request_id, ROS_EVENTS_TOPIC)
-    )
-    producer.poll()
+    # If PCP-related data is provided, enhance the payload with performance and rule data
+    if all(param is not None for param in [report_metadata_output, report_output, report_perf_profile]):
+        perf_profile_and_rule = perf_profile_and_rule_payload(
+            report_metadata_output, report_output, report_perf_profile
+        )
+        final_payload = {**final_payload, **perf_profile_and_rule}
 
-
-def produce_report_processor_event(payload, producer):
-    request_id = payload.get('metadata').get('request_id')
-    host = payload.get('host')
-    tailored_payload = api_and_no_pcp_raw_payload(payload)
-    bytes_ = json.dumps(tailored_payload).encode('utf-8')
+    # Serialize and send the event
+    bytes_ = json.dumps(final_payload).encode('utf-8')
     producer.produce(
         topic=ROS_EVENTS_TOPIC,
         value=bytes_,
