@@ -30,8 +30,7 @@ from ros.rules.rules_engine import (
     performance_profile_rule
 )
 from ros.processor.report_processor_event_producer import (
-    produce_report_processor_event,
-    produce_report_processor_event_pcp_raw_data
+    produce_report_processor_event
 )
 
 logging = get_logger(__name__)
@@ -219,8 +218,13 @@ class SuggestionsEngine:
                 report_metadata_output = rules_runner[report_metadata]
                 rules_output = rules_runner[report]
                 report_perf_profile = rules_runner[performance_profile_rule]
-                produce_report_processor_event_pcp_raw_data(payload, report_metadata_output,
-                                                            rules_output, report_perf_profile, self.producer)
+                produce_report_processor_event(
+                    payload,
+                    self.producer,
+                    report_metadata_output,
+                    rules_output,
+                    report_perf_profile
+                )
 
     def handle_api_event(self, payload):
         self.event = "Update event"
