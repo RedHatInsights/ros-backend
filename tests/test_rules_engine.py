@@ -455,8 +455,9 @@ class TestRuleFunctions:
         cpu = (0.5, 1.0)
         mem = (0.7, 700.0)
         io = {"sda": 100.5, "sdb": 200.7}
+        sys_id = "1671dcb3-821c-4a28-8b40-1c735f0c0014"
 
-        result = rules_engine.report_metadata(mock_rhel_release, mock_cloud_instance_aws, psi, cpu, mem, io)
+        result = rules_engine.report_metadata(mock_rhel_release, mock_cloud_instance_aws, psi, cpu, mem, io, sys_id)
 
         # Should return make_metadata result
         assert result is not None
@@ -564,7 +565,8 @@ class TestRunRules:
         # Mock insights_run return value
         mock_insights_run.return_value = {
             'report_metadata': {'result': 'metadata'},
-            'report': {'result': 'report'}
+            'report': {'result': 'report'},
+            'performance_profile_rules': {'result': 'metadata'},
         }
 
         extracted_dir_root = "/path/to/extracted"
@@ -573,7 +575,7 @@ class TestRunRules:
 
         mock_insights_run.assert_called_once()
         args, kwargs = mock_insights_run.call_args
-        assert len(args[0]) == 2  # Two rules: report_metadata and report
+        assert len(args[0]) == 3  # Three rules: [report_metadata, report, performance_profile_rules
         assert kwargs['root'] == extracted_dir_root
         assert result == mock_insights_run.return_value
 
