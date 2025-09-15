@@ -146,10 +146,16 @@ class KesselClient:
         a single workspace dictionary or None.
 
         Uses OIDC discovery and OAuth2ClientCredentials to authenticate with RBAC API.
+        Includes x-rh-rbac-org-id header as required by RBAC middleware.
 
         :return: Dict with workspace name and id, or None if no workspace found
         """
         try:
+            # Validate that org_id is available for RBAC API call
+            if not self.org_id:
+                LOG.error("org_id is required for RBAC API call but not provided")
+                return None
+
             # Get OAuth2ClientCredentials using helper method
             auth_credentials = self._get_auth_credentials()
             if not auth_credentials:
@@ -164,15 +170,19 @@ class KesselClient:
             # Get access token from OAuth2ClientCredentials
             try:
                 access_token = auth_credentials.get_token()
-                auth_header = {"authorization": f"Bearer {access_token}"}
+                # Include both authorization token and org_id header as required by RBAC middleware
+                headers = {
+                    "authorization": f"Bearer {access_token}",
+                    "x-rh-rbac-org-id": str(self.org_id)
+                }
             except Exception as token_err:
                 LOG.error(f"Failed to get access token from OAuth2ClientCredentials: {token_err}")
                 return None
 
-            # Make the HTTP request to RBAC API with OAuth2 authentication
+            # Make the HTTP request to RBAC API with OAuth2 authentication and org_id header
             response = requests.get(
                 rbac_workspaces_url,
-                headers=auth_header,
+                headers=headers,
                 verify=TLS_CA_PATH,
                 timeout=30
             )
