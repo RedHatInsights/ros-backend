@@ -103,9 +103,9 @@ class KesselClient:
 
             # Import kessel auth components only when needed
             try:
-                from kessel.authn import OAuth2ClientCredentials, fetch_oidc_discovery
+                from kessel.auth import OAuth2ClientCredentials, fetch_oidc_discovery
             except ImportError:
-                LOG.error("kessel.authn not available - cannot create OAuth2ClientCredentials")
+                LOG.error("kessel.auth not available - cannot create OAuth2ClientCredentials")
                 return None
 
             # Fetch OIDC discovery information to get token endpoint
