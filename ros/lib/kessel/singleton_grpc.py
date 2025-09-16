@@ -34,7 +34,7 @@ def get_kessel_stub(host, use_auth=True):
             # Try OAuth2 authentication if credentials are configured
             if use_auth and KESSEL_OAUTH_CLIENT_ID and KESSEL_OAUTH_CLIENT_SECRET and KESSEL_OAUTH_OIDC_ISSUER:
                 try:
-                    from kessel.authn import OAuth2ClientCredentials, fetch_oidc_discovery
+                    from kessel.auth import OAuth2ClientCredentials, fetch_oidc_discovery
 
                     LOG.info("Attempting OAuth2 authentication for Kessel connection")
 
