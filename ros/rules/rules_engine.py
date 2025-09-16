@@ -1,6 +1,7 @@
 from math import isclose
 from functools import reduce
 from collections import namedtuple, defaultdict
+import pydash as _
 
 from insights import (
     run as insights_run,
@@ -17,6 +18,7 @@ from insights.core.plugins import (
 from insights.core.spec_factory import SpecSet, simple_file
 from insights.parsers.lscpu import LsCPU
 from insights.parsers.cmdline import CmdLine
+from insights.parsers.client_metadata import MachineID
 from insights.parsers.insights_client_conf import InsightsClientConf
 from insights.parsers.pmlog_summary import PmLogSummaryBase
 from insights.parsers.azure_instance import AzureInstanceType
@@ -110,6 +112,14 @@ def readable_evalution(ret):
 # ---------------------------------------------------------------------------
 # Conditions
 # ---------------------------------------------------------------------------
+
+@condition(MachineID)
+def system_id(machine_id):
+    if machine_id:
+        return machine_id.id or machine_id.uuid
+    raise SkipComponent
+
+
 @condition(CloudProvider, [AWSInstanceIdDoc, AzureInstanceType])
 def cloud_metadata(cp, aws, azure):
     """
@@ -396,18 +406,67 @@ def find_solution(cm, cpu, mem, io, idle, psi):
     raise SkipComponent
 
 
+@rule([PmLogSummaryRules, LsCPU], cloud_metadata)
+def performance_profile_rule(pmlog_summary, lscpu, cloud_metadata):
+    """
+    Extract comprehensive performance profile from PmLogSummaryRules.
+    Similar to processor/process_archive.py performance_profile but integrated
+    into ROS rules engine and depends on PmLogSummaryRules.
+    """
+    profile = {}
+
+    # Performance metrics from PCP data
+    if pmlog_summary is not None:
+        performance_metrics = [
+            'hinv.ncpu',
+            'mem.physmem',
+            'mem.util.available',
+            'disk.dev.total',
+            'kernel.all.cpu.idle',
+            'kernel.all.pressure.cpu.some.avg',
+            'kernel.all.pressure.io.full.avg',
+            'kernel.all.pressure.io.some.avg',
+            'kernel.all.pressure.memory.full.avg',
+            'kernel.all.pressure.memory.some.avg',
+        ]
+
+        for metric in performance_metrics:
+            if metric in ['hinv.ncpu', 'mem.physmem', 'mem.util.available', 'kernel.all.cpu.idle']:
+                # Extract .val property for basic metrics
+                profile[metric] = _.get(pmlog_summary, f'{metric}.val')
+            else:
+                # Extract full object for complex metrics (PSI)
+                profile[metric] = _.get(pmlog_summary, metric)
+
+    # CPU information from LsCPU
+    profile["total_cpus"] = int(lscpu.info.get('CPUs'))
+
+    profile = {"instance_type": None, "region": None,  "cloud_provider": None}
+    # Cloud metadata integration
+    if cloud_metadata:
+        profile["instance_type"] = cloud_metadata.type
+        profile["region"] = cloud_metadata.region
+        profile["cloud_provider"] = cloud_metadata.provider
+
+    # Return as metadata response
+    metadata_response = make_metadata()
+    metadata_response.update(profile)
+    return metadata_response
+
+
 # ---------------------------------------------------------------------------
 # Rules
 # ---------------------------------------------------------------------------
 @rule(RhelRelease, cloud_metadata,
       optional=[psi_enabled, cpu_utilization,
-                mem_utilization, io_utilization], links=LINKS)
-def report_metadata(rhel, cloud, psi, cpu, mem, io):
+                mem_utilization, io_utilization, system_id], links=LINKS)
+def report_metadata(rhel, cloud, psi, cpu, mem, io, sys_id):
     ret = dict(cloud_provider=cloud.provider)
     ret.update(cpu_utilization=f'{round(cpu[0] * 100)}') if cpu else None
     ret.update(mem_utilization=f'{round(mem[0] * 100)}') if mem else None
     ret.update(io_utilization={k: f'{v:.3f}' for k, v in io.items()}) if io else None
     ret.update(psi_enabled=psi) if psi is not None else None
+    ret.update(system_id=sys_id) if sys_id else None
     return make_metadata(**ret)
 
 
@@ -426,6 +485,6 @@ def report(rhel, cloud, solution):
 
 
 def run_rules(extracted_dir_root):
-    rules = [report_metadata, report]
+    rules = [report_metadata, report, performance_profile_rule]
     result = insights_run(rules, root=extracted_dir_root)
     return result

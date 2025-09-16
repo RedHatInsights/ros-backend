@@ -26,10 +26,12 @@ from ros.lib.config import (
 from ros.rules.rules_engine import (
     run_rules,
     report,
-    report_metadata
+    report_metadata,
+    performance_profile_rule
 )
-from ros.processor.report_processor_event_producer import produce_report_processor_event
-
+from ros.processor.report_processor_event_producer import (
+    produce_report_processor_event
+)
 
 logging = get_logger(__name__)
 
@@ -212,10 +214,17 @@ class SuggestionsEngine:
             index_file_path = self.get_index_file_path(host, extracted_dir_root)
             if index_file_path is not None:
                 self.run_pcp_commands(host, index_file_path, platform_metadata.get('request_id'), extracted_dir_root)
-                rules_execution_output = run_rules(extracted_dir_root)
-                rules = [report_metadata, report]
-                for r in rules:
-                    print(rules_execution_output[r])
+                rules_runner = run_rules(extracted_dir_root)
+                report_metadata_output = rules_runner[report_metadata]
+                rules_output = rules_runner[report]
+                report_perf_profile = rules_runner[performance_profile_rule]
+                produce_report_processor_event(
+                    payload,
+                    self.producer,
+                    report_metadata_output,
+                    rules_output,
+                    report_perf_profile
+                )
 
     def handle_api_event(self, payload):
         self.event = "Update event"

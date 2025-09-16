@@ -257,7 +257,7 @@ class TestRulesEngineIntegration:
 
         # Check that the correct rules were passed
         rules_list = args[0]
-        assert len(rules_list) == 2  # report_metadata and report
+        assert len(rules_list) == 3  # Three rules: [report_metadata, report, performance_profile_rules
         assert rules_engine.report_metadata in rules_list
         assert rules_engine.report in rules_list
 
