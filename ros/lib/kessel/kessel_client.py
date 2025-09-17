@@ -16,7 +16,7 @@ from ros.lib.kessel.dataclasses_and_enum import ObjectType, Resource, UserAllowe
 from ros.lib.kessel.singleton_grpc import get_kessel_stub
 from ros.lib.config import (
     get_logger, RBAC_SVC_URL, TLS_CA_PATH,
-    KESSEL_OAUTH_CLIENT_ID, KESSEL_OAUTH_CLIENT_SECRET, KESSEL_OAUTH_OIDC_ISSUER
+    create_kessel_oauth2_credentials
 )
 
 
@@ -88,56 +88,6 @@ class KesselClient:
 
         return self.stub.StreamedListObjects(request)
 
-    def _get_auth_credentials(self):
-        """
-        Helper method to create OAuth2ClientCredentials for RBAC API authentication.
-        Following the kessel-sdk-py auth_insecure.py pattern with OIDC discovery.
-
-        :return: OAuth2ClientCredentials object or None if configuration is missing
-        """
-        try:
-            # Check if OAuth configuration is available
-            if not KESSEL_OAUTH_CLIENT_ID or not KESSEL_OAUTH_CLIENT_SECRET or not KESSEL_OAUTH_OIDC_ISSUER:
-                LOG.warning("OAuth2 configuration missing - cannot create auth_credentials")
-                return None
-
-            # Import kessel auth components only when needed
-            try:
-                from kessel.auth import OAuth2ClientCredentials, fetch_oidc_discovery
-            except ImportError:
-                LOG.error("kessel.auth not available - cannot create OAuth2ClientCredentials")
-                return None
-
-            # Fetch OIDC discovery information to get token endpoint
-            try:
-                LOG.info(f"Fetching OIDC discovery from: {KESSEL_OAUTH_OIDC_ISSUER}")
-                discovery = fetch_oidc_discovery(KESSEL_OAUTH_OIDC_ISSUER)
-                token_endpoint = discovery.token_endpoint
-
-                if not token_endpoint:
-                    LOG.error("No token_endpoint found in OIDC discovery response")
-                    return None
-
-                LOG.info(f"Discovered token endpoint: {token_endpoint}")
-
-            except Exception as discovery_err:
-                LOG.error(f"Failed to fetch OIDC discovery: {discovery_err}")
-                return None
-
-            # Create OAuth2ClientCredentials with discovered token endpoint
-            auth_credentials = OAuth2ClientCredentials(
-                client_id=KESSEL_OAUTH_CLIENT_ID,
-                client_secret=KESSEL_OAUTH_CLIENT_SECRET,
-                token_endpoint=token_endpoint,
-            )
-
-            LOG.info("OAuth2ClientCredentials created successfully for RBAC API using OIDC discovery")
-            return auth_credentials
-
-        except Exception as err:
-            LOG.error(f"Error creating OAuth2ClientCredentials: {err}")
-            return None
-
     def default_workspace(self):
         """
         Fetches the default workspace with name and ID using RBAC API.
@@ -151,26 +101,21 @@ class KesselClient:
         :return: Dict with workspace name and id, or None if no workspace found
         """
         try:
-            # Validate that org_id is available for RBAC API call
             if not self.org_id:
                 LOG.error("org_id is required for RBAC API call but not provided")
                 return None
 
-            # Get OAuth2ClientCredentials using helper method
-            auth_credentials = self._get_auth_credentials()
+            auth_credentials = create_kessel_oauth2_credentials()
             if not auth_credentials:
                 LOG.error("No OAuth2ClientCredentials available for RBAC API call")
                 return None
 
-            # Build the RBAC workspaces URL with type=default filter
             rbac_workspaces_url = urljoin(RBAC_SVC_URL, "/api/rbac/v2/workspaces/?type=default")
 
             LOG.info(f"Fetching default workspace from RBAC API: {rbac_workspaces_url}")
 
-            # Get access token from OAuth2ClientCredentials
             try:
                 access_token = auth_credentials.get_token()
-                # Include both authorization token and org_id header as required by RBAC middleware
                 headers = {
                     "authorization": f"Bearer {access_token}",
                     "x-rh-rbac-org-id": str(self.org_id)
@@ -179,7 +124,6 @@ class KesselClient:
                 LOG.error(f"Failed to get access token from OAuth2ClientCredentials: {token_err}")
                 return None
 
-            # Make the HTTP request to RBAC API with OAuth2 authentication and org_id header
             response = requests.get(
                 rbac_workspaces_url,
                 headers=headers,
@@ -187,19 +131,17 @@ class KesselClient:
                 timeout=30
             )
 
-            # Check if request was successful
             if response.status_code == requests.codes.ok:
                 rbac_data = response.json()
 
-                # Parse the RBAC response to extract workspace details
                 workspaces = rbac_data.get('data', [])
 
                 if workspaces:
-                    # Get the default workspace (should be only one)
-                    default_workspace = workspaces[0]
 
-                    workspace_name = default_workspace.get('name', 'Default Workspace')
-                    workspace_id = default_workspace.get('id', '')
+                    default_ws = workspaces[0]
+
+                    workspace_name = default_ws.get('name', 'Default Workspace')
+                    workspace_id = default_ws.get('id', '')
 
                     LOG.info(f"Found default workspace: {workspace_name} (ID: {workspace_id})")
                     return Resource.workspace(workspace_id, workspace_name)
