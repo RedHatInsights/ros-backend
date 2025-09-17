@@ -1,6 +1,6 @@
 import json
 from base64 import b64decode
-from ros.lib.config import KESSEL_SVC_URL
+from ros.lib.config import KESSEL_URL
 from ros.lib.config import get_logger
 
 from ros.lib.kessel.kessel_client import KesselClient
@@ -20,7 +20,7 @@ def query_kessel(auth_key):
     org_id = token.get("identity", {}).get("org_id")
 
     # Initialize KesselClient with org_id for workspace-based authentication
-    client = KesselClient(KESSEL_SVC_URL, org_id=org_id)
+    client = KesselClient(KESSEL_URL, org_id=org_id)
 
     ros_read_analysis = client.default_workspace_check("ros_read_analysis", Resource.principal(user_id))
 
