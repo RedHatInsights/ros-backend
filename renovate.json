@@ -5,8 +5,10 @@
     "schedule": [
         "on Monday after 3am and before 10am"
     ],
-    "baseBranches": ["main"],
+    "baseBranchPatterns": [
+        "main"
+    ],
     "ignorePaths": [
-      ".pre-commit-config.yaml"
+        ".pre-commit-config.yaml"
     ]
 }
