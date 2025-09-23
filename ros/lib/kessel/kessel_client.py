@@ -13,10 +13,9 @@ from kessel.inventory.v1beta2 import (
 )
 
 from ros.lib.kessel.dataclasses_and_enum import ObjectType, Resource, UserAllowed
-from ros.lib.kessel.singleton_grpc import get_kessel_stub
+from ros.lib.kessel.kessel_shared import get_kessel_stub, get_cached_kessel_auth_credentials
 from ros.lib.config import (
-    get_logger, RBAC_SVC_URL, TLS_CA_PATH,
-    create_kessel_oauth2_credentials
+    get_logger, RBAC_SVC_URL, TLS_CA_PATH
 )
 
 
@@ -105,7 +104,7 @@ class KesselClient:
                 LOG.error("org_id is required for RBAC API call but not provided")
                 return None
 
-            auth_credentials = create_kessel_oauth2_credentials()
+            auth_credentials = get_cached_kessel_auth_credentials()
             if not auth_credentials:
                 LOG.error("No OAuth2ClientCredentials available for RBAC API call")
                 return None

@@ -7,6 +7,22 @@ LOG = get_logger(__name__)
 # Singleton storage
 _GRPC_CHANNEL = None
 _GRPC_STUB = None
+_AUTH_CREDENTIALS = None
+
+
+def get_cached_kessel_auth_credentials():
+    """
+    Get or create cached OAuth2 credentials to avoid expensive OIDC discovery calls.
+    This is a shared cache used by both the gRPC singleton and KesselClient instances.
+    Returns:
+        OAuth2ClientCredentials object or None if creation fails
+    """
+    global _AUTH_CREDENTIALS
+    if _AUTH_CREDENTIALS is None:
+        from ros.lib.config import create_kessel_oauth2_credentials
+        LOG.debug("Creating shared OAuth2 credentials cache (first time)")
+        _AUTH_CREDENTIALS = create_kessel_oauth2_credentials()
+    return _AUTH_CREDENTIALS
 
 
 def get_kessel_stub(host):
@@ -27,8 +43,7 @@ def get_kessel_stub(host):
                 KESSEL_AUTH_CLIENT_ID,
                 KESSEL_AUTH_CLIENT_SECRET,
                 KESSEL_AUTH_OIDC_ISSUER,
-                KESSEL_INSECURE,
-                create_kessel_oauth2_credentials
+                KESSEL_INSECURE
             )
 
             if KESSEL_AUTH_CLIENT_ID and KESSEL_AUTH_CLIENT_SECRET and KESSEL_AUTH_OIDC_ISSUER:
@@ -37,8 +52,8 @@ def get_kessel_stub(host):
 
                     LOG.debug("Creating OAuth2 authenticated Kessel connection")
 
-                    # Create OAuth2 client credentials using shared function
-                    auth_credentials = create_kessel_oauth2_credentials()
+                    # Create OAuth2 client credentials using shared cache
+                    auth_credentials = get_cached_kessel_auth_credentials()
                     if not auth_credentials:
                         raise Exception("Failed to create OAuth2 credentials")
 
