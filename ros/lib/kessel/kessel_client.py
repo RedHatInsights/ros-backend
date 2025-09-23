@@ -17,6 +17,7 @@ from ros.lib.kessel.kessel_shared import get_kessel_stub, get_cached_kessel_auth
 from ros.lib.config import (
     get_logger, RBAC_SVC_URL, TLS_CA_PATH
 )
+from ros.extensions import cache
 
 
 LOG = get_logger(__name__)
@@ -90,6 +91,7 @@ class KesselClient:
     def default_workspace(self):
         """
         Fetches the default workspace with name and ID using RBAC API.
+        Uses Redis caching to avoid repeated API calls for the same organization.
         Uses the RBAC v2 workspaces endpoint with type=default filter.
         Since there is only one default workspace per organization, this method returns
         a single workspace dictionary or None.
@@ -103,6 +105,14 @@ class KesselClient:
             if not self.org_id:
                 LOG.error("org_id is required for RBAC API call but not provided")
                 return None
+
+            # Check cache first
+            cache_key = f"default_workspace_{self.org_id}"
+            cached_workspace = cache.get(cache_key)
+            if cached_workspace:
+                LOG.debug(f"Using cached default workspace for org_id: {self.org_id}")
+                # Cached data should contain workspace_id and workspace_name
+                return Resource.workspace(cached_workspace['workspace_id'], cached_workspace['workspace_name'])
 
             auth_credentials = get_cached_kessel_auth_credentials()
             if not auth_credentials:
@@ -142,7 +152,15 @@ class KesselClient:
                     workspace_name = default_ws.get('name', 'Default Workspace')
                     workspace_id = default_ws.get('id', '')
 
-                    LOG.info(f"Found default workspace: {workspace_name} (ID: {workspace_id})")
+                    # Cache the workspace details for future use
+                    # Use a longer TTL since default workspace details rarely change
+                    workspace_cache_data = {
+                        'workspace_id': workspace_id,
+                        'workspace_name': workspace_name
+                    }
+                    cache.set(cache_key, workspace_cache_data, timeout=14400)  # 4 hours TTL
+
+                    LOG.debug(f"Found and cached default workspace: {workspace_name} (ID: {workspace_id})")
                     return Resource.workspace(workspace_id, workspace_name)
                 else:
                     LOG.warning("No default workspace found in RBAC API response")
@@ -163,7 +181,7 @@ class KesselClient:
             return None
 
     def default_workspace_check(self, relation: str, subject: Resource) -> UserAllowed:
-        return self.check(self.default_workspace(self))
+        return self.check(self.default_workspace(), relation, subject)
 
     def check(self, resource: Resource, relation: str, subject: Resource) -> UserAllowed:
         request = check_request_pb2.CheckRequest(
