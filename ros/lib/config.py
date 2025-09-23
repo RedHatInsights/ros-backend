@@ -187,7 +187,7 @@ def create_kessel_oauth2_credentials():
     """
     Create OAuth2ClientCredentials for Kessel authentication.
     This function handles OIDC discovery and creates the auth credentials
-    that can be reused by both singleton_grpc.py and kessel_client.py.
+    that can be reused by both kessel_shared.py and kessel_client.py.
 
     Returns:
         OAuth2ClientCredentials object or None if configuration is missing or creation fails
