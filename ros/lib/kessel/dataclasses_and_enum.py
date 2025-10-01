@@ -43,10 +43,11 @@ class Resource(ObjectType):
         )
 
     @staticmethod
-    def workspace(resource_id: str):
+    def workspace(resource_id: str, resource_name: str):
         return Resource(
             resource_id=resource_id,
             resource_type="workspace",
+            resource_name=resource_name,
             reporter_type="rbac"
         )
 

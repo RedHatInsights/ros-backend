@@ -76,7 +76,7 @@ objects:
             value: ${BYPASS_UNLEASH}
           - name: ENABLE_KESSEL
             value: ${KESSEL_ENABLED}
-          - name: KESSEL_SVC_URL
+          - name: KESSEL_URL
             value: ${KESSEL_URL}
           - name: KESSEL_AUTH_ENABLED
             value: ${KESSEL_AUTH_ENABLED}
@@ -91,7 +91,7 @@ objects:
                 name: service-account-for-ros
                 key: client-id
                 optional: true
-          - name: CM_KESSEL_AUTH_CLIENT_SECRET
+          - name: KESSEL_AUTH_CLIENT_SECRET
             valueFrom:
               secretKeyRef:
                 name: service-account-for-ros
@@ -150,7 +150,7 @@ objects:
             value: ${BYPASS_UNLEASH}
           - name: ENABLE_KESSEL
             value: ${KESSEL_ENABLED}
-          - name: KESSEL_SVC_URL
+          - name: KESSEL_URL
             value: ${KESSEL_URL}
           - name: KESSEL_AUTH_ENABLED
             value: ${KESSEL_AUTH_ENABLED}
@@ -165,7 +165,7 @@ objects:
                 name: service-account-for-ros
                 key: client-id
                 optional: true
-          - name: CM_KESSEL_AUTH_CLIENT_SECRET
+          - name: KESSEL_AUTH_CLIENT_SECRET
             valueFrom:
               secretKeyRef:
                 name: service-account-for-ros
@@ -225,7 +225,7 @@ objects:
             value: ${BYPASS_UNLEASH}
           - name: ENABLE_KESSEL
             value: ${KESSEL_ENABLED}
-          - name: KESSEL_SVC_URL
+          - name: KESSEL_URL
             value: ${KESSEL_URL}
           - name: KESSEL_AUTH_ENABLED
             value: ${KESSEL_AUTH_ENABLED}
@@ -240,7 +240,7 @@ objects:
                 name: service-account-for-ros
                 key: client-id
                 optional: true
-          - name: CM_KESSEL_AUTH_CLIENT_SECRET
+          - name: KESSEL_AUTH_CLIENT_SECRET
             valueFrom:
               secretKeyRef:
                 name: service-account-for-ros
@@ -303,7 +303,7 @@ objects:
             value: ${BYPASS_UNLEASH}
           - name: ENABLE_KESSEL
             value: ${KESSEL_ENABLED}
-          - name: KESSEL_SVC_URL
+          - name: KESSEL_URL
             value: ${KESSEL_URL}
           - name: KESSEL_AUTH_ENABLED
             value: ${KESSEL_AUTH_ENABLED}
@@ -318,7 +318,7 @@ objects:
                 name: service-account-for-ros
                 key: client-id
                 optional: true
-          - name: CM_KESSEL_AUTH_CLIENT_SECRET
+          - name: KESSEL_AUTH_CLIENT_SECRET
             valueFrom:
               secretKeyRef:
                 name: service-account-for-ros
@@ -451,9 +451,14 @@ parameters:
   value: kessel-inventory-api:9000
 - name: KESSEL_AUTH_ENABLED
   value: "false"
+- name: KESSEL_AUTH_CLIENT_ID
+  value: ""
+- name: KESSEL_AUTH_CLIENT_SECRET
+  value: ""
 - name: KESSEL_AUTH_OIDC_ISSUER
+  value: ""
 - name: KESSEL_INSECURE
-  value: "true"
+  value: "false"
 
 # Feature flags
 - description: Unleash secret name

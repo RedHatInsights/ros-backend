@@ -65,8 +65,10 @@ if CLOWDER_ENABLED:
         if endpoint.app == "rbac":
             RBAC_SVC_URL = f"{build_endpoint_url(endpoint)}"
             break
-        # Todo: Load Kessel app from clowdapp
-    KESSEL_SVC_URL = os.getenv("KESSEL_URL", default="kessel-inventory-api:9000")
+    # Todo: Load Kessel app from clowdapp
+    KESSEL_URL = os.getenv("KESSEL_URL", default="kessel-inventory-api:9000")
+    # Kessel OAuth 2.0 Authentication
+
     CW_ENABLED = True if LoadedConfig.logging.cloudwatch else False  # CloudWatch/Kibana Logging
     if CW_ENABLED is True:
         # Available only in k8s namespace, through an app-interface automation
@@ -109,7 +111,7 @@ else:
     RBAC_SVC_URL = os.getenv("RBAC_SVC_URL", f"http://{RBAC_HOST}:{RBAC_PORT}/")
     KESSEL_HOST = os.getenv("KESSEL_HOST", "localhost")
     KESSEL_PORT = os.getenv("KESSEL_PORT", "9081")
-    KESSEL_SVC_URL = os.getenv("KESSEL_SVC_URL", f"{KESSEL_HOST}:{KESSEL_PORT}")
+    KESSEL_URL = os.getenv("KESSEL_URL", f"{KESSEL_HOST}:{KESSEL_PORT}")
     NOTIFICATIONS_TOPIC = os.getenv("NOTIFICATIONS_TOPIC", "platform.notifications.ingress")
     ROS_EVENTS_TOPIC = os.getenv("ROS_EVENTS_TOPIC", "ros.events")
     TLS_CA_PATH = os.getenv("TLS_CA_PATH", None)
@@ -155,6 +157,14 @@ CACHE_KEYWORD_FOR_DELETED_SYSTEM = '_del_'
 POLL_TIMEOUT_SECS = 1.0
 
 
+KESSEL_ENABLED = str_to_bool(os.getenv("KESSEL_ENABLED", "False"))
+KESSEL_AUTH_ENABLED = str_to_bool(os.getenv("KESSEL_AUTH_ENABLED", "False"))
+KESSEL_AUTH_CLIENT_ID = os.getenv("KESSEL_AUTH_CLIENT_ID", "")
+KESSEL_AUTH_CLIENT_SECRET = os.getenv("KESSEL_AUTH_CLIENT_SECRET", "")
+KESSEL_AUTH_OIDC_ISSUER = os.getenv("KESSEL_AUTH_OIDC_ISSUER", "")
+KESSEL_INSECURE = str_to_bool(os.getenv("KESSEL_INSECURE", "True"))
+
+
 def kafka_auth_config(connection_object=None):
     if connection_object is None:
         connection_object = {}
@@ -171,3 +181,52 @@ def kafka_auth_config(connection_object=None):
                 "sasl.password": KAFKA_BROKER.sasl.password,
             })
     return connection_object
+
+
+def create_kessel_oauth2_credentials():
+    """
+    Create OAuth2ClientCredentials for Kessel authentication.
+    This function handles OIDC discovery and creates the auth credentials
+    that can be reused by both kessel_shared.py and kessel_client.py.
+
+    Returns:
+        OAuth2ClientCredentials object or None if configuration is missing or creation fails
+    """
+    try:
+        if not KESSEL_AUTH_CLIENT_ID or not KESSEL_AUTH_CLIENT_SECRET or not KESSEL_AUTH_OIDC_ISSUER:
+            LOG.warning("OAuth2 configuration missing - cannot create auth credentials")
+            return None
+
+        try:
+            from kessel.auth import OAuth2ClientCredentials, fetch_oidc_discovery
+        except ImportError:
+            LOG.error("kessel.auth not available - cannot create OAuth2ClientCredentials")
+            return None
+
+        try:
+            LOG.info(f"Fetching OIDC discovery from: {KESSEL_AUTH_OIDC_ISSUER}")
+            discovery = fetch_oidc_discovery(KESSEL_AUTH_OIDC_ISSUER)
+            token_endpoint = discovery.token_endpoint
+
+            if not token_endpoint:
+                LOG.error("No token_endpoint found in OIDC discovery response")
+                return None
+
+            LOG.info(f"Discovered token endpoint: {token_endpoint}")
+
+        except Exception as discovery_err:
+            LOG.error(f"Failed to fetch OIDC discovery: {discovery_err}")
+            return None
+
+        auth_credentials = OAuth2ClientCredentials(
+            client_id=KESSEL_AUTH_CLIENT_ID,
+            client_secret=KESSEL_AUTH_CLIENT_SECRET,
+            token_endpoint=token_endpoint,
+        )
+
+        LOG.info("OAuth2ClientCredentials created successfully using OIDC discovery")
+        return auth_credentials
+
+    except Exception as err:
+        LOG.error(f"Error creating OAuth2ClientCredentials: {err}")
+        return None
