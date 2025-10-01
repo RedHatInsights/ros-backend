@@ -16,8 +16,26 @@ def query_kessel(auth_key):
         LOG.error("Unable to decode the auth_key")
         return {"ros_can_read": UserAllowed.FALSE, "host_groups": set()}
 
-    user_id = token.get("identity", {}).get("user", {}).get("user_id")
-    org_id = token.get("identity", {}).get("org_id")
+    identity = token.get("identity", {})
+    user_id = None
+    identity_type = identity.get('type')
+
+    if identity_type == 'ServiceAccount':
+        user_id = identity.get("service_account", {}).get("user_id")
+    elif identity_type == 'User':
+        user_id = identity.get("user", {}).get("user_id")
+    else:
+        LOG.error(f"Unsupported identity type: {identity_type}")
+        return {"ros_can_read": UserAllowed.FALSE, "host_groups": set()}
+
+    if not user_id:
+        LOG.error("user_id not found in identity")
+        return {"ros_can_read": UserAllowed.FALSE, "host_groups": set()}
+
+    org_id = identity.get("org_id")
+    if not org_id:
+        LOG.error("org_id not found in identity")
+        return {"ros_can_read": UserAllowed.FALSE, "host_groups": set()}
 
     # Initialize KesselClient with org_id for workspace-based authentication
     client = KesselClient(KESSEL_URL, org_id=org_id)
