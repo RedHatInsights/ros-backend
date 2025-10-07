@@ -10,6 +10,7 @@ from ros.lib.config import (
     GROUP_ID_SUGGESTIONS_ENGINE,
     POLL_TIMEOUT_SECS
 )
+from confluent_kafka import KafkaException
 from ros.lib import consume
 from ros.lib.app import app
 from ros.extensions import db
@@ -68,6 +69,10 @@ class SystemEraser:
                 if message is None:
                     continue
 
+                if message.error():
+                    logging.error(f"{self.service} - Consumer error: {message.error()}")
+                    raise KafkaException(message.error())
+
                 try:
                     payload = json.loads(message.value().decode('utf-8'))
                     event_type = payload.get('type')
@@ -75,8 +80,7 @@ class SystemEraser:
                     if event_type != 'delete':
                         continue
 
-                    host = payload.get('host')
-                    host_id = host.get('id')
+                    host_id = payload.get('id')
 
                     logging.debug(
                         f"{self.service} - Received a message for system with inventory_id {host_id}"
@@ -89,6 +93,8 @@ class SystemEraser:
                     logging.error(f"{self.service} - {self.event} - Failed to decode message: {error}")
                 except Exception as error:
                     logging.error(f"{self.service} - {self.event} - Error processing message: {error}")
+                finally:
+                    self.consumer.commit()
 
         except Exception as error:
             logging.error(f"{self.service} - {self.event} - error: {error}")
