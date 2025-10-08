@@ -21,7 +21,7 @@ def get_cached_kessel_auth_credentials():
     global _AUTH_CREDENTIALS
     if _AUTH_CREDENTIALS is None:
         from ros.lib.config import create_kessel_oauth2_credentials
-        LOG.debug("Creating shared OAuth2 credentials cache (first time)")
+        LOG.info("Creating shared OAuth2 credentials cache (first time)")
         _AUTH_CREDENTIALS = create_kessel_oauth2_credentials()
     return _AUTH_CREDENTIALS
 
@@ -49,7 +49,7 @@ def get_kessel_stub(host):
                 raise Exception("Failed to create OAuth2 credentials")
 
             # Create authenticated stub and channel using ClientBuilder
-            LOG.debug(f"Creating authenticated Kessel client for {host}")
+            LOG.info(f"Creating authenticated Kessel client for {host}")
 
             if KESSEL_INSECURE:
                 # Use local channel credentials for insecure connections

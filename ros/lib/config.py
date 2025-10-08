@@ -193,9 +193,12 @@ def create_kessel_oauth2_credentials():
         OAuth2ClientCredentials object or None if configuration is missing or creation fails
     """
     try:
-        if not KESSEL_AUTH_CLIENT_ID or not KESSEL_AUTH_CLIENT_SECRET or not KESSEL_AUTH_OIDC_ISSUER:
-            LOG.warning("OAuth2 configuration missing - cannot create auth credentials")
-            return None
+        # if not KESSEL_AUTH_CLIENT_ID or not KESSEL_AUTH_CLIENT_SECRET or not KESSEL_AUTH_OIDC_ISSUER:
+        #     LOG.warning("OAuth2 configuration missing - cannot create auth credentials")
+        #     return None
+
+        LOG.info(f"KESSEL_AUTH_CLIENT_ID : {KESSEL_AUTH_CLIENT_ID} KESSEL_AUTH_CLIENT_SECRET:\
+            {KESSEL_AUTH_CLIENT_SECRET} KESSEL_AUTH_OIDC_ISSUER: {KESSEL_AUTH_OIDC_ISSUER}")
 
         try:
             from kessel.auth import OAuth2ClientCredentials, fetch_oidc_discovery

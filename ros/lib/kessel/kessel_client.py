@@ -110,7 +110,7 @@ class KesselClient:
             cache_key = f"default_workspace_{self.org_id}"
             cached_workspace = cache.get(cache_key)
             if cached_workspace:
-                LOG.debug(f"Using cached default workspace for org_id: {self.org_id}")
+                LOG.info(f"Using cached default workspace for org_id: {self.org_id}")
                 # Cached data should contain workspace_id and workspace_name
                 return Resource.workspace(cached_workspace['workspace_id'], cached_workspace['workspace_name'])
 
@@ -160,7 +160,7 @@ class KesselClient:
                     }
                     cache.set(cache_key, workspace_cache_data, timeout=14400)  # 4 hours TTL
 
-                    LOG.debug(f"Found and cached default workspace: {workspace_name} (ID: {workspace_id})")
+                    LOG.info(f"Found and cached default workspace: {workspace_name} (ID: {workspace_id})")
                     return Resource.workspace(workspace_id, workspace_name)
                 else:
                     LOG.warning("No default workspace found in RBAC API response")
