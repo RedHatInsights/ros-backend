@@ -81,7 +81,7 @@ objects:
           - name: KESSEL_AUTH_ENABLED
             value: ${KESSEL_AUTH_ENABLED}
           - name: KESSEL_AUTH_OIDC_ISSUER
-            value: ${KESSEL_AUTH_OIDC_ISSUER}/protocol/openid-connect/token
+            value: ${KESSEL_AUTH_OIDC_ISSUER}
           - name: KESSEL_INSECURE
             value: ${KESSEL_INSECURE}
           - name: KESSEL_AUTH_CLIENT_ID
@@ -154,7 +154,7 @@ objects:
           - name: KESSEL_AUTH_ENABLED
             value: ${KESSEL_AUTH_ENABLED}
           - name: KESSEL_AUTH_OIDC_ISSUER
-            value: ${KESSEL_AUTH_OIDC_ISSUER}/protocol/openid-connect/token
+            value: ${KESSEL_AUTH_OIDC_ISSUER}
           - name: KESSEL_INSECURE
             value: ${KESSEL_INSECURE}
           - name: KESSEL_AUTH_CLIENT_ID
@@ -228,7 +228,7 @@ objects:
           - name: KESSEL_AUTH_ENABLED
             value: ${KESSEL_AUTH_ENABLED}
           - name: KESSEL_AUTH_OIDC_ISSUER
-            value: ${KESSEL_AUTH_OIDC_ISSUER}/protocol/openid-connect/token
+            value: ${KESSEL_AUTH_OIDC_ISSUER}
           - name: KESSEL_INSECURE
             value: ${KESSEL_INSECURE}
           - name: KESSEL_AUTH_CLIENT_ID
@@ -305,7 +305,7 @@ objects:
           - name: KESSEL_AUTH_ENABLED
             value: ${KESSEL_AUTH_ENABLED}
           - name: KESSEL_AUTH_OIDC_ISSUER
-            value: ${KESSEL_AUTH_OIDC_ISSUER}/protocol/openid-connect/token
+            value: ${KESSEL_AUTH_OIDC_ISSUER}
           - name: KESSEL_INSECURE
             value: ${KESSEL_INSECURE}
           - name: KESSEL_AUTH_CLIENT_ID
@@ -447,10 +447,6 @@ parameters:
   value: kessel-inventory-api:9000
 - name: KESSEL_AUTH_ENABLED
   value: "false"
-- name: KESSEL_AUTH_CLIENT_ID
-  value: ""
-- name: KESSEL_AUTH_CLIENT_SECRET
-  value: ""
 - name: KESSEL_AUTH_OIDC_ISSUER
   value: ""
 - name: KESSEL_INSECURE
