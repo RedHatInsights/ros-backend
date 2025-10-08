@@ -7,6 +7,7 @@ help:
 	@echo "get-all-suggested-instance-types        get all suggested instance types"
 	@echo "produce-no-pcp-message			produce no pcp message to the HBI topic"
 	@echo "listen-report-processor-event	        listens to ros.events topic"
+	@echo "produce-delete-event                    send delete event message to test system eraser"
 
 metadata={"branch_info": {"remote_branch": -1, "remote_leaf": -1}, "bios_uuid": "25d6ad97-60fa-4d3e-b2cc-4aa437c28f71", "ip_addresses": ["10.74.255.52", "2620:52:0:4af8:21a:4aff:fe00:a8a"], "fqdn": "vm255-52.gsslab.pnq2.redhat.com", "mac_addresses": ["00:1a:4a:00:0a:8a", "00:00:00:00:00:00"], "satellite_id": -1, "subscription_manager_id": "7846d4fa-6fcc-4b84-aa13-5f12e588ecca", "insights_id": "1d42f242-3828-4a00-8009-c67656c86a51", "machine_id": "25d6ad97-60fa-4d3e-b2cc-4aa437c28f71"}
 identity={"identity": {"account_number": "0000001", "org_id": "000001", "auth_type": "jwt-auth", "type": "User","user": {"username": "tuser@redhat.com","email": "tuser@redhat.com","first_name": "test","last_name": "user","is_active": true,"is_org_admin": false, "locale": "en_US"}}}
@@ -34,3 +35,6 @@ produce-api-message:
 
 listen-report-processor-event:
 	kcat -b localhost:29092 -t ros.events -C -o end
+
+produce-delete-event:
+	kcat -b localhost:9092 -t platform.inventory.events -P sample-files/delete_system_message.json
