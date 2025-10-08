@@ -57,6 +57,7 @@ def get_kessel_stub(host):
                 _GRPC_STUB, _GRPC_CHANNEL = (
                     ClientBuilder(host)
                     .insecure()
+                    .build()
                 )
             else:
                 # Use default secure credentials for TLS connections
