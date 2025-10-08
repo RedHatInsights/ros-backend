@@ -84,7 +84,6 @@ objects:
             value: ${KESSEL_AUTH_OIDC_ISSUER}/protocol/openid-connect/token
           - name: KESSEL_INSECURE
             value: ${KESSEL_INSECURE}
-          # This is not done yet, however config can go
           - name: KESSEL_AUTH_CLIENT_ID
             valueFrom:
               secretKeyRef:
@@ -158,7 +157,6 @@ objects:
             value: ${KESSEL_AUTH_OIDC_ISSUER}/protocol/openid-connect/token
           - name: KESSEL_INSECURE
             value: ${KESSEL_INSECURE}
-          # This is not done yet, however config can go
           - name: KESSEL_AUTH_CLIENT_ID
             valueFrom:
               secretKeyRef:
@@ -233,7 +231,6 @@ objects:
             value: ${KESSEL_AUTH_OIDC_ISSUER}/protocol/openid-connect/token
           - name: KESSEL_INSECURE
             value: ${KESSEL_INSECURE}
-          # This is not done yet, however config can go
           - name: KESSEL_AUTH_CLIENT_ID
             valueFrom:
               secretKeyRef:
@@ -311,7 +308,6 @@ objects:
             value: ${KESSEL_AUTH_OIDC_ISSUER}/protocol/openid-connect/token
           - name: KESSEL_INSECURE
             value: ${KESSEL_INSECURE}
-          # This is not done yet, however config can go
           - name: KESSEL_AUTH_CLIENT_ID
             valueFrom:
               secretKeyRef:
@@ -458,7 +454,7 @@ parameters:
 - name: KESSEL_AUTH_OIDC_ISSUER
   value: ""
 - name: KESSEL_INSECURE
-  value: "false"
+  value: "true"
 
 # Feature flags
 - description: Unleash secret name
