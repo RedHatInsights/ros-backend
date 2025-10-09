@@ -25,6 +25,7 @@ class ObjectType:
 @dataclass
 class Resource(ObjectType):
     resource_id: str
+    resource_name: str = None
 
     @staticmethod
     def principal(resource_id: str):
@@ -32,6 +33,7 @@ class Resource(ObjectType):
             resource_id=f"redhat/{resource_id}",
             resource_type="principal",
             reporter_type="rbac",
+            resource_name=None
         )
 
     @staticmethod
@@ -40,6 +42,7 @@ class Resource(ObjectType):
             resource_id=resource_id,
             resource_type="role",
             reporter_type="rbac",
+            resource_name=None
         )
 
     @staticmethod
