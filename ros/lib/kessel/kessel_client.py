@@ -124,7 +124,8 @@ class KesselClient:
             LOG.info(f"Fetching default workspace from RBAC API: {rbac_workspaces_url}")
 
             try:
-                access_token = auth_credentials.get_token()
+                token_result = auth_credentials.get_token()
+                access_token = token_result[0]
                 headers = {
                     "authorization": f"Bearer {access_token}",
                     "x-rh-rbac-org-id": str(self.org_id)
