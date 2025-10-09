@@ -160,13 +160,13 @@ objects:
           - name: KESSEL_AUTH_CLIENT_ID
             valueFrom:
               secretKeyRef:
-                name: service-account-for-ros
+                name: service-account-for-kessel
                 key: client-id
                 optional: true
           - name: KESSEL_AUTH_CLIENT_SECRET
             valueFrom:
               secretKeyRef:
-                name: service-account-for-ros
+                name: service-account-for-kessel
                 key: client-secret
                 optional: true
 
@@ -234,13 +234,13 @@ objects:
           - name: KESSEL_AUTH_CLIENT_ID
             valueFrom:
               secretKeyRef:
-                name: service-account-for-ros
+                name: service-account-for-kessel
                 key: client-id
                 optional: true
           - name: KESSEL_AUTH_CLIENT_SECRET
             valueFrom:
               secretKeyRef:
-                name: service-account-for-ros
+                name: service-account-for-kessel
                 key: client-secret
                 optional: true
 
@@ -311,13 +311,13 @@ objects:
           - name: KESSEL_AUTH_CLIENT_ID
             valueFrom:
               secretKeyRef:
-                name: service-account-for-ros
+                name: service-account-for-kessel
                 key: client-id
                 optional: true
           - name: KESSEL_AUTH_CLIENT_SECRET
             valueFrom:
               secretKeyRef:
-                name: service-account-for-ros
+                name: service-account-for-kessel
                 key: client-secret
                 optional: true
 
