@@ -1,0 +1,14 @@
+{
+  "type": "delete",
+  "id": "bdc9eb93-b636-4663-a9fe-47db34cb5ca4",
+  "timestamp": "2025-10-01T12:00:00.000000+00:00",
+  "account": "0000001", 
+  "org_id": "000001",
+  "request_id": "delete-test-123",
+  "platform_metadata": {
+    "b64_identity": ""
+  },
+  "metadata": {
+    "request_id": "delete-test-123"
+  }
+}
