@@ -75,8 +75,7 @@ class SystemEraser:
                     if event_type != 'delete':
                         continue
 
-                    host = payload.get('host')
-                    host_id = host.get('id')
+                    host_id = payload.get('id')
 
                     logging.debug(
                         f"{self.service} - Received a message for system with inventory_id {host_id}"
@@ -89,6 +88,8 @@ class SystemEraser:
                     logging.error(f"{self.service} - {self.event} - Failed to decode message: {error}")
                 except Exception as error:
                     logging.error(f"{self.service} - {self.event} - Error processing message: {error}")
+                finally:
+                    self.consumer.commit()
 
         except Exception as error:
             logging.error(f"{self.service} - {self.event} - error: {error}")

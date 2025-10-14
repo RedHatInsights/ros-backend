@@ -74,7 +74,7 @@ def test_delete_system_exception(mock_app_context, mock_db_session, mock_consume
 def test_run_processes_delete_message(mock_app_context, mock_db_session, mock_consumer):
     eraser = SystemEraser()
 
-    payload = {"type": "delete", "host": {"id": "host-999"}}
+    payload = {"type": "delete", "id": "host-999"}
     message = MagicMock()
     message.value.return_value = json.dumps(payload).encode("utf-8")
 
@@ -90,7 +90,7 @@ def test_run_processes_delete_message(mock_app_context, mock_db_session, mock_co
 def test_run_ignores_non_delete_message(mock_app_context, mock_db_session, mock_consumer):
     eraser = SystemEraser()
 
-    payload = {"type": "update", "host": {"id": "host-777"}}
+    payload = {"type": "update", "id": "host-777"}
     message = MagicMock()
     message.value.return_value = json.dumps(payload).encode("utf-8")
 
