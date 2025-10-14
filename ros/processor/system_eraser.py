@@ -10,7 +10,6 @@ from ros.lib.config import (
     GROUP_ID_SUGGESTIONS_ENGINE,
     POLL_TIMEOUT_SECS
 )
-from confluent_kafka import KafkaException
 from ros.lib import consume
 from ros.lib.app import app
 from ros.extensions import db
@@ -68,10 +67,6 @@ class SystemEraser:
                 message = self.consumer.poll(timeout=POLL_TIMEOUT_SECS)
                 if message is None:
                     continue
-
-                if message.error():
-                    logging.error(f"{self.service} - Consumer error: {message.error()}")
-                    raise KafkaException(message.error())
 
                 try:
                     payload = json.loads(message.value().decode('utf-8'))

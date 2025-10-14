@@ -77,7 +77,6 @@ def test_run_processes_delete_message(mock_app_context, mock_db_session, mock_co
     payload = {"type": "delete", "id": "host-999"}
     message = MagicMock()
     message.value.return_value = json.dumps(payload).encode("utf-8")
-    message.error.return_value = None  # No error
 
     # Consumer should return the message once then None
     mock_consumer.poll.side_effect = [message, None]
@@ -94,7 +93,6 @@ def test_run_ignores_non_delete_message(mock_app_context, mock_db_session, mock_
     payload = {"type": "update", "id": "host-777"}
     message = MagicMock()
     message.value.return_value = json.dumps(payload).encode("utf-8")
-    message.error.return_value = None  # No error
 
     mock_consumer.poll.side_effect = [message, None]
 
