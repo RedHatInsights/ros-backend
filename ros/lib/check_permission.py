@@ -56,7 +56,7 @@ def check_permission(**kwargs):
         if kessel_response["host_groups"]:
             host_groups = kessel_response["host_groups"]
             setattr(request, host_group_attr, host_groups)
-            LOG.info(f"User has host groups {host_groups}")
+            LOG.info(f"Kessel Enabled - User has host groups {host_groups}")
         else:
             abort(
                 HTTPStatus.FORBIDDEN,
