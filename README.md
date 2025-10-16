@@ -3,7 +3,7 @@
 Backend for Resource Optimization Service
 
 The Red Hat Insights resource optimization service enables RHEL customers to assess and monitor their public cloud usage and optimization. The service exposes workload metrics for CPU, memory, and disk-usage and compares them to resource limits recommended by the public cloud provider.
-Currently ROS only provides suggestions for AWS RHEL instances. To enable ROS, a customer needs to perform a few prerequisite steps on targeted systems via Ansible playbook.
+Currently ROS only provides suggestions for AWS RHEL instances. To enable ROS, customers need to perform a few prerequisite steps on targeted systems via Ansible playbook.
 
 Underneath, ROS uses Performance Co-Pilot (PCP) to monitor and report workload metrics.
 
