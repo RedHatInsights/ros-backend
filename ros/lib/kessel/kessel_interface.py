@@ -42,7 +42,13 @@ def query_kessel(auth_key):
     workspaces = []
 
     try:
-        workspaces = [w.resource_id for w in client.get_resources(ObjectType.workspace(), "ros_read_analysis", Resource.principal(user_id))]
+        workspaces = [
+            w.resource_id for w in client.get_resources(
+                ObjectType.workspace(),
+                "ros_read_analysis",
+                Resource.principal(user_id)
+            )
+        ]
     except Exception as err:
         LOG.info(f"Failed to fetch the workspaces {err}")
 
