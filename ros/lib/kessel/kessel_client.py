@@ -41,7 +41,7 @@ class KesselClient:
         object_type: ObjectType,
         relation: str,
         subject: Resource,
-        limit: int = 20,
+        limit: int = 1000,
         fetch_all=True
     ):
         response = self._get_resources_internal(object_type, relation, subject, limit=limit)
