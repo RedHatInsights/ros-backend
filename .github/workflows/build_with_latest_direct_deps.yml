@@ -101,7 +101,7 @@ jobs:
         flask-caching = "*"
         flask-unleash = "*"
         tenacity = "*"
-        inventory-grpc-clients-python-kessel-project = "*"
+        kessel-sdk = "*"
         grpcio = "*"
 
         [tool.poetry.group.dev.dependencies]
