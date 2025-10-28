@@ -39,20 +39,14 @@ def query_kessel(auth_key):
 
     # Initialize KesselClient with org_id for workspace-based authentication
     client = KesselClient(KESSEL_URL, org_id=org_id)
+    workspaces = []
 
-    ros_read_analysis = client.default_workspace_check("ros_read_analysis", Resource.principal(user_id))
-
-    if ros_read_analysis is UserAllowed.TRUE:
-        try:
-            workspaces = [w.resource_id for w in client.get_resources(ObjectType.workspace(),
-                                                                      "inventory_host_view",
-                                                                      Resource.principal(user_id))]
-        except Exception as err:
-            LOG.info(f"Failed to fetch the workspaces {err}")
-    else:
-        workspaces = []
+    try:
+        workspaces = [w.resource_id for w in client.get_resources(ObjectType.workspace(), "ros_read_analysis", Resource.principal(user_id))]
+    except Exception as err:
+        LOG.info(f"Failed to fetch the workspaces {err}")
 
     return {
-        "ros_can_read": ros_read_analysis,
+        "ros_can_read": len(workspaces) > 0,
         "host_groups": set(workspaces)
     }
