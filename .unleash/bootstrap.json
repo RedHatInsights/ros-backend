@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "tokens": [
+    {
+      "projects":["ros"],
+      "type": "client",
+      "token": "ros:dev.token"
+    }
+  ],
+  "features": [
+    {
+      "name": "ros.v2",
+      "project": "ros",
+      "enabled": true,
+      "strategies": [
+        {
+          "name": "userWithId",
+          "parameters": {
+            "userIds": "000001"
+          }
+        }
+      ]
+    }
+  ]
+}
