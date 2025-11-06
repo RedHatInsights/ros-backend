@@ -39,3 +39,6 @@ listen-report-processor-event:
 produce-system-delete-event:
 	$(eval DELETE_SYSTEM_ID ?= bdc9eb93-b636-4663-a9fe-47db34cb5ca4)
 	jq -c '.id = "$(DELETE_SYSTEM_ID)"' sample-files/delete_system_message.json | kcat -b localhost:9092 -t platform.inventory.events -P
+
+get_features:
+	curl -H "Authorization: ros:dev.token" http://localhost:3063/api/client/features

@@ -154,6 +154,15 @@ services:
       - puptoo
       - kafka-create-topics
       - insights-inventory-mq
+
+  unleash-edge:
+    image: unleashorg/unleash-edge:latest
+    command: ["offline", "--tokens", "ros:dev.token", "--bootstrap-file", "/unleash/bootstrap.json"]
+    ports:
+      - "3063:3063"
+    volumes:
+      - ../.unleash/bootstrap.json:/unleash/bootstrap.json
+
   # Allows us to run the application in the form it's going to be deployed, will be needed for tests
   # ros-processor: &ros
   #   build:
