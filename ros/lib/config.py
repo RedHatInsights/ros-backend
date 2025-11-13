@@ -122,6 +122,11 @@ else:
         AWS_REGION_NAME = os.getenv("AWS_REGION_NAME", None)
         AWS_LOG_GROUP = os.getenv("AWS_LOG_GROUP", None)
 
+    # Feature flags
+    UNLEASH_CACHE_DIR = os.getenv("UNLEASH_CACHE_DIR", "/tmp/.unleashcache")
+    UNLEASH_TOKEN = os.getenv("UNLEASH_TOKEN", 'ros:dev.token')
+    UNLEASH_URL = os.getenv("UNLEASH_URL", "http://localhost:3063/api")
+
 DB_URI = f"postgresql://{DB_USER}:{DB_PASSWORD}"\
          f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 if DB_SSL_CERTPATH:
@@ -155,6 +160,7 @@ CACHE_TIMEOUT_FOR_DELETED_SYSTEM = int(
     os.getenv("CACHE_TIMEOUT_FOR_DELETED_SYSTEM", "86400"))
 CACHE_KEYWORD_FOR_DELETED_SYSTEM = '_del_'
 POLL_TIMEOUT_SECS = 1.0
+UNLEASH_ROS_V2_FLAG = 'ros.v2'
 
 
 KESSEL_ENABLED = str_to_bool(os.getenv("KESSEL_ENABLED", "False"))
