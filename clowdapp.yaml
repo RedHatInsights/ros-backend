@@ -74,8 +74,28 @@ objects:
                 optional: true
           - name: BYPASS_UNLEASH
             value: ${BYPASS_UNLEASH}
-          - name: BACKEND_VERSION
-            value: ${BACKEND_VERSION}
+          - name: ENABLE_KESSEL
+            value: ${KESSEL_ENABLED}
+          - name: KESSEL_URL
+            value: ${KESSEL_URL}
+          - name: KESSEL_AUTH_ENABLED
+            value: ${KESSEL_AUTH_ENABLED}
+          - name: KESSEL_AUTH_OIDC_ISSUER
+            value: ${KESSEL_AUTH_OIDC_ISSUER}
+          - name: KESSEL_INSECURE
+            value: ${KESSEL_INSECURE}
+          - name: KESSEL_AUTH_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: service-account-for-kessel
+                key: client-id
+                optional: true
+          - name: KESSEL_AUTH_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: service-account-for-kessel
+                key: client-secret
+                optional: true
 
     - name: inventory-events-processor
       replicas: ${{INVENTORY_PROCESSOR_REPLICA_COUNT}}
@@ -127,8 +147,29 @@ objects:
                 optional: true
           - name: BYPASS_UNLEASH
             value: ${BYPASS_UNLEASH}
-          - name: BACKEND_VERSION
-            value: ${BACKEND_VERSION}
+          - name: ENABLE_KESSEL
+            value: ${KESSEL_ENABLED}
+          - name: KESSEL_URL
+            value: ${KESSEL_URL}
+          - name: KESSEL_AUTH_ENABLED
+            value: ${KESSEL_AUTH_ENABLED}
+          - name: KESSEL_AUTH_OIDC_ISSUER
+            value: ${KESSEL_AUTH_OIDC_ISSUER}
+          - name: KESSEL_INSECURE
+            value: ${KESSEL_INSECURE}
+          - name: KESSEL_AUTH_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: service-account-for-kessel
+                key: client-id
+                optional: true
+          - name: KESSEL_AUTH_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: service-account-for-kessel
+                key: client-secret
+                optional: true
+
 
     - name: engine-result-processor
       replicas: ${{ENGINE_PROCESSOR_REPLICA_COUNT}}
@@ -180,8 +221,28 @@ objects:
                 optional: true
           - name: BYPASS_UNLEASH
             value: ${BYPASS_UNLEASH}
-          - name: BACKEND_VERSION
-            value: ${BACKEND_VERSION}
+          - name: ENABLE_KESSEL
+            value: ${KESSEL_ENABLED}
+          - name: KESSEL_URL
+            value: ${KESSEL_URL}
+          - name: KESSEL_AUTH_ENABLED
+            value: ${KESSEL_AUTH_ENABLED}
+          - name: KESSEL_AUTH_OIDC_ISSUER
+            value: ${KESSEL_AUTH_OIDC_ISSUER}
+          - name: KESSEL_INSECURE
+            value: ${KESSEL_INSECURE}
+          - name: KESSEL_AUTH_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: service-account-for-kessel
+                key: client-id
+                optional: true
+          - name: KESSEL_AUTH_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: service-account-for-kessel
+                key: client-secret
+                optional: true
 
     - name: garbage-collector-processor
       replicas: ${{GARBAGE_COLLECTOR_REPLICA_COUNT}}
@@ -237,8 +298,28 @@ objects:
                 optional: true
           - name: BYPASS_UNLEASH
             value: ${BYPASS_UNLEASH}
-          - name: BACKEND_VERSION
-            value: ${BACKEND_VERSION}
+          - name: ENABLE_KESSEL
+            value: ${KESSEL_ENABLED}
+          - name: KESSEL_URL
+            value: ${KESSEL_URL}
+          - name: KESSEL_AUTH_ENABLED
+            value: ${KESSEL_AUTH_ENABLED}
+          - name: KESSEL_AUTH_OIDC_ISSUER
+            value: ${KESSEL_AUTH_OIDC_ISSUER}
+          - name: KESSEL_INSECURE
+            value: ${KESSEL_INSECURE}
+          - name: KESSEL_AUTH_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: service-account-for-kessel
+                key: client-id
+                optional: true
+          - name: KESSEL_AUTH_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: service-account-for-kessel
+                key: client-secret
+                optional: true
 
     database:
       name: ros
@@ -250,6 +331,8 @@ objects:
       - topicName: platform.engine.results
         partitions: 1
       - topicName: platform.notifications.ingress
+        partitions: 1
+      - topicName: ros.events
         partitions: 1
     testing:
       iqePlugin: ros
@@ -358,6 +441,16 @@ parameters:
   value: "20"
 - name: DB_MAX_OVERFLOW
   value: "20"
+- name: KESSEL_ENABLED
+  value: "false"
+- name: KESSEL_URL
+  value: kessel-inventory-api:9000
+- name: KESSEL_AUTH_ENABLED
+  value: "false"
+- name: KESSEL_AUTH_OIDC_ISSUER
+  value: ""
+- name: KESSEL_INSECURE
+  value: "true"
 
 # Feature flags
 - description: Unleash secret name
@@ -365,10 +458,3 @@ parameters:
   value: bypass
 - description: Unleash API url
   name: UNLEASH_URL
-- description: disable Unleash (feature flags), defaulting to fallback values
-  name: BYPASS_UNLEASH
-  value: 'false'
-- description: control old vs new backend 
-  name: BACKEND_VERSION
-  value: 'old'
-
