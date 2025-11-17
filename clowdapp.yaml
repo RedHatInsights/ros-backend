@@ -96,6 +96,8 @@ objects:
                 name: service-account-for-kessel
                 key: client-secret
                 optional: true
+          - name: BACKEND_VERSION
+            value: ${BACKEND_VERSION}
 
     - name: inventory-events-processor
       replicas: ${{INVENTORY_PROCESSOR_REPLICA_COUNT}}
@@ -169,7 +171,8 @@ objects:
                 name: service-account-for-kessel
                 key: client-secret
                 optional: true
-
+	  - name: BACKEND_VERSION
+            value: ${BACKEND_VERSION}
 
     - name: engine-result-processor
       replicas: ${{ENGINE_PROCESSOR_REPLICA_COUNT}}
@@ -243,6 +246,8 @@ objects:
                 name: service-account-for-kessel
                 key: client-secret
                 optional: true
+          - name: BACKEND_VERSION
+            value: ${BACKEND_VERSION}
 
     - name: garbage-collector-processor
       replicas: ${{GARBAGE_COLLECTOR_REPLICA_COUNT}}
@@ -320,6 +325,8 @@ objects:
                 name: service-account-for-kessel
                 key: client-secret
                 optional: true
+	  - name: BACKEND_VERSION
+            value: ${BACKEND_VERSION}
 
     database:
       name: ros
@@ -458,3 +465,6 @@ parameters:
   value: bypass
 - description: Unleash API url
   name: UNLEASH_URL
+- description: Controls old vs new backend
+  name: BACKEND_VERSION
+  value: 'old'
