@@ -7,7 +7,7 @@ from ros.lib.config import (
     get_logger,
     METRICS_PORT,
     INVENTORY_EVENTS_TOPIC,
-    GROUP_ID_SUGGESTIONS_ENGINE,
+    GROUP_ID_SYSTEM_ERASER,
     POLL_TIMEOUT_SECS
 )
 from ros.lib import consume
@@ -21,7 +21,7 @@ logging = get_logger(__name__)
 
 class SystemEraser:
     def __init__(self):
-        self.consumer = consume.init_consumer(INVENTORY_EVENTS_TOPIC, GROUP_ID_SUGGESTIONS_ENGINE)
+        self.consumer = consume.init_consumer(INVENTORY_EVENTS_TOPIC, GROUP_ID_SYSTEM_ERASER)
         self.service = 'SYSTEM_ERASER'
         self.event = 'Delete event'
         self.running = True

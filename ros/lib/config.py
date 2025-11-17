@@ -139,6 +139,7 @@ REDIS_SCHEME = "rediss://" if REDIS_PASSWORD else "redis://"
 REDIS_URL = f"{REDIS_SCHEME}{REDIS_AUTH}{REDIS_HOST}:{REDIS_PORT}"
 GROUP_ID = os.getenv('GROUP_ID', 'resource-optimization')
 GROUP_ID_SUGGESTIONS_ENGINE = os.getenv('GROUP_ID_SUGGESTIONS_ENGINE', 'suggestions-engine-group')
+GROUP_ID_SYSTEM_ERASER = os.getenv('GROUP_ID_SYSTEM_ERASER', 'system-eraser-group')
 # The default value for PATH_PREFIX is same as under clowdapp file
 PATH_PREFIX = os.getenv("PATH_PREFIX", "/api")
 APP_NAME = os.getenv("APP_NAME", "ros")
