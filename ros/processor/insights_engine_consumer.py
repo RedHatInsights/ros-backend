@@ -10,7 +10,8 @@ from ros.lib.config import (
     METRICS_PORT,
     get_logger,
     CACHE_KEYWORD_FOR_DELETED_SYSTEM,
-    GROUP_ID
+    GROUP_ID,
+    UNLEASH_ROS_V2_FLAG
 )
 from ros.processor.process_archive import get_performance_profile
 from ros.processor.notification_event_producer import new_suggestion_event
@@ -26,6 +27,7 @@ from ros.lib.utils import (
 from ros.processor.metrics import (processor_requests_success,
                                    processor_requests_failures,
                                    kafka_failures)
+from ros.lib.unleash import is_feature_flag_enabled
 
 LOG = get_logger(__name__)
 
@@ -70,6 +72,11 @@ class InsightsEngineConsumer:
                 raise KafkaException(msg.error())
             try:
                 msg = json.loads(msg.value().decode("utf-8"))
+
+                org_id = msg["input"]["platform_metadata"].get('org_id')
+                if is_feature_flag_enabled(org_id, UNLEASH_ROS_V2_FLAG, self.prefix):
+                    continue
+
                 self.handle_msg(msg)
             except json.decoder.JSONDecodeError:
                 kafka_failures.labels(reporter=self.reporter).inc()

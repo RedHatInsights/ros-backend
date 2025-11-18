@@ -16,3 +16,15 @@ unleash_client = UnleashClient(
 
 unleash_client.initialize_client()
 logger.info(f"Unleash client initialized: {unleash_client.is_initialized}")
+
+
+def is_feature_flag_enabled(org_id, flag_name, service_name):
+    context = {"userId": org_id}
+    is_enabled = unleash_client.is_enabled(flag_name, context)
+
+    logger.debug(
+        f"{service_name} - Feature flag {flag_name} is {'enabled' if is_enabled else 'disabled'} "
+        f"for org_id {org_id}"
+    )
+
+    return is_enabled
