@@ -14,7 +14,7 @@ echo "JOB_NAME: $JOB_NAME"
 
 if [[ "$JOB_NAME" == *"ros-backend-v1-pr-tests"* ]]; then
     # Old backend testing configuration
-    export ROS_NEW_BACKEND_FLAG_ENABLED="false"
+    export ROS_BACKEND_V2_FLAG_ENABLED="false"
     export IQE_MARKER_EXPRESSION="ros_smoke and insights_ros_v1"
     export IBUTSU_SOURCE="ros-backend-v1-pr"
     echo " Configured for OLD backend testing"
@@ -22,7 +22,7 @@ if [[ "$JOB_NAME" == *"ros-backend-v1-pr-tests"* ]]; then
     echo "   - Test markers: ros_smoke and insights_ros_v1"
 elif [[ "$JOB_NAME" == *"ros-backend-v2-pr-tests"* ]]; then
     # New backend testing configuration
-    export ROS_NEW_BACKEND_FLAG_ENABLED="true"
+    export ROS_BACKEND_V2_FLAG_ENABLED="true"
     export IQE_MARKER_EXPRESSION="ros_smoke and insights_ros_v2"
     export IBUTSU_SOURCE="ros-backend-v2-pr"
     echo " Configured for NEW backend testing"
@@ -35,8 +35,8 @@ export IQE_PLUGINS="ros"
 export IQE_FILTER_EXPRESSION=""
 export IQE_CJI_TIMEOUT="30m"
 
-# CRITICAL: Pass ROS_NEW_BACKEND_FLAG_ENABLED to IQE via IQE_ENV_VARS
-export IQE_ENV_VARS="JOB_NAME=${JOB_NAME},BUILD_NUMBER=${BUILD_NUMBER},BUILD_URL=${BUILD_URL},ROS_NEW_BACKEND_FLAG_ENABLED=${ROS_NEW_BACKEND_FLAG_ENABLED}"
+# CRITICAL: Pass ROS_BACKEND_V2_FLAG_ENABLED to IQE via IQE_ENV_VARS
+export IQE_ENV_VARS="JOB_NAME=${JOB_NAME},BUILD_NUMBER=${BUILD_NUMBER},BUILD_URL=${BUILD_URL},ROS_BACKEND_V2_FLAG_ENABLED=${ROS_BACKEND_V2_FLAG_ENABLED}"
 
 echo "  Final Configuration:"
 echo "  IQE_MARKER_EXPRESSION: $IQE_MARKER_EXPRESSION"
