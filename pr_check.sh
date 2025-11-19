@@ -12,19 +12,19 @@ export DOCKERFILE="Dockerfile"
 # NEW: Dual backend testing logic based on job name
 echo "JOB_NAME: $JOB_NAME"
 
-if [[ "$JOB_NAME" == *"old-backend"* ]]; then
+if [[ "$JOB_NAME" == *"ros-backend-v1-pr-tests"* ]]; then
     # Old backend testing configuration
     export ROS_NEW_BACKEND_FLAG_ENABLED="false"
     export IQE_MARKER_EXPRESSION="ros_smoke and (common or old_backend)"
-    export IBUTSU_SOURCE="ros-old-backend-pr"
+    export IBUTSU_SOURCE="ros-backend-v1-pr"
     echo " Configured for OLD backend testing"
     echo "   - Unleash flag will be set to: FALSE"
     echo "   - Test markers: ros_smoke and (common or old_backend)"
-elif [[ "$JOB_NAME" == *"new-backend"* ]]; then
+elif [[ "$JOB_NAME" == *"ros-backend-v2-pr-tests"* ]]; then
     # New backend testing configuration
     export ROS_NEW_BACKEND_FLAG_ENABLED="true"
     export IQE_MARKER_EXPRESSION="ros_smoke and (common or new_backend)"
-    export IBUTSU_SOURCE="ros-new-backend-pr"
+    export IBUTSU_SOURCE="ros-backend-v2-pr"
     echo " Configured for NEW backend testing"
     echo "   - Unleash flag will be set to: TRUE"
     echo "   - Test markers: ros_smoke and (common or new_backend)"
