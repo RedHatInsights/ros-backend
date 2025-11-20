@@ -14,12 +14,14 @@ from ros.lib.config import (
     get_logger,
     CACHE_TIMEOUT_FOR_DELETED_SYSTEM,
     CACHE_KEYWORD_FOR_DELETED_SYSTEM,
-    GROUP_ID
+    GROUP_ID,
+    UNLEASH_ROS_V2_FLAG
 )
 from ros.lib.cw_logging import commence_cw_log_streaming, threadctx
 from ros.processor.metrics import (processor_requests_success,
                                    processor_requests_failures,
                                    kafka_failures)
+from ros.lib.unleash import is_feature_flag_enabled
 
 LOG = get_logger(__name__)
 
@@ -81,6 +83,9 @@ class InventoryEventsConsumer:
                     threadctx.request_id = metadata.get('request_id')
                 threadctx.account = account
                 threadctx.org_id = org_id
+
+                if is_feature_flag_enabled(org_id, UNLEASH_ROS_V2_FLAG, self.prefix):
+                    continue
 
                 if event_type in self.event_type_map.keys():
                     handler = self.event_type_map[event_type]
