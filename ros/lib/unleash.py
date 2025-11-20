@@ -19,7 +19,7 @@ logger.info(f"Unleash client initialized: {unleash_client.is_initialized}")
 
 
 def is_feature_flag_enabled(org_id, flag_name, service_name):
-    context = {"userId": str(org_id)}
+    context = {"orgId": str(org_id)}
     is_enabled = unleash_client.is_enabled(flag_name, context)
 
     logger.debug(
