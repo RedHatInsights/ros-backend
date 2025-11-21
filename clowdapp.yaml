@@ -170,7 +170,6 @@ objects:
                 key: client-secret
                 optional: true
 
-
     - name: engine-result-processor
       replicas: ${{ENGINE_PROCESSOR_REPLICA_COUNT}}
       podSpec:
