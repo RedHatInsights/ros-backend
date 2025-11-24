@@ -32,7 +32,7 @@ werkzeug = "<4.0.0"
 logstash_formatter = "^0.5.17"
 tenacity = "^9.0.0"
 grpcio = "^1.73.1"
-kessel-sdk = {extras = ["auth"], version = "^1.5.0"}
+kessel-sdk = {extras = ["auth"], version = "^2.0.0"}
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "*"
