@@ -8,12 +8,14 @@ from ros.lib.config import (
     METRICS_PORT,
     INVENTORY_EVENTS_TOPIC,
     GROUP_ID_SYSTEM_ERASER,
-    POLL_TIMEOUT_SECS
+    POLL_TIMEOUT_SECS,
+    UNLEASH_ROS_V2_FLAG
 )
 from ros.lib import consume
 from ros.lib.app import app
 from ros.extensions import db
 from ros.lib.models import System
+from ros.lib.unleash import is_feature_flag_enabled
 
 
 logging = get_logger(__name__)
@@ -71,6 +73,10 @@ class SystemEraser:
                 try:
                     payload = json.loads(message.value().decode('utf-8'))
                     event_type = payload.get('type')
+
+                    org_id = payload.get('host').get('org_id')
+                    if not is_feature_flag_enabled(org_id, UNLEASH_ROS_V2_FLAG, self.service):
+                        continue
 
                     if event_type != 'delete':
                         continue
