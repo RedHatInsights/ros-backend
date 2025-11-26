@@ -122,6 +122,27 @@ def test_run_handles_invalid_json(mock_feature_flag, mock_app_context, mock_db_s
         mock_delete.assert_not_called()
 
 
+@patch("ros.processor.system_eraser.is_feature_flag_enabled")
+def test_run_skips_processing_when_feature_flag_disabled(
+        mock_feature_flag, mock_app_context, mock_db_session, mock_consumer
+):
+    """Test that delete_system is not invoked when feature flag is disabled"""
+    eraser = SystemEraser()
+
+    payload = {"type": "delete", "id": "host-999", "host": {"org_id": "123456"}}
+    message = MagicMock()
+    message.value.return_value = json.dumps(payload).encode("utf-8")
+
+    mock_consumer.poll.side_effect = [message, None]
+    mock_feature_flag.return_value = False
+
+    with patch.object(eraser, "delete_system") as mock_delete:
+        eraser.running = True
+        eraser.run()
+        mock_delete.assert_not_called()
+        mock_consumer.commit.assert_called_once()
+
+
 class TestSystemEraserIntegration:
 
     def test_delete_system_integration(self, db_create_account, caplog):
