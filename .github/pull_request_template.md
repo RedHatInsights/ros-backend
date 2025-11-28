@@ -47,7 +47,7 @@ Upon raising this PR please go through [RedHatInsights/secure-coding-checklist](
           description: Runs all ROS RHEL backend tests  
 
    How to use for ROS RHEL testing:
-     1. Add a label to ROS backend pull request using Github's label interface
+     1. Add a label to ROS backend pull request using GitHub's label interface
      2. ROS RHEL tests execute automatically on new commits, and users can add labels either right before or right after commits are pushed.
      3. Tests will be executed as per label
 
@@ -61,7 +61,7 @@ Upon raising this PR please go through [RedHatInsights/secure-coding-checklist](
         Remove other labels
         ROS RHEL New backend tests will get executed
      3. User pushed a commit 'PQR' .
-        Label added: test-backend-v2 ( No matter if added right before or after a commit )
+        Label added: test-backend-both ( No matter if added right before or after a commit )
         Remove other labels
         ROS RHEL both backends tests i.e. all tests will get executed
      4. User pushed a commit 'LMN'
@@ -71,9 +71,9 @@ Upon raising this PR please go through [RedHatInsights/secure-coding-checklist](
    Limitations:
        1. Changing labels on the same PR with the same commit will not trigger new tests.
           Example:
-          User pused a commit 'EFG'
+          User pushed a commit 'EFG'
           label added: test-backend-v1 => Old backend tests will get executed
-          Now label added : test-backend-v2 AND label removed: test-backend-v1 => New backend tests won't executed
+          Now label added : test-backend-v2 AND label removed: test-backend-v1 => New backend tests won't be executed
                	   
 ## Additional :mega:
 
