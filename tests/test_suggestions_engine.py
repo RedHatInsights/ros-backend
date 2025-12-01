@@ -218,12 +218,13 @@ class TestAPIEvent(unittest.TestCase):
     def setUp(self):
         self.engine = SuggestionsEngine()
 
+    @patch("ros.processor.suggestions_engine.is_feature_flag_enabled")
     @patch("ros.processor.suggestions_engine.SuggestionsEngine.handle_api_event")
     @patch("ros.processor.suggestions_engine.SuggestionsEngine.handle_create_update")
-    def test_handle_api_event(self, mock_create_update, mock_api_event):
+    def test_handle_api_event(self, mock_create_update, mock_api_event, mock_is_feature_flag_enabled):
         payload = {
             "type": "updated",
-            "host": {"id": "host-abc"},
+            "host": {"id": "host-abc", "org_id": "123456"},
             "platform_metadata": {}
         }
         headers = [('producer', b'host-inventory-service-xyz')]
@@ -231,18 +232,20 @@ class TestAPIEvent(unittest.TestCase):
         message = Mock()
         message.value.return_value = json.dumps(payload).encode()
         message.headers.return_value = headers
+        mock_is_feature_flag_enabled.return_value = True
 
         self.engine.process_message(message)
 
         mock_api_event.assert_called_once_with(payload)
         mock_create_update.assert_not_called()
 
+    @patch("ros.processor.suggestions_engine.is_feature_flag_enabled")
     @patch("ros.processor.suggestions_engine.SuggestionsEngine.handle_api_event")
     @patch("ros.processor.suggestions_engine.SuggestionsEngine.handle_create_update")
-    def test_handle_non_api_event(self, mock_create_update, mock_api_event):
+    def test_handle_non_api_event(self, mock_create_update, mock_api_event, mock_is_feature_flag_enabled):
         payload = {
             "type": "updated",
-            "host": {"id": "host-abc"},
+            "host": {"id": "host-abc", "org_id": "123456"},
             "platform_metadata": {}
         }
         headers = [('producer', b'service-abc')]
@@ -250,10 +253,35 @@ class TestAPIEvent(unittest.TestCase):
         message = Mock()
         message.value.return_value = json.dumps(payload).encode()
         message.headers.return_value = headers
+        mock_is_feature_flag_enabled.return_value = True
 
         self.engine.process_message(message)
 
         mock_create_update.assert_called_once_with(payload)
+        mock_api_event.assert_not_called()
+
+    @patch("ros.processor.suggestions_engine.is_feature_flag_enabled")
+    @patch("ros.processor.suggestions_engine.SuggestionsEngine.handle_api_event")
+    @patch("ros.processor.suggestions_engine.SuggestionsEngine.handle_create_update")
+    def test_skips_processing_when_feature_flag_disabled(
+            self, mock_create_update, mock_api_event, mock_is_feature_flag_enabled
+    ):
+        """Test that processing methods are not invoked when feature flag is disabled"""
+        payload = {
+            "type": "created",
+            "host": {"id": "host-xyz", "org_id": "123456"},
+            "platform_metadata": {}
+        }
+        headers = [('producer', b'service-abc')]
+
+        message = Mock()
+        message.value.return_value = json.dumps(payload).encode()
+        message.headers.return_value = headers
+        mock_is_feature_flag_enabled.return_value = False
+
+        self.engine.process_message(message)
+
+        mock_create_update.assert_not_called()
         mock_api_event.assert_not_called()
 
 

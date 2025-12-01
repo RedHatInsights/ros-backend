@@ -22,6 +22,7 @@ from ros.lib.config import (
     METRICS_PORT,
     INVENTORY_EVENTS_TOPIC,
     GROUP_ID_SUGGESTIONS_ENGINE,
+    UNLEASH_ROS_V2_FLAG
 )
 from ros.rules.rules_engine import (
     run_rules,
@@ -32,6 +33,7 @@ from ros.rules.rules_engine import (
 from ros.processor.report_processor_event_producer import (
     produce_report_processor_event
 )
+from ros.lib.unleash import is_feature_flag_enabled
 
 logging = get_logger(__name__)
 
@@ -238,6 +240,11 @@ class SuggestionsEngine:
 
     def process_message(self, message):
         payload = json.loads(message.value().decode('utf-8'))
+
+        org_id = payload.get('host').get('org_id')
+        if not is_feature_flag_enabled(org_id, UNLEASH_ROS_V2_FLAG, self.service):
+            return
+
         event_type = payload['type']
 
         headers = dict(message.headers() or [])
