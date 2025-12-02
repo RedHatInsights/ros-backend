@@ -67,6 +67,23 @@ class ReportProcessorConsumer:
             'rule_hit_details' in payload
         )
 
+    def _build_system_fields(self, payload, account_id=None):
+        inventory_id = payload.get('id')
+        system_fields = {
+            "inventory_id": inventory_id,
+            "display_name": payload.get('display_name'),
+            "fqdn": payload.get('fqdn'),
+            "stale_timestamp": payload.get('stale_timestamp'),
+            "groups": payload.get('groups', []),
+            "operating_system": payload.get('operating_system'),
+            "cloud_provider": payload.get('cloud_provider')
+        }
+
+        if account_id is not None:
+            system_fields["tenant_id"] = account_id
+
+        return system_fields
+
     def _process_without_performance_data(self, payload):
         """
         Process API events or create/update events without PCP data.
@@ -86,16 +103,7 @@ class ReportProcessorConsumer:
         logging.debug(f"{self.service} - Processing {event_type} event for system {inventory_id}")
 
         if event_type == 'updated':
-            system_fields = {
-                "inventory_id": inventory_id,
-                "display_name": payload.get('display_name'),
-                "fqdn": payload.get('fqdn'),
-                "stale_timestamp": payload.get('stale_timestamp'),
-                "groups": payload.get('groups', []),
-                "operating_system": payload.get('operating_system'),
-                "cloud_provider": payload.get('cloud_provider')
-            }
-
+            system_fields = self._build_system_fields(payload)
             system = update_system_record(db.session, **system_fields)
 
             if system is not None:
@@ -114,17 +122,7 @@ class ReportProcessorConsumer:
                 org_id=org_id
             )
 
-            system_fields = {
-                "tenant_id": account.id,
-                "inventory_id": inventory_id,
-                "display_name": payload.get('display_name'),
-                "fqdn": payload.get('fqdn'),
-                "stale_timestamp": payload.get('stale_timestamp'),
-                "groups": payload.get('groups', []),
-                "operating_system": payload.get('operating_system'),
-                "cloud_provider": payload.get('cloud_provider')
-            }
-
+            system_fields = self._build_system_fields(payload, account.id)
             system = get_or_create(db.session, System, 'inventory_id', **system_fields)
 
             db.session.commit()
@@ -154,22 +152,17 @@ class ReportProcessorConsumer:
             org_id=org_id
         )
 
-        system_fields = {
-            "tenant_id": account.id,
-            "inventory_id": inventory_id,
-            "display_name": payload.get('display_name'),
-            "fqdn": payload.get('fqdn'),
-            "stale_timestamp": payload.get('stale_timestamp'),
-            "groups": payload.get('groups', []),
-            "operating_system": payload.get('operating_system'),
-            "cloud_provider": payload.get('cloud_provider'),
+        system_fields = self._build_system_fields(payload, account.id)
+
+        # Add performance-specific fields
+        system_fields.update({
             "cpu_states": payload.get('cpu_states'),
             "io_states": payload.get('io_states'),
             "memory_states": payload.get('memory_states'),
             "state": payload.get('state'),
             "instance_type": payload.get('instance_type'),
             "region": payload.get('region')
-        }
+        })
 
         system = get_or_create(db.session, System, 'inventory_id', **system_fields)
         logging.info(
