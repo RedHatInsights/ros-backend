@@ -95,31 +95,36 @@ On a local instance it can be accessed on http://localhost:8000/api/ros/v1/opena
 For local development setup, remember to use the `x-rh-identity` header encoded from account number and org_id, the one used while running `make insights-upload-data` command.
 
 
-## How to use Labels for ROS RHEL testing:
-     1. Add a label to ROS backend pull request using GitHub's label interface
-     2. ROS RHEL tests execute automatically on new commits, and users can add labels either right before or right after commits are pushed.
-     3. Tests will be executed as per selected label
+## ROS RHEL Backend Testing
 
-  Example:
-     1. User pushed a commit 'ABC' .
-        Label added : test-backend-v1 ( No matter if added right before or after a commit )
-        Remove other labels from available ROS RHEL labels ( test-backend-v2, test-backend-both)
-        Legacy backend tests will be executed
-     2. User pushed a commit 'XYZ' .
-        Label added: test-backend-v2 ( No matter if added right before or after a commit )
-        Remove other labels from available ROS RHEL labels ( test-backend-v1, test-backend-both)
-        ROS RHEL New backend tests will be executed
-     3. User pushed a commit 'PQR' .
-        Label added: test-backend-both ( No matter if added right before or after a commit )
-        Remove other labels from available ROS RHEL labels ( test-backend-v1, test-backend-v2)
-        All backend tests, covering both new and legacy will be executed
-     4. User pushed a commit 'LMN'
-        No label is present on PR.
-        All tests will be executed
+### How to use labels
 
-   Limitations:
-       1. Changing labels on the same PR with the same commit will not trigger new tests.
-          Example:
-          User pushed a commit 'EFG'
-          label added: test-backend-v1 => Legacy backend tests will be executed
-          Now label added : test-backend-v2 AND label removed: test-backend-v1 => New backend tests won't be executed
+####  Usage Instructions:
+     1. ROS RHEL tests execute automatically on new commits based on labels added to your PR (labels can be added before or after commits are pushed).
+
+#### Examples:
+     1. Legacy backend Testing:
+        1.1. User pushed a commit 'ABC' .
+        1.2. Label added : test-backend-v1 ( No matter if added right before or after a commit )
+        1.3. Remove other labels from available ROS RHEL labels ( test-backend-v2, test-backend-both)
+        1.4. Legacy backend tests will be executed
+     2. New Backend Testing:
+	2.1. User pushed a commit 'XYZ' .
+        2.2. Label added: test-backend-v2 ( No matter if added right before or after a commit )
+        2.3. Remove other labels from available ROS RHEL labels ( test-backend-v1, test-backend-both)
+        2.4. ROS RHEL New backend tests will be executed
+     3. Both Backends Testing
+	3.1. User pushed a commit 'PQR' .
+        3.2. Label added: test-backend-both ( No matter if added right before or after a commit )
+        3.3. Remove other labels from available ROS RHEL labels ( test-backend-v1, test-backend-v2)
+        3.4. All backend tests, covering both new and legacy will be executed
+     4. Default behavior
+	4.1. User pushed a commit 'LMN'
+        4.2. No label is present on PR.
+        4.3. All tests will be executed
+
+#### Limitations:
+     1. Changing labels on the same PR with the same commit will not trigger new tests:
+        1.1. User pushed a commit 'EFG'
+        1.2. label added: test-backend-v1 => Legacy backend tests will be executed
+        1.3. Now label added : test-backend-v2 AND label removed: test-backend-v1 => New backend tests won't be executed

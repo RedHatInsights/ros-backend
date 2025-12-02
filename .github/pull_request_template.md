@@ -34,7 +34,7 @@ Upon raising this PR please go through [RedHatInsights/secure-coding-checklist](
 
 ## ROS RHEL Github label usage for executing a desired test suit
    
-   Add one of these labels to a pull request to control which ROS RHEL backend tests to run:
+   Select the appropriate Github label to control which ROS RHEL backend tests run for this PR:
      Available ROS RHEL labels:
        1. test-backend-v1: tests only specific to legacy ROS backend
        2. test-backend-v2: tests only specific to New ROS backend
