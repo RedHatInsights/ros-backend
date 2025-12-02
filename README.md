@@ -104,27 +104,27 @@ For local development setup, remember to use the `x-rh-identity` header encoded 
 
 #### Examples:
      1. Legacy backend Testing:
-        1.1. User pushed a commit 'ABC' .
-        1.2. Label added : test-backend-v1 ( No matter if added right before or after a commit )
-        1.3. Remove other labels from available ROS RHEL labels ( test-backend-v2, test-backend-both)
-        1.4. Legacy backend tests will be executed
+        1.1. User pushed a commit 'ABC'.
+        1.2. Label added : test-backend-v1 ( No matter if added right before or after a commit ).
+        1.3. Remove other labels from available ROS RHEL labels ( test-backend-v2, test-backend-both).
+        1.4. Legacy backend tests will be executed.
      2. New Backend Testing:
-        2.1. User pushed a commit 'XYZ' .
-        2.2. Label added: test-backend-v2 ( No matter if added right before or after a commit )
-        2.3. Remove other labels from available ROS RHEL labels ( test-backend-v1, test-backend-both)
-        2.4. ROS RHEL New backend tests will be executed
+        2.1. User pushed a commit 'XYZ'.
+        2.2. Label added: test-backend-v2 ( No matter if added right before or after a commit ).
+        2.3. Remove other labels from available ROS RHEL labels ( test-backend-v1, test-backend-both).
+        2.4. ROS RHEL New backend tests will be executed.
      3. Both Backends Testing
-	3.1. User pushed a commit 'PQR' .
-        3.2. Label added: test-backend-both ( No matter if added right before or after a commit )
-        3.3. Remove other labels from available ROS RHEL labels ( test-backend-v1, test-backend-v2)
-        3.4. All backend tests, covering both new and legacy will be executed
+        3.1. User pushed a commit 'PQR'.
+        3.2. Label added: test-backend-both ( No matter if added right before or after a commit ).
+        3.3. Remove other labels from available ROS RHEL labels ( test-backend-v1, test-backend-v2).
+        3.4. All backend tests, covering both new and legacy will be executed.
      4. Default behavior
-	4.1. User pushed a commit 'LMN'
+        4.1. User pushed a commit 'LMN'.
         4.2. No label is present on PR.
-        4.3. All tests will be executed
+        4.3. All tests will be executed.
 
 #### Limitations:
      1. Changing labels on the same PR with the same commit will not trigger new tests:
-        1.1. User pushed a commit 'EFG'
-        1.2. label added: test-backend-v1 => Legacy backend tests will be executed
-        1.3. Now label added : test-backend-v2 AND label removed: test-backend-v1 => New backend tests won't be executed
+        1.1. User pushed a commit 'EFG'.
+        1.2. label added: test-backend-v1 => Legacy backend tests will be executed.
+        1.3. Now label added : test-backend-v2 AND label removed: test-backend-v1 => New backend tests won't be executed.
