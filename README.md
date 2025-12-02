@@ -93,3 +93,33 @@ Resource Optimization REST API documentation can be found at `/api/ros`. It is a
 On a local instance it can be accessed on http://localhost:8000/api/ros/v1/openapi.json.
 
 For local development setup, remember to use the `x-rh-identity` header encoded from account number and org_id, the one used while running `make insights-upload-data` command.
+
+
+## How to use Labels for ROS RHEL testing:
+     1. Add a label to ROS backend pull request using GitHub's label interface
+     2. ROS RHEL tests execute automatically on new commits, and users can add labels either right before or right after commits are pushed.
+     3. Tests will be executed as per selected label
+
+  Example:
+     1. User pushed a commit 'ABC' .
+        Label added : test-backend-v1 ( No matter if added right before or after a commit )
+        Remove other labels from available ROS RHEL labels ( test-backend-v2, test-backend-both)
+        Legacy backend tests will be executed
+     2. User pushed a commit 'XYZ' .
+        Label added: test-backend-v2 ( No matter if added right before or after a commit )
+        Remove other labels from available ROS RHEL labels ( test-backend-v1, test-backend-both)
+        ROS RHEL New backend tests will be executed
+     3. User pushed a commit 'PQR' .
+        Label added: test-backend-both ( No matter if added right before or after a commit )
+        Remove other labels from available ROS RHEL labels ( test-backend-v1, test-backend-v2)
+        All backend tests, covering both new and legacy will be executed
+     4. User pushed a commit 'LMN'
+        No label is present on PR.
+        All tests will be executed
+
+   Limitations:
+       1. Changing labels on the same PR with the same commit will not trigger new tests.
+          Example:
+          User pushed a commit 'EFG'
+          label added: test-backend-v1 => Legacy backend tests will be executed
+          Now label added : test-backend-v2 AND label removed: test-backend-v1 => New backend tests won't be executed
