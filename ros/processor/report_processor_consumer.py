@@ -102,33 +102,27 @@ class ReportProcessorConsumer:
 
         logging.debug(f"{self.service} - Processing {event_type} event for system {inventory_id}")
 
-        if event_type == 'updated':
-            system_fields = self._build_system_fields(payload)
-            system = update_system_record(db.session, **system_fields)
+        try:
+            if event_type == 'updated':
+                system_fields = self._build_system_fields(payload)
+                system = update_system_record(db.session, **system_fields)
 
-            if system is not None:
+                if system is not None:
+                    db.session.commit()
+                    logging.info(f"{self.service} - Updated system {system.inventory_id} ({system.id})")
+                else:
+                    logging.warning(f"{self.service} - System {inventory_id} not found for update.")
+
+            elif event_type == 'created':
+                account = get_or_create(db.session, RhAccount, 'org_id', org_id=org_id)
+                system_fields = self._build_system_fields(payload, account.id)
+                system = get_or_create(db.session, System, 'inventory_id', **system_fields)
+
                 db.session.commit()
-                logging.info(
-                    f"{self.service} - Updated system {system.inventory_id} ({system.id})"
-                )
-            else:
-                logging.warning(
-                    f"{self.service} - System {inventory_id} not found for update."
-                )
+                logging.info(f"{self.service} - Created system {system.inventory_id} ({system.id})")
 
-        elif event_type == 'created':
-            account = get_or_create(
-                db.session, RhAccount, 'org_id',
-                org_id=org_id
-            )
-
-            system_fields = self._build_system_fields(payload, account.id)
-            system = get_or_create(db.session, System, 'inventory_id', **system_fields)
-
-            db.session.commit()
-            logging.info(
-                f"{self.service} - Created system {system.inventory_id} ({system.id})"
-            )
+        except Exception as error:
+            logging.error(f"{self.service} - Failed to process system {inventory_id}: {error}")
 
     def _process_with_performance_data(self, payload):
         """
@@ -147,51 +141,48 @@ class ReportProcessorConsumer:
 
         logging.debug(f"{self.service} - Processing event with performance data for system {inventory_id}")
 
-        account = get_or_create(
-            db.session, RhAccount, 'org_id',
-            org_id=org_id
-        )
+        try:
+            account = get_or_create(db.session, RhAccount, 'org_id', org_id=org_id)
 
-        system_fields = self._build_system_fields(payload, account.id)
+            system_fields = self._build_system_fields(payload, account.id)
+            system_fields.update({
+                "cpu_states": payload.get('cpu_states'),
+                "io_states": payload.get('io_states'),
+                "memory_states": payload.get('memory_states'),
+                "state": payload.get('state'),
+                "instance_type": payload.get('instance_type'),
+                "region": payload.get('region')
+            })
 
-        # Add performance-specific fields
-        system_fields.update({
-            "cpu_states": payload.get('cpu_states'),
-            "io_states": payload.get('io_states'),
-            "memory_states": payload.get('memory_states'),
-            "state": payload.get('state'),
-            "instance_type": payload.get('instance_type'),
-            "region": payload.get('region')
-        })
+            system = get_or_create(db.session, System, 'inventory_id', **system_fields)
+            logging.info(
+                f"{self.service} - System {inventory_id} ({system.id}) created/updated successfully."
+            )
 
-        system = get_or_create(db.session, System, 'inventory_id', **system_fields)
-        logging.info(
-            f"{self.service} - System {inventory_id} ({system.id}) created/updated successfully."
-        )
+            performance_profile_fields = {
+                "system_id": system.id,
+                "performance_record": payload.get('performance_record'),
+                "performance_utilization": payload.get('performance_utilization'),
+                "report_date": datetime.now(timezone.utc),
+                "rule_hit_details": payload.get('rule_hit_details'),
+                "number_of_recommendations": payload.get('number_of_recommendations', 0),
+                "state": payload.get('state'),
+                "operating_system": payload.get('operating_system'),
+                "psi_enabled": payload.get('psi_enabled'),
+                "top_candidate": payload.get('top_candidate'),
+                "top_candidate_price": payload.get('top_candidate_price')
+            }
 
-        performance_profile_fields = {
-            "system_id": system.id,
-            "performance_record": payload.get('performance_record'),
-            "performance_utilization": payload.get('performance_utilization'),
-            "report_date": datetime.now(timezone.utc),
-            "rule_hit_details": payload.get('rule_hit_details'),
-            "number_of_recommendations": payload.get('number_of_recommendations', 0),
-            "state": payload.get('state'),
-            "operating_system": payload.get('operating_system'),
-            "psi_enabled": payload.get('psi_enabled'),
-            "top_candidate": payload.get('top_candidate'),
-            "top_candidate_price": payload.get('top_candidate_price')
-        }
+            insert_performance_profiles(db.session, system.id, performance_profile_fields)
+            logging.info(
+                f"{self.service} - Performance profile created/updated successfully for system: {inventory_id}"
+            )
 
-        insert_performance_profiles(db.session, system.id, performance_profile_fields)
-        logging.info(
-            f"{self.service} - Performance profile created/updated successfully for system: {inventory_id}"
-        )
+            db.session.commit()
+            logging.info(f"{self.service} - Successfully processed system {inventory_id} ({system.id})")
 
-        db.session.commit()
-        logging.info(
-            f"{self.service} - Successfully processed system {system.inventory_id} ({system.id})"
-        )
+        except Exception as error:
+            logging.error(f"{self.service} - Failed to process system {inventory_id} with performance data: {error}")
 
 
 if __name__ == "__main__":
