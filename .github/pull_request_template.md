@@ -32,6 +32,18 @@ Upon raising this PR please go through [RedHatInsights/secure-coding-checklist](
 - [ ] Dependency Added
 - [ ] DB Migration Added
 
+## ROS RHEL GitHub label usage for executing a desired test suite
+
+Select the appropriate GitHub label to control which ROS RHEL backend tests run for this PR (Labels can be added before or after commits are pushed):
+
+**Note:** Changing a Label on a PR with an already-tested commit will not trigger a new test run
+
+**Available ROS RHEL labels:**
+
+- **test-backend-v1:** Run legacy backend tests only
+- **test-backend-v2:** Run new backend tests only
+- **test-backend-both:** Run both backend tests
+
 ## Additional :mega:
 
 Feel free to add any other relevant details such as __links, notes, screenshots__, here.
