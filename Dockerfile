@@ -2,7 +2,7 @@ FROM registry.redhat.io/rhel9/pcp@sha256:30fae18306d844d10b7f75ca917289743a8197c
 
 ARG PYTHON_PIP_VERSION=23.3
 
-RUN microdnf install \
+RUN dnf install \
     --nodocs -y python3.11 tar gzip gcc python3.11-devel libpq-devel
 
 # Install poetry in separate virtual env
