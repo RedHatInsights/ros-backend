@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi9/ubi-minimal
+FROM registry.access.redhat.com/rhel9/pcp:latest
 
 ARG PYTHON_PIP_VERSION=23.3
 
