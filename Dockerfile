@@ -1,4 +1,4 @@
-FROM registry.redhat.io/rhel9/pcp@sha256:30fae18306d844d10b7f75ca917289743a8197cd5d88426bc15524761761313f
+FROM registry.redhat.io/rhel9/pcp:latest
 
 ARG PYTHON_PIP_VERSION=23.3
 
