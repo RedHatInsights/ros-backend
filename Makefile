@@ -16,7 +16,7 @@ b64_identity=$(shell echo '${identity}' | base64 -w 0 -)
 ROS_API_PORT?=8000
 
 insights-upload-data:
-	curl -vvvv -F "upload=@sample-files/rhel8/rhel8-insights-ip-aws-idle.tar.gz;type=application/vnd.redhat.advisor.collection+tgz" \
+	curl -v -F "upload=@sample-files/rhel8/rhel8-insights-ip-aws-idle.tar.gz;type=application/vnd.redhat.advisor.collection+tgz" \
 	    -H "x-rh-identity: ${b64_identity}" \
 		-H "x-rh-request_id: testtesttest" \
 		localhost:3000/api/ingress/v1/upload | python -m json.tool
