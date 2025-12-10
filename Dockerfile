@@ -1,9 +1,8 @@
-FROM registry.access.redhat.com/ubi9/ubi-minimal
+FROM registry.redhat.io/rhel9/pcp:latest
 
 ARG PYTHON_PIP_VERSION=23.3
 
-RUN microdnf install \
-    --disableplugin=subscription-manager \
+RUN dnf install \
     --nodocs -y python3.11 tar gzip gcc python3.11-devel libpq-devel
 
 # Install poetry in separate virtual env
