@@ -74,7 +74,7 @@ class SystemEraser:
                     payload = json.loads(message.value().decode('utf-8'))
                     event_type = payload.get('type')
 
-                    org_id = payload.get('host').get('org_id')
+                    org_id = payload.get('org_id')
                     if not is_feature_flag_enabled(org_id, UNLEASH_ROS_V2_FLAG, self.service):
                         continue
 
