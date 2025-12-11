@@ -6,14 +6,13 @@ from ros.lib import consume
 from ros.lib.app import app
 from ros.extensions import db, cache
 from ros.lib.utils import get_or_create, system_allowed_in_ros, update_system_record
+from ros.lib.cache_utils import set_deleted_system_cache, clear_deleted_system_cache
 from confluent_kafka import KafkaException
 from ros.lib.models import RhAccount, System
 from ros.lib.config import (
     INVENTORY_EVENTS_TOPIC,
     METRICS_PORT,
     get_logger,
-    CACHE_TIMEOUT_FOR_DELETED_SYSTEM,
-    CACHE_KEYWORD_FOR_DELETED_SYSTEM,
     GROUP_ID,
     UNLEASH_ROS_V2_FLAG
 )
@@ -119,6 +118,9 @@ class InventoryEventsConsumer:
         """Process delete message."""
         self.prefix = "INVENTORY DELETE EVENT"
         host_id = msg['id']
+        org_id = msg.get('org_id')
+        event_timestamp = msg.get('timestamp')
+
         with app.app_context():
             LOG.debug(
                 f"{self.prefix} - Received a message for system with inventory_id {host_id}"
@@ -128,16 +130,13 @@ class InventoryEventsConsumer:
             db.session.commit()
 
             if rows_deleted.rowcount == 1:
+
+                set_deleted_system_cache(org_id, host_id, event_timestamp)
                 processor_requests_success.labels(
-                    reporter=self.reporter, org_id=msg['org_id']
+                    reporter=self.reporter, org_id=org_id
                 ).inc()
                 LOG.info(
                     f"{self.prefix} - Deleted system with inventory id: {host_id}"
-                )
-                cache_key = (f"{msg['org_id']}{CACHE_KEYWORD_FOR_DELETED_SYSTEM}"
-                             f'{host_id}')
-                cache.set(
-                    cache_key, 1, timeout=CACHE_TIMEOUT_FOR_DELETED_SYSTEM
                 )
 
     def host_create_update_events(self, msg):
@@ -181,9 +180,7 @@ class InventoryEventsConsumer:
                         f"{self.prefix} - Refreshed system {system.inventory_id} ({system.id}) "
                         f"belonging to account: {account.account} ({account.id}) and org_id: {account.org_id}"
                     )
-                    self.expired_del_cache_if_exists(
-                        host['id'], account.org_id
-                    )
+                    clear_deleted_system_cache(account.org_id, host.get('id'))
             else:
                 try:
                     account = get_or_create(
@@ -213,9 +210,7 @@ class InventoryEventsConsumer:
                         f"{self.prefix} - Refreshed system {system.inventory_id} ({system.id}) "
                         f"belonging to account: {account.account} ({account.id}) and org_id: {account.org_id}"
                     )
-                    self.expired_del_cache_if_exists(
-                        host['id'], account.org_id
-                    )
+                    clear_deleted_system_cache(account.org_id, host['id'])
                 except Exception as err:
                     processor_requests_failures.labels(
                         reporter=self.reporter, org_id=account.org_id
@@ -225,13 +220,6 @@ class InventoryEventsConsumer:
                         f"{self.prefix} - Unable to add system {host['id']} to DB "
                         f"belonging to account: {account.account} and org_id: {account.org_id} - {err}"
                     )
-
-    def expired_del_cache_if_exists(self, host_id, org_id):
-        with app.app_context():
-            cache_key = (f"{org_id}{CACHE_KEYWORD_FOR_DELETED_SYSTEM}"
-                         f'{host_id}')
-            if cache.get(cache_key):
-                cache.delete(cache_key)
 
 
 if __name__ == "__main__":

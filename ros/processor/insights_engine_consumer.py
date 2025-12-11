@@ -3,13 +3,13 @@ from ros.lib import consume, produce
 from ros.lib.app import app
 from ros.extensions import db, cache
 from datetime import datetime, timezone
+from ros.lib.cache_utils import is_system_deleted
 from confluent_kafka import KafkaException
 from ros.lib.models import RhAccount, System
 from ros.lib.config import (
     ENGINE_RESULT_TOPIC,
     METRICS_PORT,
     get_logger,
-    CACHE_KEYWORD_FOR_DELETED_SYSTEM,
     GROUP_ID,
     UNLEASH_ROS_V2_FLAG
 )
@@ -105,12 +105,13 @@ class InsightsEngineConsumer:
                 threadctx.account = platform_metadata.get('account')
                 threadctx.org_id = platform_metadata.get('org_id')
 
-                cache_key = (f"{platform_metadata.get('org_id')}"
-                             f"{CACHE_KEYWORD_FOR_DELETED_SYSTEM}{host['id']}")
-                if cache.get(cache_key):
+                org_id = platform_metadata.get('org_id')
+                host_id = host.get('id')
+                event_timestamp = msg.get('timestamp')
+
+                if is_system_deleted(org_id, host_id, event_timestamp):
                     LOG.info(
-                        f"{self.prefix} - Received a msg for deleted system "
-                        f"with inventory id: {host['id']}. Hence, rejecting a msg."
+                        f"{self.prefix} - Received event for deleted system {host_id}. Rejecting the event"
                     )
                     return
                 performance_record = get_performance_profile(

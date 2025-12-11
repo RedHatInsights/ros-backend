@@ -110,16 +110,20 @@ def test_host_delete_event(inventory_event_consumer, inventory_event_message, db
     inventory_event_message['type'] = 'created'
     inventory_event_consumer.host_create_update_events(inventory_event_message)
 
-    msg = {"type": "delete",
-           "insights_id": "677fb960-e164-48a4-929f-59e2d917b444",
-           "id": "ee0b9978-fe1b-4191-8408-cbadbd47f7a2",
-           "account": '0000001', 'org_id': '000001'}
+    msg = {
+        "type": "delete",
+        "insights_id": "677fb960-e164-48a4-929f-59e2d917b444",
+        "id": "ee0b9978-fe1b-4191-8408-cbadbd47f7a2",
+        "account": '0000001',
+        'org_id': '000001',
+        'timestamp': '2022-05-11T13:58:54.509083+00:00'
+    }
     inventory_event_consumer.host_delete_event(msg)
     with app.app_context():
         cached_deleted_sys = cache.get(
             f"{msg['org_id']}{CACHE_KEYWORD_FOR_DELETED_SYSTEM}{msg['id']}"
         )
-        assert cached_deleted_sys == 1
+        assert cached_deleted_sys == '2022-05-11T13:58:54.509083+00:00'
 
     host = db_get_host(msg['id'])
     assert host is None
