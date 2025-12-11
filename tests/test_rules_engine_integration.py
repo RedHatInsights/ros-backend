@@ -277,8 +277,8 @@ class TestRulesEngineIntegration:
             (RosKeys.CPU_UNDERSIZED, "INSTANCE_UNDERSIZED", ["cpu"]),
             (RosKeys.MEMORY_UNDERSIZED | RosKeys.IO_UNDERSIZED,
              "INSTANCE_UNDERSIZED", ["memory", "io"]),
-            (RosKeys.CPU_OVERSIZED | RosKeys.MEMORY_OVERSIZED,
-             "INSTANCE_OVERSIZED", ["cpu", "memory"]),
+            (RosKeys.CPU_OVERSIZED | RosKeys.MEMORY_OVERSIZED | RosKeys.IO_OVERSIZED,
+             "INSTANCE_OVERSIZED", ["cpu", "memory", "io"]),
             (RosKeys.CPU_UNDERSIZED_BY_PRESSURE,
              "INSTANCE_OPTIMIZED_UNDER_PRESSURE", ["cpu"]),
             (RosKeys.MEMORY_UNDERSIZED_BY_PRESSURE |
