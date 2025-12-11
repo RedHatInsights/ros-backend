@@ -16,6 +16,7 @@ from tenacity import (
     retry_if_exception_type
 )
 
+from ros.lib.app import app
 from ros.lib import consume, produce
 from ros.lib.config import (
     get_logger,
@@ -24,6 +25,7 @@ from ros.lib.config import (
     GROUP_ID_SUGGESTIONS_ENGINE,
     UNLEASH_ROS_V2_FLAG
 )
+from ros.extensions import cache
 from ros.rules.rules_engine import (
     run_rules,
     report,
@@ -34,6 +36,7 @@ from ros.processor.report_processor_event_producer import (
     produce_report_processor_event
 )
 from ros.lib.unleash import is_feature_flag_enabled
+from ros.lib.cache_utils import is_system_deleted
 
 logging = get_logger(__name__)
 
@@ -109,6 +112,21 @@ class SuggestionsEngine:
         logging.debug(f"Successfully created output_dir for system {host.get('id')}: {output_dir}")
 
         return output_dir
+
+    def should_reject_deleted_system(self, payload):
+        host = payload.get('host')
+
+        host_id = host.get('id')
+        org_id = host.get('org_id')
+        event_timestamp = payload.get('timestamp')
+
+        if is_system_deleted(org_id, host_id, event_timestamp):
+            logging.info(
+                f"{self.service} - {self.event} - Received event for deleted system {host_id}. Rejecting the event"
+            )
+            return True
+
+        return False
 
     def run_pcp_commands(self, host, index_file_path, request_id, extracted_dir_root):
         sanitized_request_id = request_id.replace("/", "_")
@@ -197,6 +215,9 @@ class SuggestionsEngine:
         if not platform_metadata.get('is_ros_v2', False):
             return
 
+        if self.should_reject_deleted_system(payload):
+            return
+
         if not platform_metadata.get('is_pcp_raw_data_collected', False):
             logging.debug(
                 f"{self.service} - {self.event} - Triggering an event for system {host.get('id')}"
@@ -230,6 +251,10 @@ class SuggestionsEngine:
 
     def handle_api_event(self, payload):
         self.event = "Update event"
+
+        if self.should_reject_deleted_system(payload):
+            return
+
         host = payload.get('host')
         logging.debug(
             f"{self.service} - {self.event} - Triggering an event for system {host.get('id')}, updated via API"
@@ -280,5 +305,6 @@ class SuggestionsEngine:
 
 if __name__ == "__main__":
     start_http_server(int(METRICS_PORT))
+    cache.init_app(app)
     processor = SuggestionsEngine()
     processor.run()
