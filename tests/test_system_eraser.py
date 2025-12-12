@@ -75,7 +75,12 @@ def test_delete_system_exception(mock_app_context, mock_db_session, mock_consume
 def test_run_processes_delete_message(mock_feature_flag, mock_app_context, mock_db_session, mock_consumer):
     eraser = SystemEraser()
 
-    payload = {"type": "delete", "id": "host-999", "host": {"org_id": "123456"}}
+    payload = {
+        "type": "delete",
+        "id": "host-999",
+        "org_id": "123456",
+        "timestamp": "2022-05-11T13:58:54.509083+00:00"
+    }
     message = MagicMock()
     message.value.return_value = json.dumps(payload).encode("utf-8")
 
@@ -86,14 +91,14 @@ def test_run_processes_delete_message(mock_feature_flag, mock_app_context, mock_
     with patch.object(eraser, "delete_system", return_value=True) as mock_delete:
         eraser.running = True
         eraser.run()
-        mock_delete.assert_called_once_with("host-999")
+        mock_delete.assert_called_once_with("host-999", "123456", "2022-05-11T13:58:54.509083+00:00")
 
 
 @patch("ros.processor.system_eraser.is_feature_flag_enabled")
 def test_run_ignores_non_delete_message(mock_feature_flag, mock_app_context, mock_db_session, mock_consumer):
     eraser = SystemEraser()
 
-    payload = {"type": "update", "id": "host-777", "host": {"org_id": "123456"}}
+    payload = {"type": "update", "id": "host-777", "org_id": "123456"}
     message = MagicMock()
     message.value.return_value = json.dumps(payload).encode("utf-8")
 
@@ -129,7 +134,7 @@ def test_run_skips_processing_when_feature_flag_disabled(
     """Test that delete_system is not invoked when feature flag is disabled"""
     eraser = SystemEraser()
 
-    payload = {"type": "delete", "id": "host-999", "host": {"org_id": "123456"}}
+    payload = {"type": "delete", "id": "host-999", "org_id": "123456"}
     message = MagicMock()
     message.value.return_value = json.dumps(payload).encode("utf-8")
 
@@ -172,8 +177,9 @@ class TestSystemEraserIntegration:
                 assert created_system is not None
                 assert created_system.display_name == 'test_system'
 
-            # Call delete_system method
-            result = system_eraser.delete_system(host_id)
+            result = system_eraser.delete_system(
+                host_id, org_id='000001', event_timestamp='2022-05-11T13:58:54.509083+00:00'
+            )
 
             assert result is True
             assert "Successfully deleted 1 system(s)" in caplog.text
