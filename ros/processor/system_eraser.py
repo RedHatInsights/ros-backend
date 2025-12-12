@@ -13,9 +13,10 @@ from ros.lib.config import (
 )
 from ros.lib import consume
 from ros.lib.app import app
-from ros.extensions import db
+from ros.extensions import db, cache
 from ros.lib.models import System
 from ros.lib.unleash import is_feature_flag_enabled
+from ros.lib.cache_utils import set_deleted_system_cache
 
 
 logging = get_logger(__name__)
@@ -34,14 +35,16 @@ class SystemEraser:
         logging.info(f"{self.service} - Shutdown signal received: {signum}")
         self.running = False
 
-    def delete_system(self, host_id):
-        """Delete system from database where inventory_id matches host_id."""
+    def delete_system(self, host_id, org_id=None, event_timestamp=None):
         try:
             with app.app_context():
                 rows_deleted = db.session.execute(
                     db.delete(System).filter(System.inventory_id == host_id)
                 )
                 db.session.commit()
+
+                if org_id:
+                    set_deleted_system_cache(org_id, host_id, event_timestamp)
 
                 if rows_deleted.rowcount > 0:
                     logging.info(
@@ -82,13 +85,13 @@ class SystemEraser:
                         continue
 
                     host_id = payload.get('id')
+                    event_timestamp = payload.get('timestamp')
 
                     logging.debug(
-                        f"{self.service} - Received a message for system with inventory_id {host_id}"
+                        f"{self.service} - Received delete message for system {host_id}"
                     )
 
-                    # Perform the delete operation
-                    self.delete_system(host_id)
+                    self.delete_system(host_id, org_id, event_timestamp)
 
                 except json.JSONDecodeError as error:
                     logging.error(f"{self.service} - {self.event} - Failed to decode message: {error}")
@@ -106,5 +109,6 @@ class SystemEraser:
 
 if __name__ == "__main__":
     start_http_server(int(METRICS_PORT))
+    cache.init_app(app)
     processor = SystemEraser()
     processor.run()
