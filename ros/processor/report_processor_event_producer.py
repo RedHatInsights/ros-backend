@@ -62,7 +62,20 @@ def _calculate_performance_utilization(report_metadata_output):
 
 
 def _build_rule_hit_details(error_key, report_output, system_id):
-    """Construct rule hit details array matching process_report structure."""
+    """Construct rule hit details array matching process_report structure.
+
+    Returns empty array for OPTIMIZED state (no recommendations) or when error_key is None,
+    matching the behavior of insights_engine_consumer.py.
+    """
+    # For OPTIMIZED state or when there are no valid recommendations, return empty array
+    if error_key is None or error_key == "OPTIMIZED":
+        return []
+
+    # Check if report is skipped/invalid (no valid recommendations)
+    details = report_output.get("details", {})
+    if isinstance(details, dict) and details.get("type") == "skip":
+        return []
+
     return [{
         "key": error_key,
         "tags": [],
@@ -77,7 +90,8 @@ def _build_rule_hit_details(error_key, report_output, system_id):
 
 def _determine_candidates(report_output, error_key):
     """Determine top candidate and price with proper fallbacks."""
-    if error_key in NO_RECOMMENDATION_STATES:
+    # For OPTIMIZED state or when error_key is None, return None (no recommendations)
+    if error_key is None or error_key in NO_RECOMMENDATION_STATES:
         return None, None
 
     candidates = report_output.get("candidates", [[None, None]])
@@ -90,8 +104,19 @@ def _determine_candidates(report_output, error_key):
 
 
 def _calculate_recommendations_count(error_key):
-    """Calculate number of recommendations using process_report logic."""
-    return -1 if error_key == 'NO_PCP_DATA' else 1
+    """Calculate number of recommendations using process_report logic.
+
+    Matches insights_engine_consumer.py behavior:
+    - NO_PCP_DATA: -1 (unknown)
+    - OPTIMIZED or None: 0 (no recommendations)
+    - Other states: 1 (or len(reports) in insights_engine_consumer, but here we have single report)
+    """
+    if error_key == 'NO_PCP_DATA':
+        return -1
+    elif error_key is None or error_key == 'OPTIMIZED':
+        return 0
+    else:
+        return 1
 
 
 def _prepare_performance_record(report_perf_profile):
@@ -114,6 +139,16 @@ def perf_profile_and_rule_payload(report_metadata_output, report_output, report_
     """
     # Extract basic data
     error_key = report_output.get("error_key")
+
+    # Check if report is skipped/invalid (no valid recommendations)
+    # This indicates OPTIMIZED state - no recommendations available
+    details = report_output.get("details", {})
+    is_skipped_report = isinstance(details, dict) and details.get("type") == "skip"
+
+    # If error_key is None or report is skipped, treat as OPTIMIZED
+    if error_key is None or is_skipped_report:
+        error_key = "OPTIMIZED"
+
     state = SystemStatesWithKeys[error_key].value if error_key else None
     system_states = _extract_system_states(report_output)
 
@@ -126,12 +161,17 @@ def perf_profile_and_rule_payload(report_metadata_output, report_output, report_
     number_of_recommendations = _calculate_recommendations_count(error_key)
     top_candidate, top_candidate_price = _determine_candidates(report_output, error_key)
 
+    # Extract instance_type and region, with fallback to performance_record
+    # This matches insights_engine_consumer.py behavior where these come from performance_record
+    instance_type = report_output.get("instance_type") or report_perf_profile.get("instance_type")
+    region = report_output.get("region") or report_perf_profile.get("region")
+
     # Assemble final payload
     return {
         **system_states,  # cpu_states, io_states, memory_states
         "state": state,
-        "instance_type": report_output.get("instance_type"),
-        "region": report_output.get("region"),
+        "instance_type": instance_type,
+        "region": region,
         "performance_record": performance_record,
         "performance_utilization": performance_utilization,
         "report_date": datetime.now(timezone.utc).isoformat(),
