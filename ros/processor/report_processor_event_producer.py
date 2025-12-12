@@ -47,10 +47,14 @@ def _extract_system_states(report_output):
 
 
 def _calculate_performance_utilization(report_metadata_output):
-    """Calculate performance utilization metrics with max_io."""
+    """Calculate performance utilization metrics with max_io.
+
+    Matches insights_engine_consumer.py behavior (lines 200-208):
+    - Converts cpu and memory to integers (not strings)
+    """
     performance_utilization = {
-        "memory": report_metadata_output.get("mem_utilization"),
-        "cpu": report_metadata_output.get("cpu_utilization"),
+        "memory": int(report_metadata_output.get("mem_utilization")),
+        "cpu": int(report_metadata_output.get("cpu_utilization")),
         "io": cast_iops_as_float(report_metadata_output.get("io_utilization", {}))
     }
 
@@ -120,10 +124,20 @@ def _calculate_recommendations_count(error_key):
 
 
 def _prepare_performance_record(report_perf_profile):
-    """Prepare performance record by removing unnecessary keys."""
-    # Remove the 'type' key as it's not required
-    report_perf_profile.pop('type', None)
-    return report_perf_profile
+    """Prepare performance record by removing unnecessary keys.
+
+    Matches insights_engine_consumer.py behavior exactly:
+    - get_performance_profile() already removes 'type' key (process_archive.py line 69)
+    - Then process_report() removes 'instance_type' and 'region' (insights_engine_consumer.py lines 218-219)
+    - Note: process_archive.py's performance_profile does NOT include 'cloud_provider',
+      but rules_engine.py's performance_profile_rule does, so we remove it here to match
+    """
+    performance_record = report_perf_profile.copy()
+    keys_to_remove = ['instance_type', 'region', 'cloud_provider', 'type']
+    for key in keys_to_remove:
+        if key in performance_record:
+            del performance_record[key]
+    return performance_record
 
 
 def perf_profile_and_rule_payload(report_metadata_output, report_output, report_perf_profile):
