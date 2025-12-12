@@ -4,7 +4,7 @@ from unittest.mock import patch, Mock
 import json
 
 from ros.processor.suggestions_engine import SuggestionsEngine
-from ros.processor.report_processor_event_producer import api_and_no_pcp_raw_payload
+from ros.processor.report_processor_event_producer import _build_base_payload
 
 
 class TestSuggestionsEngine(unittest.TestCase):
@@ -142,7 +142,7 @@ class TestCreateOutputDir(unittest.TestCase):
         self.assertEqual(output_dir, "/var/tmp/pmlogextract-output-12345/")
 
 
-class TestNoPcpRawPayload(unittest.TestCase):
+class TestBuildBasePayload(unittest.TestCase):
     def test_valid_payload(self):
         with open("sample-files/no_pcp_raw_message.json", "r") as f:
             input_payload = json.load(f)
@@ -164,11 +164,11 @@ class TestNoPcpRawPayload(unittest.TestCase):
             "cloud_provider": "aws"
         }
 
-        self.assertEqual(api_and_no_pcp_raw_payload(input_payload), expected_output)
+        self.assertEqual(_build_base_payload(input_payload), expected_output)
 
     def test_missing_host(self):
         with self.assertRaises(AttributeError):
-            api_and_no_pcp_raw_payload({
+            _build_base_payload({
                 "type": "created",
                 "platform_metadata": {"request_id": "a1b2c3"},
                 "host": None
@@ -211,7 +211,7 @@ class TestNoPcpRawPayload(unittest.TestCase):
             "cloud_provider": "aws",
         }
 
-        self.assertEqual(api_and_no_pcp_raw_payload(input_payload), expected_output)
+        self.assertEqual(_build_base_payload(input_payload), expected_output)
 
 
 class TestAPIEvent(unittest.TestCase):
