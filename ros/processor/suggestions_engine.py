@@ -32,6 +32,7 @@ from ros.rules.rules_engine import (
     report_metadata,
     performance_profile_rule
 )
+from insights import run as insights_run
 from ros.processor.report_processor_event_producer import (
     produce_report_processor_event
 )
@@ -218,15 +219,9 @@ class SuggestionsEngine:
         if self.should_reject_deleted_system(payload):
             return
 
-        if not platform_metadata.get('is_pcp_raw_data_collected', False):
-            logging.debug(
-                f"{self.service} - {self.event} - Triggering an event for system {host.get('id')}"
-            )
-            self.consumer.commit()
-            produce_report_processor_event(payload, self.producer)
-            return
-
         archive_URL = platform_metadata.get('url')
+        is_pcp_raw_data_collected = platform_metadata.get('is_pcp_raw_data_collected', False)
+
         with self.download_and_extract(
                 archive_URL,
                 host,
@@ -234,6 +229,28 @@ class SuggestionsEngine:
         ) as ext_dir:
             extracted_dir = ext_dir.tmp_dir
             extracted_dir_root = self.find_root_directory(extracted_dir, "insights_archive.txt")
+
+            if not is_pcp_raw_data_collected:
+                # No PCP data - only run report_metadata rule to get system metadata
+                # Skip PCP commands and other rules
+                logging.debug(
+                    f"{self.service} - {self.event} - No PCP data collected, "
+                    f"running only report_metadata rule for system {host.get('id')}"
+                )
+
+                # Run only report_metadata rule (cloud_metadata is a condition, so it will be evaluated)
+                rules_runner = insights_run([report_metadata], root=extracted_dir_root)
+
+                self.consumer.commit()
+                produce_report_processor_event(
+                    payload,
+                    self.producer,
+                    is_pcp_raw_data_collected=is_pcp_raw_data_collected,
+                    rules_runner=rules_runner
+                )
+                return
+
+            # PCP data is available - run full processing
             index_file_path = self.get_index_file_path(host, extracted_dir_root)
             if index_file_path is not None:
                 self.run_pcp_commands(host, index_file_path, platform_metadata.get('request_id'), extracted_dir_root)
@@ -244,6 +261,7 @@ class SuggestionsEngine:
                 produce_report_processor_event(
                     payload,
                     self.producer,
+                    is_pcp_raw_data_collected,
                     report_metadata_output,
                     rules_output,
                     report_perf_profile
@@ -256,11 +274,18 @@ class SuggestionsEngine:
             return
 
         host = payload.get('host')
+        platform_metadata = payload.get('platform_metadata', {})
         logging.debug(
             f"{self.service} - {self.event} - Triggering an event for system {host.get('id')}, updated via API"
         )
         self.consumer.commit()
-        produce_report_processor_event(payload, self.producer)
+        # API events don't have PCP data - only update System, no PerformanceProfile
+        produce_report_processor_event(
+            payload,
+            self.producer,
+            is_pcp_raw_data_collected=platform_metadata.get('is_pcp_raw_data_collected', False),
+            is_api_call=True
+        )
         return
 
     def process_message(self, message):
