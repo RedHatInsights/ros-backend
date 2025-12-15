@@ -439,8 +439,10 @@ def performance_profile_rule(pmlog_summary, lscpu, cloud_metadata):
     # CPU information from LsCPU
     profile["total_cpus"] = int(lscpu.info.get('CPUs'))
 
-    profile = {"instance_type": None, "region": None,  "cloud_provider": None}
     # Cloud metadata integration
+    profile["instance_type"] = None
+    profile["region"] = None
+    profile["cloud_provider"] = None
     if cloud_metadata:
         profile["instance_type"] = cloud_metadata.type
         profile["region"] = cloud_metadata.region
