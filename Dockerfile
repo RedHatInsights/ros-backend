@@ -1,6 +1,6 @@
 FROM registry.redhat.io/rhel9/pcp:latest
 
-ARG PYTHON_PIP_VERSION=23.3
+ARG PYTHON_PIP_VERSION=25.3
 
 RUN dnf install \
     --nodocs -y python3.11 tar gzip gcc python3.11-devel libpq-devel
