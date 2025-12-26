@@ -14,10 +14,19 @@
       "enabled": true,
       "strategies": [
         {
-          "name": "userWithId",
+          "name": "flexibleRollout",
           "parameters": {
-            "userIds": "000001"
-          }
+            "rollout": "100",
+            "stickiness": "orgId",
+            "groupId": "ros.v2"
+          },
+          "constraints": [
+            {
+              "contextName": "orgId",
+              "operator": "IN",
+              "values": ["000001"]
+            }
+          ]
         }
       ]
     }
