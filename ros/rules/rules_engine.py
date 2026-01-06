@@ -8,6 +8,7 @@ from insights import (
     SkipComponent,
     add_filter
 )
+from insights.core import dr
 from insights.core.plugins import (
     make_metadata,
     make_fail,
@@ -29,8 +30,11 @@ from ros.rules.combiners.rhel_release import RhelRelease
 from ros.rules.helpers import Ec2LinuxPrices
 from ros.lib.aws_instance_types import INSTANCE_TYPES as EC2_INSTANCE_TYPES
 from ros.rules.helpers.rules_data import RosThresholds, RosKeys
+from ros.lib.config import INSIGHTS_EXTRACT_LOGLEVEL
 
 add_filter(InsightsClientConf, ['ros_collect'])
+dr.log.setLevel(INSIGHTS_EXTRACT_LOGLEVEL)
+
 ERROR_KEY_NO_DATA = "NO_PCP_DATA"
 ERROR_KEY_IDLE = "INSTANCE_IDLE"
 ERROR_KEY_OVERSIZED = "INSTANCE_OVERSIZED"
