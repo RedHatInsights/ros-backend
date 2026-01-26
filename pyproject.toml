@@ -7,7 +7,7 @@ authors = []
 [tool.poetry.dependencies]
 python = "^3.11"
 Flask = "~=3.1.1"
-gunicorn = "~=23.0.0"
+gunicorn = "~=24.1.1"
 flask-restful = "~=0.3.8"
 Flask-SQLAlchemy = "~=3.1.1"
 sqlalchemy = "~=2.0"
