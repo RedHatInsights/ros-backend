@@ -40,7 +40,7 @@ pipeline {
             }
             steps {
                 withVault([configuration: configuration, vaultSecrets: secrets]) {
-                    sh 'bash -x pr_check.sh'
+                    sh 'bash pr_check.sh'
                 }
             }
         }
@@ -51,7 +51,7 @@ pipeline {
             }
             steps {
                 withVault([configuration: configuration, vaultSecrets: secrets]) {
-                    sh 'bash -x build_deploy.sh'
+                    sh 'bash build_deploy.sh'
                 }
             }
         }
