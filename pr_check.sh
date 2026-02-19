@@ -9,13 +9,13 @@ export DOCKERFILE="Dockerfile"
 echo "=== JOB INFORMATION ==="
 echo "JOB_NAME: $JOB_NAME"
 echo "BUILD_NUMBER: $BUILD_NUMBER"
-echo "GitHub PR ID: $ghprbPullId"
+echo "GitHub PR ID: $CHANGE_ID"
 
 get_pr_labels() {
-    if [[ -n "$ghprbPullId" && -n "$GITHUB_TOKEN" ]]; then
+    if [[ -n "$CHANGE_ID" && -n "$GITHUB_TOKEN" ]]; then
         echo "Fetching PR labels from GitHub API..."
         local labels=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/repos/RedHatInsights/ros-backend/pulls/$ghprbPullId" | \
+            "https://api.github.com/repos/RedHatInsights/ros-backend/pulls/$CHANGE_ID" | \
             jq -r '.labels[].name' 2>/dev/null || echo "")
         echo "PR Labels: $labels"
         echo "$labels"
