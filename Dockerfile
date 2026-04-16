@@ -1,4 +1,4 @@
-FROM registry.redhat.io/rhel9/pcp:latest
+FROM registry.access.redhat.com/rhel9/pcp:latest
 
 ARG PYTHON_PIP_VERSION=26.0
 
