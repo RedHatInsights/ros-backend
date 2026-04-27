@@ -129,11 +129,10 @@ else:
     UNLEASH_URL = os.getenv("UNLEASH_URL", "http://localhost:3063/api")
 
 DB_URI = f"postgresql://{DB_USER}:{DB_PASSWORD}"\
-         f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-if DB_SSL_CERTPATH:
-    DB_URI += f"?sslmode={DB_SSL_MODE}&sslrootcert={DB_SSL_CERTPATH}"
-elif DB_SSL_MODE != "disable":
-    DB_URI += f"?sslmode={DB_SSL_MODE}"
+         f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"\
+         f"?sslmode={DB_SSL_MODE}"
+if DB_SSL_MODE != "disable" and DB_SSL_CERTPATH:
+    DB_URI += f"&sslrootcert={DB_SSL_CERTPATH}"
 
 DB_POOL_SIZE = int(os.getenv("DB_POOL_SIZE", '5'))
 DB_MAX_OVERFLOW = int(os.getenv("DB_MAX_OVERFLOW", '10'))
