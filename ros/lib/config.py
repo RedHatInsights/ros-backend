@@ -31,7 +31,7 @@ def build_endpoint_url(ep):
 
 LOG = logging.getLogger(__name__)
 CLOWDER_ENABLED = True if os.getenv("CLOWDER_ENABLED", default="False").lower() in ["true", "t", "yes", "y"] else False
-DB_SSL_MODE = "verify-full"
+DB_SSL_MODE = "disable"
 DB_SSL_CERTPATH = None
 
 if CLOWDER_ENABLED:
@@ -45,6 +45,7 @@ if CLOWDER_ENABLED:
     DB_PASSWORD = LoadedConfig.database.password
     DB_HOST = LoadedConfig.database.hostname
     DB_PORT = LoadedConfig.database.port
+    DB_SSL_MODE = LoadedConfig.database.sslMode
     if LoadedConfig.database.rdsCa:
         DB_SSL_CERTPATH = LoadedConfig.rds_ca()
     REDIS_USERNAME = LoadedConfig.inMemoryDb.username
@@ -129,8 +130,12 @@ else:
 
 DB_URI = f"postgresql://{DB_USER}:{DB_PASSWORD}"\
          f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-if DB_SSL_CERTPATH:
-    DB_URI += f"?sslmode={DB_SSL_MODE}&sslrootcert={DB_SSL_CERTPATH}"
+if DB_SSL_MODE != "disable":
+    DB_URI += f"?sslmode={DB_SSL_MODE}"
+    if DB_SSL_MODE in ("verify-ca", "verify-full"):
+        if not DB_SSL_CERTPATH:
+            raise ValueError(f"sslrootcert is required when sslmode is {DB_SSL_MODE}")
+        DB_URI += f"&sslrootcert={DB_SSL_CERTPATH}"
 
 DB_POOL_SIZE = int(os.getenv("DB_POOL_SIZE", '5'))
 DB_MAX_OVERFLOW = int(os.getenv("DB_MAX_OVERFLOW", '10'))
