@@ -132,7 +132,9 @@ DB_URI = f"postgresql://{DB_USER}:{DB_PASSWORD}"\
          f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 if DB_SSL_MODE != "disable":
     DB_URI += f"?sslmode={DB_SSL_MODE}"
-    if DB_SSL_CERTPATH:
+    if DB_SSL_MODE in ("verify-ca", "verify-full"):
+        if not DB_SSL_CERTPATH:
+            raise ValueError(f"sslrootcert is required when sslmode is {DB_SSL_MODE}")
         DB_URI += f"&sslrootcert={DB_SSL_CERTPATH}"
 
 DB_POOL_SIZE = int(os.getenv("DB_POOL_SIZE", '5'))
