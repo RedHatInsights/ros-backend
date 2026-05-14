@@ -83,7 +83,7 @@ services:
     depends_on:
     - kafka
   db-ros:
-    image: postgres
+    image: postgres:16
     restart: always
     environment:
       POSTGRES_PASSWORD: postgres
@@ -92,7 +92,7 @@ services:
     ports:
       - "15432:5432"
   db-inventory:
-    image: postgres
+    image: postgres:16
     restart: always
     environment:
       POSTGRES_PASSWORD: insights
