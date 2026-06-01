@@ -2389,14 +2389,14 @@ devenv = ["check-manifest", "pytest (>=4.3)", "pytest-cov", "pytest-mock (>=3.3)
 
 [[package]]
 name = "unleashclient"
-version = "6.4.0"
+version = "6.7.0"
 description = "Python client for the Unleash feature toggle system!"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "unleashclient-6.4.0-py3-none-any.whl", hash = "sha256:e0b80fffbda50427115707cf042611ad130b5ed3b01611301f06a9fc8981eea7"},
-    {file = "unleashclient-6.4.0.tar.gz", hash = "sha256:54952e5d64c05835e44315efd17e8ba0e7815e1cc431ba510d6c1928c363b003"},
+    {file = "unleashclient-6.7.0-py3-none-any.whl", hash = "sha256:1fbf4bc66ec9b952e0131012f954adfc1d476d54ad320905bc5f4fdea963a9fc"},
+    {file = "unleashclient-6.7.0.tar.gz", hash = "sha256:a34649ef2232c3e0e18232b2067c07dd0bf474b977efc67c8806d816418ebe29"},
 ]
 
 [package.dependencies]
@@ -2408,7 +2408,7 @@ mmh3 = "*"
 python-dateutil = "*"
 requests = "*"
 semver = "<4.0.0"
-yggdrasil-engine = ">=1.0.0"
+yggdrasil-engine = ">=1.3.0"
 
 [[package]]
 name = "urllib3"
@@ -2466,60 +2466,60 @@ watchdog = ["watchdog (>=2.3)"]
 
 [[package]]
 name = "yggdrasil-engine"
-version = "1.0.0"
+version = "1.3.0"
 description = "Engine for evaluating Unleash feature flags"
 optional = false
 python-versions = "<4.0,>=3.8"
 groups = ["main"]
 files = [
-    {file = "yggdrasil_engine-1.0.0-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:a1ed0b4d8d1702b3e6a1f454f89be2fdac544ff1b7d979afa62224377ae0cf6e"},
-    {file = "yggdrasil_engine-1.0.0-cp310-abi3-macosx_11_0_x86_64.whl", hash = "sha256:9ff016dad3f6972d79dc121625df4c5ea35e8f69519de3873a408daf0b65bd54"},
-    {file = "yggdrasil_engine-1.0.0-cp310-abi3-manylinux2014_aarch64.whl", hash = "sha256:de577c8abd064861423b55d245e16770927332b1d3a6ef2e94ccb4b5d759349b"},
-    {file = "yggdrasil_engine-1.0.0-cp310-abi3-manylinux2014_x86_64.whl", hash = "sha256:b1dece26decdcf1fc061bc9a3771618d00bf9431466cfe2b952151f92814d169"},
-    {file = "yggdrasil_engine-1.0.0-cp310-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:938f1a88c801f4ccc6289dced4033cb05a6f7042f373581ce7d8a999da6b82d0"},
-    {file = "yggdrasil_engine-1.0.0-cp310-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:6386ec0c0fd0a9c196e54b9cd36b1edecb0233a618496210cb70f914eae593b9"},
-    {file = "yggdrasil_engine-1.0.0-cp310-abi3-win_amd64.whl", hash = "sha256:345c6003f07480fcf6d7c5ba8522de2cbafa4521bbc42013ceaeef34c2395a74"},
-    {file = "yggdrasil_engine-1.0.0-cp310-abi3-win_arm64.whl", hash = "sha256:52f648a83049c3ff29bc2d8f6064c745895e38d021051948fab55a041d0d1195"},
-    {file = "yggdrasil_engine-1.0.0-cp311-abi3-macosx_11_0_arm64.whl", hash = "sha256:cecae8456c3b45e71a84e7e5c9467fb26343c27a86c7b9b53c080959f5bf4092"},
-    {file = "yggdrasil_engine-1.0.0-cp311-abi3-macosx_11_0_x86_64.whl", hash = "sha256:8f1ff08afa2a2c6b1b856439078a473abca275223636630fb7a67108e587fe79"},
-    {file = "yggdrasil_engine-1.0.0-cp311-abi3-manylinux2014_aarch64.whl", hash = "sha256:447f2beb4c743db01aa8ae26eb38b5cd314aaa664388361006456ca6735b5a42"},
-    {file = "yggdrasil_engine-1.0.0-cp311-abi3-manylinux2014_x86_64.whl", hash = "sha256:9c784fe3d47e88f4f059d59d47ea0e64c9e352d1e5e8b91efdaba36c3509d94d"},
-    {file = "yggdrasil_engine-1.0.0-cp311-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:cf325a422b1fb1033999b6dffac3ed211e1dabe4c7e5815ce3ce3d46819eff8b"},
-    {file = "yggdrasil_engine-1.0.0-cp311-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:f52b362ec2c5f9e192de99877b8e801b82a46ffe2ae565d7b676c549b1b88ad1"},
-    {file = "yggdrasil_engine-1.0.0-cp311-abi3-win_amd64.whl", hash = "sha256:e9adb857705bf646541124527b049c4cca17b82de9c0390ab51c8f7ab97474e1"},
-    {file = "yggdrasil_engine-1.0.0-cp311-abi3-win_arm64.whl", hash = "sha256:33a11e16f9436425896faf6cdff58eab43b0cd2979011c7aff63e3e919c8888a"},
-    {file = "yggdrasil_engine-1.0.0-cp312-abi3-macosx_11_0_arm64.whl", hash = "sha256:b92167283a0c4b04f38f738a04a990f01176a075f6a8af3e62d7174f34646fd1"},
-    {file = "yggdrasil_engine-1.0.0-cp312-abi3-macosx_11_0_x86_64.whl", hash = "sha256:5d190184f3feace6112a220d47052398432cf3aa6eb33efe06dcfcb9b06a3d6d"},
-    {file = "yggdrasil_engine-1.0.0-cp312-abi3-manylinux2014_aarch64.whl", hash = "sha256:90d627ca958eefebeb8d183b7f53cf32f1bc0e558e600ce3334ecd56bbe2b1ef"},
-    {file = "yggdrasil_engine-1.0.0-cp312-abi3-manylinux2014_x86_64.whl", hash = "sha256:0a86e2cd08225bd76e7df64f1a41582161b1ac19317f41f68175b6b79bc281ae"},
-    {file = "yggdrasil_engine-1.0.0-cp312-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:a50704d10ed1054047eb87bca85c348f4c9cba35d6bff9058c2c487739c3aa3c"},
-    {file = "yggdrasil_engine-1.0.0-cp312-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:770509f97e27228dca593663f16d07cbd08f61535fe2f3203b725ff144e191ed"},
-    {file = "yggdrasil_engine-1.0.0-cp312-abi3-win_amd64.whl", hash = "sha256:8438548e05525eaf4f770918a836e04829fdaee32e14da6f2ff7e8b3f2512d53"},
-    {file = "yggdrasil_engine-1.0.0-cp312-abi3-win_arm64.whl", hash = "sha256:69c0ec4ab606fad5dd8ff96b565af4c3a9c5dd1fd6844e549ea0bf3db4a2f763"},
-    {file = "yggdrasil_engine-1.0.0-cp313-abi3-macosx_11_0_arm64.whl", hash = "sha256:90f9336a24a9e09fe211eb6079e5c4a9e2cc245e90842356be511bd7bc73c594"},
-    {file = "yggdrasil_engine-1.0.0-cp313-abi3-macosx_11_0_x86_64.whl", hash = "sha256:d0cabfd198b1ac927d0c56d0d667ab9497acb8b60351ff45a4000214c79a54a0"},
-    {file = "yggdrasil_engine-1.0.0-cp313-abi3-manylinux2014_aarch64.whl", hash = "sha256:21340f75a9283bfc1feb78ba071703f432e77ca1fcd32fe1a28a5d1314a8a39d"},
-    {file = "yggdrasil_engine-1.0.0-cp313-abi3-manylinux2014_x86_64.whl", hash = "sha256:2cac50c85887a6c078ca6d3792d2b7241539d6e385648006ca8255cd20fce431"},
-    {file = "yggdrasil_engine-1.0.0-cp313-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:3eb8bc69111e1f3d10649504a33b6a6677cd932037c6c7e77f12c80c1d8b3c63"},
-    {file = "yggdrasil_engine-1.0.0-cp313-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:2fe9d2ef59ebdbfbbc689b440c45283f3c385b7b5e1ee637618d8e279fc41301"},
-    {file = "yggdrasil_engine-1.0.0-cp313-abi3-win_amd64.whl", hash = "sha256:40131927c89f8f8bfc66e01f4b8e9168433b64c23b8a3ea1614bdddc0ca3ae14"},
-    {file = "yggdrasil_engine-1.0.0-cp313-abi3-win_arm64.whl", hash = "sha256:d5830f797a2309a99fdf49fe469a52ad5bb0bbb22ee68b409d47a07c72e5f5b3"},
-    {file = "yggdrasil_engine-1.0.0-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:cafb7e5bb3cb4143b2fd83f99250bd23f8c4d9f9c60f1fd8783c1615a4bdfcea"},
-    {file = "yggdrasil_engine-1.0.0-cp38-abi3-macosx_11_0_x86_64.whl", hash = "sha256:7aafb572c6d7ddbdd9724ad494f53add883bdd1def24a63e175854d5c76dd26e"},
-    {file = "yggdrasil_engine-1.0.0-cp38-abi3-manylinux2014_aarch64.whl", hash = "sha256:4d73c51519455b7758f551982ba6f5ede70990b51da9e9c070cef2afcd2f36ce"},
-    {file = "yggdrasil_engine-1.0.0-cp38-abi3-manylinux2014_x86_64.whl", hash = "sha256:1581d90fb52497cbd7a0eee54d8f325139c5f76d90a3931dbd42d9d0c0209d83"},
-    {file = "yggdrasil_engine-1.0.0-cp38-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:b6b7a28e81e09c2719241b41ec63ff0acda00c2f2b5a54e83d703101440e41c1"},
-    {file = "yggdrasil_engine-1.0.0-cp38-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:ab486a8401e3e0358fa75ee183dc9096443df979602c156a70a2259884f5f856"},
-    {file = "yggdrasil_engine-1.0.0-cp38-abi3-win_amd64.whl", hash = "sha256:816fcf92995ab9725968746ad20258bb1d87602d2d2ebf14bc0b56aa405ab03e"},
-    {file = "yggdrasil_engine-1.0.0-cp38-abi3-win_arm64.whl", hash = "sha256:2a8f833cdd555c33747532792cf0cc6620dca9bb6a693ab1ff8dea375a2d9970"},
-    {file = "yggdrasil_engine-1.0.0-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:4b1765db6b31cd1d7bef5821493834003df50121604907bce82e84d3dc0c80d9"},
-    {file = "yggdrasil_engine-1.0.0-cp39-abi3-macosx_11_0_x86_64.whl", hash = "sha256:ee9ebcf0b206ce8959147d8b7faeab1833c0587e2573f8f3d6dd4a98605b8d97"},
-    {file = "yggdrasil_engine-1.0.0-cp39-abi3-manylinux2014_aarch64.whl", hash = "sha256:42a199714bab52c9e22108a74b1b4cfdefd5f451139024cc6d8828111835189d"},
-    {file = "yggdrasil_engine-1.0.0-cp39-abi3-manylinux2014_x86_64.whl", hash = "sha256:f3132700301f2a7f0cb3509fda9d159db2fb28437ae1e1bd214604520ad10905"},
-    {file = "yggdrasil_engine-1.0.0-cp39-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:25503d8711ef3d009707be73eaaa500646b90ecd88085b4c2cbe6f2a176c3986"},
-    {file = "yggdrasil_engine-1.0.0-cp39-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:6d4ebaa62898e2e59da960ab6e24214d2b06312f36e5199fb9d22715b46224db"},
-    {file = "yggdrasil_engine-1.0.0-cp39-abi3-win_amd64.whl", hash = "sha256:5eb80a90d002d3f32e7ecf0743699818c84b39bfd349be20ab780177dc113c33"},
-    {file = "yggdrasil_engine-1.0.0-cp39-abi3-win_arm64.whl", hash = "sha256:8be8bdd4e2ba82febe493c70fa5d4c1a6235c8f250f62db853ec3f4bcbdb2e63"},
+    {file = "yggdrasil_engine-1.3.0-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:838880e916da4af97c10ff38e1845ef38ed91201c2868e3275e1372c8979a3ca"},
+    {file = "yggdrasil_engine-1.3.0-cp310-abi3-macosx_11_0_x86_64.whl", hash = "sha256:8d23e865a82b47bac7a59376fd4f0e000ae8b3b4e25fc27a5554f00093f2ff75"},
+    {file = "yggdrasil_engine-1.3.0-cp310-abi3-manylinux2014_aarch64.whl", hash = "sha256:bf78418d4b66c4ec888fa9444061c65358df013105f85d7ddcd64fe78e23f38d"},
+    {file = "yggdrasil_engine-1.3.0-cp310-abi3-manylinux2014_x86_64.whl", hash = "sha256:8a244b6084dfd1bb15dd862cecd82f3a69d26c233e3b60d63c4b31b224d92257"},
+    {file = "yggdrasil_engine-1.3.0-cp310-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:1a332da70a8efaaed9b603676efa5dac7ed6e4f4cb4524bc3712bd4ea90c4186"},
+    {file = "yggdrasil_engine-1.3.0-cp310-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:48a027b7c54e2837988e07a44c77ddd6e2d68aac98e8289b0d75a6a4e4f6f0da"},
+    {file = "yggdrasil_engine-1.3.0-cp310-abi3-win_amd64.whl", hash = "sha256:afa6c9a454b79126048a62fced3862c0608d74a466f172625924bb28108b5ff4"},
+    {file = "yggdrasil_engine-1.3.0-cp310-abi3-win_arm64.whl", hash = "sha256:bf2abdd70976ff95b8f72cc4e8a63968702cadbdac035f7924dcffb314042482"},
+    {file = "yggdrasil_engine-1.3.0-cp311-abi3-macosx_11_0_arm64.whl", hash = "sha256:80aba2cd6bf06434bbe996e384434c4fa1f5e7371a46ef5deeb1c8c34afe7fe4"},
+    {file = "yggdrasil_engine-1.3.0-cp311-abi3-macosx_11_0_x86_64.whl", hash = "sha256:ac81c0a4e6120bee6e3c3049420ab7b44415d9fd876d1ae549206fb582d82a4d"},
+    {file = "yggdrasil_engine-1.3.0-cp311-abi3-manylinux2014_aarch64.whl", hash = "sha256:8946d23a0883012a5e3404643f210e8cf654030af87722262ad28e92fb07aa76"},
+    {file = "yggdrasil_engine-1.3.0-cp311-abi3-manylinux2014_x86_64.whl", hash = "sha256:66c1d03edb846a0fc1a622685ee80ae9552fd1ddd21d41524466dc8fe914b37c"},
+    {file = "yggdrasil_engine-1.3.0-cp311-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:928230be698325d9fdc8a01b477c5948b86e979897a54f6fa6030f4a1d334bc5"},
+    {file = "yggdrasil_engine-1.3.0-cp311-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:f632266983af11bc572d9cf29e8baeeae4c96f736a764034ca82dea7e6640cbc"},
+    {file = "yggdrasil_engine-1.3.0-cp311-abi3-win_amd64.whl", hash = "sha256:8096fdf4674987d9c1d3f72b8a86e81121cbed25f74d66d4413460556f56ea3c"},
+    {file = "yggdrasil_engine-1.3.0-cp311-abi3-win_arm64.whl", hash = "sha256:3b0df9e6ab138f0dfc4cf2d88ae060b360060ef7fc239ab64a808ec56e450567"},
+    {file = "yggdrasil_engine-1.3.0-cp312-abi3-macosx_11_0_arm64.whl", hash = "sha256:19d1136cab1963f7cc3d1926f6cbcfc42de1f5c8c0e4d8d6e68765768d8ed238"},
+    {file = "yggdrasil_engine-1.3.0-cp312-abi3-macosx_11_0_x86_64.whl", hash = "sha256:6f0b7aa3be0aaf28cee7b7f3428922d4735f72533052aad6e4187f7814ba56f0"},
+    {file = "yggdrasil_engine-1.3.0-cp312-abi3-manylinux2014_aarch64.whl", hash = "sha256:28dde2312ccd778d32c94103b2c8332a72c077b834b55d8408a334a736460f53"},
+    {file = "yggdrasil_engine-1.3.0-cp312-abi3-manylinux2014_x86_64.whl", hash = "sha256:b13a49c29d676b4674ee9362eedb86491332d4d2da07afb9ea2140a1b05e8a90"},
+    {file = "yggdrasil_engine-1.3.0-cp312-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:ca0d5493e365ee2ccc9b69434c34986d5616e8277ed8609a9e307a101c4e0a23"},
+    {file = "yggdrasil_engine-1.3.0-cp312-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:b21708fb0389d2fc240b35377c7821571ecba93ef4e0a01a8d15e53f016d4971"},
+    {file = "yggdrasil_engine-1.3.0-cp312-abi3-win_amd64.whl", hash = "sha256:ab3a3f024c7c2d692bbdc8e1467bd16aa98b5d30ed33938fbde61ed0f3e4ea97"},
+    {file = "yggdrasil_engine-1.3.0-cp312-abi3-win_arm64.whl", hash = "sha256:8da87fcd93d6ccbab5d3a2d2aaf54b447265be61b19f65ba6044986f35798f99"},
+    {file = "yggdrasil_engine-1.3.0-cp313-abi3-macosx_11_0_arm64.whl", hash = "sha256:4a700c1711e0db80d57bd5e5fe32f537d7cf999e92e0d1c5b086ce5a17e69f98"},
+    {file = "yggdrasil_engine-1.3.0-cp313-abi3-macosx_11_0_x86_64.whl", hash = "sha256:a69049ca69abae3945a0d9811e4f8aa6b94e5ab12af1ff32cdf9b2bd30e41e67"},
+    {file = "yggdrasil_engine-1.3.0-cp313-abi3-manylinux2014_aarch64.whl", hash = "sha256:b07d0ecd58a36d7c25c3708526900a34d5f4ccb77cd822ec27f17a6952f6278a"},
+    {file = "yggdrasil_engine-1.3.0-cp313-abi3-manylinux2014_x86_64.whl", hash = "sha256:a2cacdf5ee7eb942e0b09e0a76e6d28460cd528c961126b01c58d2dcd4b14ea3"},
+    {file = "yggdrasil_engine-1.3.0-cp313-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:91d28e7d8838b14722f6165cd19b3ae8cea711a43485f2260f988d922c2b84ea"},
+    {file = "yggdrasil_engine-1.3.0-cp313-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:18a493f539408ec262be315d40f58e1da899fea6b1be18695516469352c42ac7"},
+    {file = "yggdrasil_engine-1.3.0-cp313-abi3-win_amd64.whl", hash = "sha256:3ec38c4be410618d9826749f275f451cc07dce426413e3576ef7b6a6db1474e2"},
+    {file = "yggdrasil_engine-1.3.0-cp313-abi3-win_arm64.whl", hash = "sha256:1704c458dfe3dbc4a8655a5271b2bef7264d8d7b392f7e02194ff3171d3c7538"},
+    {file = "yggdrasil_engine-1.3.0-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:e073a0ecf15fee1315db1bd02baadd0c1309b67188a16bf23a50456b2f7be951"},
+    {file = "yggdrasil_engine-1.3.0-cp38-abi3-macosx_11_0_x86_64.whl", hash = "sha256:037eff18de77e9b357829d3dd5cc4ee5bd5aaf0eb949cd87e163790bd319cc27"},
+    {file = "yggdrasil_engine-1.3.0-cp38-abi3-manylinux2014_aarch64.whl", hash = "sha256:d005998f66048e637b17b6a169bc009d55d9c26d10dfaada2e7fe296eadfd599"},
+    {file = "yggdrasil_engine-1.3.0-cp38-abi3-manylinux2014_x86_64.whl", hash = "sha256:84f6168452c062df2386e7ebd858066f8a82562531c4be37b5024634a6ece9eb"},
+    {file = "yggdrasil_engine-1.3.0-cp38-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:1ab1b8f457e55b49eaa86dd1c42ab8ff45d0e6f5ec7be31cfed6c698f0c44e75"},
+    {file = "yggdrasil_engine-1.3.0-cp38-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:a5f7da76799391a4ae1462223229092b91bef863626ce3f662027a0321513a27"},
+    {file = "yggdrasil_engine-1.3.0-cp38-abi3-win_amd64.whl", hash = "sha256:0113ba088babf7cced92f88c64ec9ea3e28692c705fedab5b3262f3bcfc492ba"},
+    {file = "yggdrasil_engine-1.3.0-cp38-abi3-win_arm64.whl", hash = "sha256:02a6cbe73892b5a574fd3962ff692e00e6ed51af5ba4f8f1ea6745392cfd5fac"},
+    {file = "yggdrasil_engine-1.3.0-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:de45a251ceeed07818735ce894c781d7a142a60718fbff76419eae66b9859a94"},
+    {file = "yggdrasil_engine-1.3.0-cp39-abi3-macosx_11_0_x86_64.whl", hash = "sha256:b1996338ff1a1dca2dfb337ee111487f4c92351cb31d94e3badb8a97524be4c3"},
+    {file = "yggdrasil_engine-1.3.0-cp39-abi3-manylinux2014_aarch64.whl", hash = "sha256:93e9fa8639c1a887e0175823316eb986ee58ec94999ebadbf0cc4bc84b085410"},
+    {file = "yggdrasil_engine-1.3.0-cp39-abi3-manylinux2014_x86_64.whl", hash = "sha256:049b407a23fabacface173abd802340922246cea6c9b9842af5926742fbf5572"},
+    {file = "yggdrasil_engine-1.3.0-cp39-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:778c15dc202b83472407f83622e52612a58ae979c2c8240aec1277dab6f3d407"},
+    {file = "yggdrasil_engine-1.3.0-cp39-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:fe2f98703fbb8b04aac05de5491a85d6e5263c1944c66dbb9253d1395d6e9935"},
+    {file = "yggdrasil_engine-1.3.0-cp39-abi3-win_amd64.whl", hash = "sha256:324f69da1314aaa1e81fbf7dd4ca6b2e241f2b1ce8bc2e018cf17b4193f6523f"},
+    {file = "yggdrasil_engine-1.3.0-cp39-abi3-win_arm64.whl", hash = "sha256:ecbc7db34359958bcf30b9ad5ab1f68c1114d19cb47b14f2c1a341a1468cd73c"},
 ]
 
 [[package]]
