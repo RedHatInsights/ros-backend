@@ -8,8 +8,7 @@ metadata:
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
       == "security-compliance"
-    pipelinesascode.tekton.dev/pipeline: https://github.com/RedHatInsights/konflux-pipelines/raw/v1.60.0/pipelines/docker-build-oci-ta.yaml
-  creationTimestamp: null
+    pipelinesascode.tekton.dev/pipeline: https://github.com/RedHatInsights/konflux-pipelines/raw/v1.68.0/pipelines/docker-build-oci-ta.yaml
   labels:
     appstudio.openshift.io/application: resource-optimization-sc
     appstudio.openshift.io/component: ros-backend-sc
@@ -35,8 +34,6 @@ spec:
   workspaces:
   - name: workspace
     volumeClaimTemplate:
-      metadata:
-        creationTimestamp: null
       spec:
         accessModes:
           - ReadWriteOnce
