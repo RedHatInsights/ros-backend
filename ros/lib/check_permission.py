@@ -32,6 +32,22 @@ def check_permission(**kwargs):
             HTTPStatus.BAD_REQUEST, message="Identity not found in request"
         )
 
+    if ENABLE_KESSEL:
+        kessel_response = query_kessel(auth_key)
+        if kessel_response["host_groups"]:
+            host_groups = kessel_response["host_groups"]
+            setattr(request, host_group_attr, host_groups)
+            LOG.info(f"Kessel Enabled - User has host groups {host_groups}")
+        else:
+            abort(
+                HTTPStatus.FORBIDDEN,
+                message='User does not have correct permissions to access the service'
+            )
+
+        # Kessel returns exactly the workspaces we have access to
+        setattr(request, access_all_systems, False)
+        return
+
     if ENABLE_RBAC:
         rbac_response = query_rbac(kwargs["application"], auth_key, kwargs["logger"])
         perms = [perm["permission"] for perm in rbac_response.get("data")]
@@ -50,21 +66,6 @@ def check_permission(**kwargs):
             HTTPStatus.FORBIDDEN,
             message='User does not have correct permissions to access the service'
         )
-
-    if ENABLE_KESSEL and not ENABLE_RBAC:
-        kessel_response = query_kessel(auth_key)
-        if kessel_response["host_groups"]:
-            host_groups = kessel_response["host_groups"]
-            setattr(request, host_group_attr, host_groups)
-            LOG.info(f"Kessel Enabled - User has host groups {host_groups}")
-        else:
-            abort(
-                HTTPStatus.FORBIDDEN,
-                message='User does not have correct permissions to access the service'
-            )
-
-        # Set admin to false - Kessel will return exactly the workspaces we have access to
-        setattr(request, access_all_systems, False)
 
 
 def _is_mgmt_url(path):
