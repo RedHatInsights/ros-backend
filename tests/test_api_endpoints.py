@@ -714,6 +714,34 @@ def test_kessel_workspaces(
         assert response.json["data"][1]["groups"][0]["name"] == "test-group"
 
 
+def test_kessel_takes_priority_over_rbac(
+        auth_token,
+        db_setup,
+        db_create_account,
+        db_create_system,
+        system_with_example_group,
+        system_with_test_group,
+        system_with_foo_group,
+        db_create_performance_profile,
+        create_performance_profiles,
+        mocker):
+    with app.test_client() as client:
+        mock_enable_rbac(mocker)
+        mock_enable_kessel(mocker)
+        rbac_spy = mocker.patch('ros.lib.check_permission.query_rbac')
+        mock_kessel({
+            "ros_can_read": True,
+            "host_groups": [
+                "155860d5-648c-4529-847a-690cbf198934",
+                "abcdefgh-d97e-4ed0-9095-ef07d73b4839",
+                "d4e2fc0f-617d-49d5-8d1b-acbb423f0fbe",
+            ]
+        }, mocker)
+        response = client.get('/api/ros/v1/systems', headers={"x-rh-identity": auth_token})
+        assert response.status_code == 200
+        rbac_spy.assert_not_called()
+
+
 @pytest.mark.no_suggestions
 def test_no_suggestions_when_system_is_optimized(
         auth_token,
