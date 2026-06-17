@@ -1,6 +1,9 @@
 FROM registry.redhat.io/rhel9/pcp:latest
 
-ARG PYTHON_PIP_VERSION=">=26,<27"
+# PEP 440 version specifier for pip (without the "pip" prefix).
+# Override must include operators, e.g. ">=26,<27", "==26.1.2", or ">=27,<28".
+# A plain version like "27.0" is invalid here.
+ARG PYTHON_PIP_SPEC=">=26,<27"
 
 RUN dnf install \
     --nodocs -y python3.11 tar gzip gcc python3.11-devel libpq-devel
@@ -8,7 +11,7 @@ RUN dnf install \
 # Install poetry in separate virtual env
 ENV POETRY_HOME=/opt/poetry
 RUN python3.11 -m venv $POETRY_HOME &&\
-    $POETRY_HOME/bin/pip install --upgrade "pip${PYTHON_PIP_VERSION}" setuptools wheel && \
+    $POETRY_HOME/bin/pip install --upgrade "pip${PYTHON_PIP_SPEC}" setuptools wheel && \
     $POETRY_HOME/bin/pip install poetry
 
 # Set new virtual env for ROS
@@ -22,7 +25,7 @@ COPY migrations migrations
 COPY seed.d seed.d
 
 RUN python3.11 -m venv $VIRTUAL_ENV && \
-    $VIRTUAL_ENV/bin/pip install --upgrade "pip${PYTHON_PIP_VERSION}" setuptools wheel && \
+    $VIRTUAL_ENV/bin/pip install --upgrade "pip${PYTHON_PIP_SPEC}" setuptools wheel && \
     poetry install
 
 ARG description="The Red Hat Insights resource optimization service \
