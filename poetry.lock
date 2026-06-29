@@ -1155,14 +1155,14 @@ files = [
 
 [[package]]
 name = "insights-core"
-version = "3.6.11"
+version = "3.7.7"
 description = "Insights Core is a data collection and analysis framework"
 optional = false
 python-versions = ">=2.7"
 groups = ["main"]
 files = [
-    {file = "insights_core-3.6.11-py3-none-any.whl", hash = "sha256:696d818554af484da45dd765df0c68d37376c5a5d1cc2ba8af849e2efcfa92a7"},
-    {file = "insights_core-3.6.11.tar.gz", hash = "sha256:f57fc6b1e241ba9c0d0bd27a1579b7c4b8dfcc772c01a18f6a08cd0707da8e94"},
+    {file = "insights_core-3.7.7-py3-none-any.whl", hash = "sha256:3d3610945f824e988cb13a0ea479000e6fb45b703491c7628ccb352d4f4229b3"},
+    {file = "insights_core-3.7.7.tar.gz", hash = "sha256:ed3e72d4b6e3249cd9e1d02116eb3825ca54a6fb9e0a0846fd9bd359888990b2"},
 ]
 
 [package.dependencies]
@@ -1177,19 +1177,18 @@ lockfile = "*"
 pyyaml = "*"
 redis = "*"
 requests = "*"
-rpm = {version = "*", markers = "python_version >= \"3.6\""}
-six = "*"
+rpm = "*"
 
 [package.extras]
 client = ["oyaml", "python-gnupg (==0.4.6)"]
 client-develop = ["oyaml", "pre-commit", "python-gnupg (==0.4.6)", "wheel"]
 cluster = ["ansible", "pandas"]
 develop = ["pre-commit", "wheel"]
-docs = ["MarkupSafe", "Pygments", "Sphinx", "colorama", "docutils", "ipython", "jedi", "nbsphinx", "sphinx_rtd_theme"]
+docs = ["MarkupSafe", "Pygments", "Sphinx (<=8.2.3)", "colorama", "docutils", "ipython (<8.7.0) ; python_version <= \"3.6\"", "ipython ; python_version > \"3.6\"", "jedi", "nbsphinx", "sphinx_rtd_theme"]
 linting = ["flake8"]
 openshift = ["openshift"]
 optional = ["colorama", "python-cjson", "python-logstash", "python-statsd", "watchdog"]
-testing = ["coverage", "mock (==2.0.0)", "pytest (>=4.6.0,<4.7.0) ; python_version == \"2.7\"", "pytest ; python_version >= \"3\"", "pytest-cov"]
+testing = ["coverage", "pytest", "pytest-cov"]
 
 [[package]]
 name = "itsdangerous"
@@ -2712,4 +2711,4 @@ type = ["pytest-mypy (>=1.0.1) ; platform_python_implementation != \"PyPy\""]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "9d4a2acf55f03b6ef18c63da7f0e9c5a9d7710c5b6f17e0ead5f4feedcd0a470"
+content-hash = "98371c39bb5d4a0c16c934d8905a187b215a3f9c8699b190e1ef9fd9e34dd300"
