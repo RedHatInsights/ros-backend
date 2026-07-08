@@ -63,12 +63,12 @@ jobs:
 
     - name: Install poetry
       run: |
-        pip install poetry
+        pip install poetry==2.4.1
 
     - name: Update indirect dependencies to latest
       run: |
         rm -rf poetry.lock
-        poetry update
+        poetry update --with dev
 
     - name: Show all installed packages
       run: |

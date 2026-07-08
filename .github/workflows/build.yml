@@ -63,8 +63,8 @@ jobs:
 
     - name: Install poetry
       run: |
-        pip install poetry
-        poetry install
+        pip install poetry==2.4.1
+        poetry install --with dev
 
     - name: Lint with flake8
       run: |
