@@ -65,7 +65,7 @@ jobs:
 
     - name: Install poetry
       run: |
-        pip install poetry
+        pip install poetry==2.4.1
 
     - name: Update all dependencies to latest
       run: |
@@ -119,7 +119,7 @@ jobs:
         build-backend = "poetry.core.masonry.api"
         EOF`" > pyproject.toml
         rm -rf poetry.lock
-        poetry install
+        poetry install --with dev
 
     - name: Show all installed packages
       run: |

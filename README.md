@@ -80,9 +80,9 @@ These components are shared by both V1 and V2 architectures:
 ![UML](http://www.plantuml.com/plantuml/png/tLJDRjmW4BxxARXLgfeyG1L5KLJrqaEhvW4GXjdrDC1G63PritdtOfDQ45chdkk39Rxlcny-HdENM4NEpWwCR45y__eWxfL-16_4ftlne2TmQdWd9ZGWU0AH0l7ViyQeBGpbg4w4HeH8emMNn1Fo99G_MZ12HtfAuW30Gtf47rHKJbZqm7C0GP4d6WRmZ3mBLQ97rF84CI5vyJm8yVxr87rsukRcsvVRM_5HeEVXPOkBarHQK_QSQWoQNYh4rLNvlOeAoF1hGIaU9PfwRXC6Y0UAJdaDCaGwe8MQECs9mSdz_5rO14rnIVqZaH_Va9dHuc_5IBvHH0WKMHh5K5161ucL2uKfTnyXIZgiQPq3RzRWjDLFNADEAkf9nO9GALX4_YXhqssXR45EM4e1AxIfxJAX1Az62wQW8v7zK52c8BNo1arVfMSMhr0llA5SCbmsj3IGcE9yqTZ2jAvKhZNd_xQ-SR1cIfV6cqkqv-hXvvP5VmA_U5s7FMSq1TMMibbUuuG6OdS1WobODKklN7-pmq_ZEm1zujLNdaChRMrf40joC_UDqH6EIFvVVTGXoxL2wjkXFTI1AvVVOuwHSjWUeR5xUQUBowI-99hUDqWwObY7Qrio4LJgpubixZMQlC46QZhfnqvMGourLhtQ6OCI2aQESzFAccmJw0YhHF6Rjyd1x14lG_bgkIHUwFhwV6vtyKQTpmkrjmGkIlezqKdfUT-NuQu0sTa_)
 ## Getting Started
 
-This project uses poetry to manage the development and production environments.
+This project uses [Poetry](https://python-poetry.org/) 2.4.1 to manage the development and production environments.
 
-Once you have poetry installed, do the following:
+Once you have Poetry 2.4.1 installed (`pip install poetry==2.4.1`), do the following:
 
 The latest version is supported on Python 3.11, install it and then switch to 3.11 version:
 ```bash
@@ -96,7 +96,7 @@ dnf install tar gzip gcc python3.11-devel libpq-devel
 
 Install the required dependencies:
 ```bash
-poetry install
+poetry install --with dev
 ```
 
 Afterwards you can activate the virtual environment by running:
@@ -185,7 +185,7 @@ python -m ros.api.main
 #### Running the Tests
 It is possible to run the tests using pytest:
 ```bash
-poetry install
+poetry install --with dev
 poetry run pytest --cov=ros tests
 ```
 

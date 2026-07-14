@@ -9,10 +9,11 @@ RUN dnf install \
     --nodocs -y python3.11 tar gzip gcc python3.11-devel libpq-devel
 
 # Install poetry in separate virtual env
+ARG POETRY_VERSION=2.4.1
 ENV POETRY_HOME=/opt/poetry
 RUN python3.11 -m venv $POETRY_HOME &&\
     $POETRY_HOME/bin/pip install --upgrade "pip${PYTHON_PIP_SPEC}" setuptools wheel && \
-    $POETRY_HOME/bin/pip install poetry
+    $POETRY_HOME/bin/pip install "poetry==${POETRY_VERSION}"
 
 # Set new virtual env for ROS
 ENV VIRTUAL_ENV=/app_root/src \

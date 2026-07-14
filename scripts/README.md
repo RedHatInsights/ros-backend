@@ -32,7 +32,7 @@ docker-compose up --build insights-inventory-web db-ros insights-engine
 Following commands are expected to be run from the repository root (not within the *scripts* directory).
 ### Enter into the poetry(poetry shell) environment
 ```bash
-poetry install
+poetry install --with dev
 poetry shell
 ```
 ### Run ros-api application
