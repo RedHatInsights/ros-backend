@@ -2556,14 +2556,14 @@ testing = ["check_manifest", "pyroma", "pytest (>=4.3)", "pytest-cov", "pytest-m
 
 [[package]]
 name = "unleashclient"
-version = "6.7.0"
+version = "6.8.0"
 description = "Python client for the Unleash feature toggle system!"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "unleashclient-6.7.0-py3-none-any.whl", hash = "sha256:1fbf4bc66ec9b952e0131012f954adfc1d476d54ad320905bc5f4fdea963a9fc"},
-    {file = "unleashclient-6.7.0.tar.gz", hash = "sha256:a34649ef2232c3e0e18232b2067c07dd0bf474b977efc67c8806d816418ebe29"},
+    {file = "unleashclient-6.8.0-py3-none-any.whl", hash = "sha256:a368ed333c462988d4110ef78ded09b81e7544a914cf63466657434206b09d95"},
+    {file = "unleashclient-6.8.0.tar.gz", hash = "sha256:89319193bfffbbe2c6c4c4815aebb1755938e9b0f0cb3c080c00cd9918e9c630"},
 ]
 
 [package.dependencies]
