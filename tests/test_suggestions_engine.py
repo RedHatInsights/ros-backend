@@ -54,7 +54,7 @@ class TestDownloadAndExtract(unittest.TestCase):
         ) as extract_dir:
             self.assertEqual(extract_dir.tmp_dir, "extracted_dir")
 
-        mock_get.assert_called_once_with("http://example.com/archive.tar.gz", timeout=10)
+        mock_get.assert_called_once_with("http://example.com/archive.tar.gz", timeout=(10, 60))
         mock_tempfile.return_value.__enter__.assert_called_once()
         mock_extract.assert_called_once()
 
@@ -73,7 +73,7 @@ class TestDownloadAndExtract(unittest.TestCase):
         ) as extract_dir:
             self.assertIsNone(extract_dir)
 
-        mock_get.assert_called_once_with("http://example.com/archive.tar.gz", timeout=10)
+        mock_get.assert_called_once_with("http://example.com/archive.tar.gz", timeout=(10, 60))
 
 
 class TestFindRootDirectory(unittest.TestCase):

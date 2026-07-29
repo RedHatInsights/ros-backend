@@ -417,7 +417,7 @@ def _send_event(producer, final_payload, host_id, request_id):
         key=host_id,
         on_delivery=lambda err, msg: delivery_report(err, msg, host_id, request_id, ROS_EVENTS_TOPIC)
     )
-    producer.poll()
+    producer.poll(0)
 
 
 def produce_report_processor_event(

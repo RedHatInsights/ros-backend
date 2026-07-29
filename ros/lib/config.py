@@ -167,6 +167,11 @@ CACHE_TIMEOUT_FOR_DELETED_SYSTEM = int(
     os.getenv("CACHE_TIMEOUT_FOR_DELETED_SYSTEM", "86400"))
 CACHE_KEYWORD_FOR_DELETED_SYSTEM = '_del_'
 POLL_TIMEOUT_SECS = 1.0
+# Suggestions Engine can exceed the librdkafka default (300000ms) between poll()
+# calls while downloading archives and running PCP commands; raise to avoid MAXPOLL eviction.
+SUGGESTIONS_ENGINE_MAX_POLL_INTERVAL_MS = int(
+    os.getenv("SUGGESTIONS_ENGINE_MAX_POLL_INTERVAL_MS", "900000")
+)
 UNLEASH_ROS_V2_FLAG = 'ros.v2'
 
 
