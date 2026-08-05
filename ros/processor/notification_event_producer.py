@@ -55,4 +55,4 @@ def new_suggestion_event(host, platform_metadata, system_previous_state, system_
         bytes_,
         on_delivery=lambda err, msg: delivery_report(err, msg, host.get('id'), request_id, NOTIFICATIONS_TOPIC)
     )
-    producer.poll()
+    producer.poll(0)

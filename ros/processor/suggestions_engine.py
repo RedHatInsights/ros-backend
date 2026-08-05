@@ -23,6 +23,7 @@ from ros.lib.config import (
     METRICS_PORT,
     INVENTORY_EVENTS_TOPIC,
     GROUP_ID_SUGGESTIONS_ENGINE,
+    SUGGESTIONS_ENGINE_MAX_POLL_INTERVAL_MS,
     UNLEASH_ROS_V2_FLAG
 )
 from ros.extensions import cache
@@ -44,7 +45,11 @@ logging = get_logger(__name__)
 
 class SuggestionsEngine:
     def __init__(self):
-        self.consumer = consume.init_consumer(INVENTORY_EVENTS_TOPIC, GROUP_ID_SUGGESTIONS_ENGINE)
+        self.consumer = consume.init_consumer(
+            INVENTORY_EVENTS_TOPIC,
+            GROUP_ID_SUGGESTIONS_ENGINE,
+            max_poll_interval_ms=SUGGESTIONS_ENGINE_MAX_POLL_INTERVAL_MS,
+        )
         self.producer = produce.init_producer()
         self.service = 'SUGGESTIONS_ENGINE'
         self.event = None
@@ -182,8 +187,7 @@ class SuggestionsEngine:
         logging.debug(f"{self.service} - {self.event} - Report downloading for system {host.get('id')}.")
 
         try:
-            response = requests.get(archive_URL, timeout=10)
-            self.consumer.commit()
+            response = requests.get(archive_URL, timeout=(10, 60))
 
             if response.status_code != HTTPStatus.OK:
                 logging.error(
@@ -202,6 +206,7 @@ class SuggestionsEngine:
                         yield extract_dir
         except Exception as error:
             logging.error(f"{self.service} - {self.event} - Error occurred during download and extraction: {error}")
+            yield None
 
     def handle_create_update(self, payload):
         self.event = "Update event" if payload.get('type') == 'updated' else "Create event"
@@ -227,6 +232,12 @@ class SuggestionsEngine:
                 host,
                 org_id=host.get('org_id')
         ) as ext_dir:
+            if ext_dir is None:
+                logging.error(
+                    f"{self.service} - {self.event} - "
+                    f"Failed to download/extract archive for system {host.get('id')}, skipping."
+                )
+                return
             extracted_dir = ext_dir.tmp_dir
             extracted_dir_root = self.find_root_directory(extracted_dir, "insights_archive.txt")
 
@@ -241,7 +252,6 @@ class SuggestionsEngine:
                 # Run only report_metadata rule (cloud_metadata is a condition, so it will be evaluated)
                 rules_runner = insights_run([report_metadata], root=extracted_dir_root)
 
-                self.consumer.commit()
                 produce_report_processor_event(
                     payload,
                     self.producer,
@@ -278,7 +288,6 @@ class SuggestionsEngine:
         logging.debug(
             f"{self.service} - {self.event} - Triggering an event for system {host.get('id')}, updated via API"
         )
-        self.consumer.commit()
         # API events don't have PCP data - only update System, no PerformanceProfile
         produce_report_processor_event(
             payload,
@@ -306,6 +315,8 @@ class SuggestionsEngine:
             self.handle_api_event(payload)
         elif event_type in ('created', 'updated'):
             self.handle_create_update(payload)
+
+        self.consumer.commit()
 
     def run(self):
         logging.info(f"{self.service} - Engine is running. Awaiting msgs.")
