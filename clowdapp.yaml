@@ -277,6 +277,8 @@ objects:
             value: ${GARBAGE_COLLECTION_INTERVAL}
           - name: DAYS_UNTIL_STALE
             value: ${DAYS_UNTIL_STALE}
+          - name: DAYS_UNTIL_ACCOUNT_STALE
+            value: ${DAYS_UNTIL_ACCOUNT_STALE}
           - name: DB_POOL_SIZE
             value: ${DB_POOL_SIZE}
           - name: DB_MAX_OVERFLOW
@@ -605,6 +607,9 @@ parameters:
 - description: Number of days after which data is considered to be outdated
   name: DAYS_UNTIL_STALE
   value: "45"
+- description: Number of days after which an empty account (no systems) is considered obsolete
+  name: DAYS_UNTIL_ACCOUNT_STALE
+  value: "90"
 - description: Host for the EAN to OrgId translator.
   name: TENANT_TRANSLATOR_HOST
   required: true

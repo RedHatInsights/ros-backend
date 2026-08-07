@@ -1,10 +1,17 @@
 from ros.lib.app import app
 from ros.extensions import db
-from ros.lib.models import PerformanceProfile, PerformanceProfileHistory
+from ros.lib.models import PerformanceProfile, PerformanceProfileHistory, RhAccount, System
 from datetime import datetime, timedelta, timezone
-from ros.lib.config import GARBAGE_COLLECTION_INTERVAL, DAYS_UNTIL_STALE, METRICS_PORT, get_logger
+from ros.lib.config import (
+    GARBAGE_COLLECTION_INTERVAL,
+    DAYS_UNTIL_STALE,
+    DAYS_UNTIL_ACCOUNT_STALE,
+    METRICS_PORT,
+    get_logger,
+)
 from ros.lib.cw_logging import commence_cw_log_streaming
 from prometheus_client import start_http_server
+from sqlalchemy import select, exists
 import time
 
 LOG = get_logger(__name__)
@@ -17,6 +24,7 @@ class GarbageCollector():
     def run(self):
         while True:
             self.remove_outdated_data()
+            self.remove_obsolete_accounts()
             time.sleep(GARBAGE_COLLECTION_INTERVAL)
 
     def remove_outdated_data(self):
@@ -49,6 +57,39 @@ class GarbageCollector():
         except Exception as error:  # pylint: disable=broad-except
             LOG.error(
                 f"{self.prefix} - Could not remove outdated records "
+                f"due to the following error {str(error)}."
+            )
+
+    def remove_obsolete_accounts(self):
+        """
+        Purge rh_accounts that have no associated systems and whose created_at
+        is older than DAYS_UNTIL_ACCOUNT_STALE. Accounts with NULL created_at
+        are skipped (cannot evaluate staleness).
+        """
+        try:
+            # created_at is stored without timezone; compare using naive UTC.
+            cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(
+                days=DAYS_UNTIL_ACCOUNT_STALE
+            )
+            with app.app_context():
+                has_systems = exists(
+                    select(System.id).where(System.tenant_id == RhAccount.id)
+                )
+                deleted_accounts = db.session.execute(
+                    db.delete(RhAccount).where(
+                        RhAccount.created_at.is_not(None),
+                        RhAccount.created_at < cutoff,
+                        ~has_systems,
+                    )
+                )
+                db.session.commit()
+                LOG.info(
+                    f"{self.prefix} - Purged {deleted_accounts.rowcount} obsolete account(s) "
+                    f"with no systems and created_at older than {DAYS_UNTIL_ACCOUNT_STALE} days"
+                )
+        except Exception as error:  # pylint: disable=broad-except
+            LOG.error(
+                f"{self.prefix} - Could not remove obsolete accounts "
                 f"due to the following error {str(error)}."
             )
 

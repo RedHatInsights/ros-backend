@@ -71,8 +71,8 @@ These components are shared by both V1 and V2 architectures:
 - Serves data from the same database regardless of which architecture processed it
 
 #### **Garbage Collector**
-- Periodic cleanup of outdated system data
-- Configurable via `GARBAGE_COLLECTION_INTERVAL` and `DAYS_UNTIL_STALE`
+- Periodic cleanup of outdated system data and obsolete empty accounts
+- Configurable via `GARBAGE_COLLECTION_INTERVAL`, `DAYS_UNTIL_STALE`, and `DAYS_UNTIL_ACCOUNT_STALE`
 - Works with data from both V1 and V2 processing
 
   
