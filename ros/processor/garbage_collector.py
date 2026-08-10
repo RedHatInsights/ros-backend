@@ -66,19 +66,26 @@ class GarbageCollector():
         is older than DAYS_UNTIL_ACCOUNT_STALE. Accounts with NULL created_at
         are skipped (cannot evaluate staleness).
         """
-        try:
-            # created_at is stored without timezone; compare using naive UTC.
-            cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(
-                days=DAYS_UNTIL_ACCOUNT_STALE
+        if DAYS_UNTIL_ACCOUNT_STALE < 1:
+            LOG.error(
+                f"{self.prefix} - Skipping obsolete account purge: "
+                f"DAYS_UNTIL_ACCOUNT_STALE must be >= 1 "
+                f"(got {DAYS_UNTIL_ACCOUNT_STALE})"
             )
-            with app.app_context():
-                has_systems = exists(
-                    select(System.id).where(System.tenant_id == RhAccount.id)
-                )
+            return
+
+        # created_at is naive UTC; use utcnow() to match.
+        cutoff = datetime.utcnow() - timedelta(days=DAYS_UNTIL_ACCOUNT_STALE)
+        has_systems = exists(
+            select(System.id).where(System.tenant_id == RhAccount.id)
+        )
+
+        with app.app_context():
+            try:
                 deleted_accounts = db.session.execute(
                     db.delete(RhAccount).where(
                         RhAccount.created_at.is_not(None),
-                        RhAccount.created_at < cutoff,
+                        RhAccount.created_at <= cutoff,
                         ~has_systems,
                     )
                 )
@@ -87,11 +94,11 @@ class GarbageCollector():
                     f"{self.prefix} - Purged {deleted_accounts.rowcount} obsolete account(s) "
                     f"with no systems and created_at older than {DAYS_UNTIL_ACCOUNT_STALE} days"
                 )
-        except Exception as error:  # pylint: disable=broad-except
-            LOG.error(
-                f"{self.prefix} - Could not remove obsolete accounts "
-                f"due to the following error {str(error)}."
-            )
+            except Exception as error:  # pylint: disable=broad-except
+                LOG.error(
+                    f"{self.prefix} - Could not remove obsolete accounts "
+                    f"due to the following error {error}."
+                )
 
 
 if __name__ == "__main__":

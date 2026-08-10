@@ -158,8 +158,21 @@ GARBAGE_COLLECTION_INTERVAL = int(
 )
 # Number of days after which data is considered to be outdated.
 DAYS_UNTIL_STALE = int(os.getenv("DAYS_UNTIL_STALE", '45'))
+
+
+def validate_days_until_account_stale(value):
+    """Reject non-positive values that would purge accounts immediately."""
+    if value < 1:
+        raise ValueError(
+            f"DAYS_UNTIL_ACCOUNT_STALE must be >= 1 (got {value})"
+        )
+    return value
+
+
 # Number of days after which an empty account (no systems) is considered obsolete.
-DAYS_UNTIL_ACCOUNT_STALE = int(os.getenv("DAYS_UNTIL_ACCOUNT_STALE", '90'))
+DAYS_UNTIL_ACCOUNT_STALE = validate_days_until_account_stale(
+    int(os.getenv("DAYS_UNTIL_ACCOUNT_STALE", '90'))
+)
 CW_LOGGING_FORMAT = '%(asctime)s - %(levelname)s  - %(funcName)s - %(message)s'
 ROS_PROCESSOR_PORT = int(os.getenv("ROS_PROCESSOR_PORT", "8000"))
 ROS_SUGGESTIONS_ENGINE_PORT = int(os.getenv("ROS_SUGGESTIONS_ENGINE_PORT", "8003"))

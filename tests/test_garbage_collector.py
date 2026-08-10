@@ -1,14 +1,27 @@
 import pytest
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 from ros.lib.models import db, PerformanceProfile, PerformanceProfileHistory, RhAccount, System
-from ros.processor.garbage_collector import GarbageCollector
+from ros.processor.garbage_collector import GarbageCollector, DAYS_UNTIL_ACCOUNT_STALE
 from tests.helpers.db_helper import db_get_records
 
 
 @pytest.fixture
 def garbage_collector():
     return GarbageCollector()
+
+
+@pytest.fixture
+def freeze_gc_now(monkeypatch):
+    """Freeze garbage_collector.datetime.utcnow for deterministic cutoff comparisons."""
+    fixed_now = datetime(2026, 8, 10, 12, 0, 0)
+
+    class FrozenDateTime(datetime):
+        @classmethod
+        def utcnow(cls):
+            return fixed_now
+
+    monkeypatch.setattr('ros.processor.garbage_collector.datetime', FrozenDateTime)
+    return fixed_now
 
 
 def test_remove_outdated_data(
@@ -88,6 +101,40 @@ def test_remove_obsolete_accounts_keeps_recent_empty_account(
     assert db.session.get(RhAccount, 11) is not None
 
 
+def test_remove_obsolete_accounts_deletes_account_at_staleness_cutoff(
+        garbage_collector, db_setup, freeze_gc_now, caplog):
+    # created_at <= cutoff => purge (exactly DAYS_UNTIL_ACCOUNT_STALE days old)
+    cutoff_account = RhAccount(
+        id=15,
+        account='cutoff-acct',
+        org_id='cutoff-org',
+        created_at=freeze_gc_now - timedelta(days=DAYS_UNTIL_ACCOUNT_STALE),
+    )
+    db.session.add(cutoff_account)
+    db.session.commit()
+
+    garbage_collector.remove_obsolete_accounts()
+
+    assert db.session.get(RhAccount, 15) is None
+    assert "Purged 1 obsolete account(s)" in caplog.text
+
+
+def test_remove_obsolete_accounts_retains_account_just_before_staleness_cutoff(
+        garbage_collector, db_setup, freeze_gc_now):
+    almost_fresh_account = RhAccount(
+        id=16,
+        account='almost-fresh-acct',
+        org_id='almost-fresh-org',
+        created_at=freeze_gc_now - timedelta(days=DAYS_UNTIL_ACCOUNT_STALE - 1),
+    )
+    db.session.add(almost_fresh_account)
+    db.session.commit()
+
+    garbage_collector.remove_obsolete_accounts()
+
+    assert db.session.get(RhAccount, 16) is not None
+
+
 def test_remove_obsolete_accounts_keeps_null_created_at(
         garbage_collector, db_setup):
     null_created = RhAccount(
@@ -127,3 +174,35 @@ def test_remove_obsolete_accounts_keeps_account_with_systems(
 
     assert db.session.get(RhAccount, 13) is not None
     assert db.session.get(System, 13) is not None
+
+
+def test_remove_obsolete_accounts_skips_when_stale_days_non_positive(
+        garbage_collector, db_setup, monkeypatch, caplog):
+    monkeypatch.setattr(
+        'ros.processor.garbage_collector.DAYS_UNTIL_ACCOUNT_STALE', 0
+    )
+    stale_account = RhAccount(
+        id=14,
+        account='zero-days',
+        org_id='zero-days-org',
+        created_at=datetime.utcnow() - timedelta(days=1),
+    )
+    db.session.add(stale_account)
+    db.session.commit()
+
+    garbage_collector.remove_obsolete_accounts()
+
+    assert db.session.get(RhAccount, 14) is not None
+    assert "Skipping obsolete account purge" in caplog.text
+    assert "DAYS_UNTIL_ACCOUNT_STALE must be >= 1" in caplog.text
+
+
+def test_validate_days_until_account_stale():
+    from ros.lib.config import validate_days_until_account_stale
+
+    assert validate_days_until_account_stale(1) == 1
+    assert validate_days_until_account_stale(90) == 90
+    with pytest.raises(ValueError, match="DAYS_UNTIL_ACCOUNT_STALE must be >= 1"):
+        validate_days_until_account_stale(0)
+    with pytest.raises(ValueError, match="DAYS_UNTIL_ACCOUNT_STALE must be >= 1"):
+        validate_days_until_account_stale(-5)
