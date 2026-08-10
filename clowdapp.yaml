@@ -527,6 +527,34 @@ objects:
                 key: client-secret
                 optional: true
 
+    # TEMPORARY one-shot Job: purges rh_accounts with 0 systems.
+    # No schedule => Clowder creates a Kubernetes Job that runs on apply.
+    # Remove this entire jobs entry after a successful stage/prod run.
+    jobs:
+    - name: empty-account-cleanup
+      restartPolicy: Never
+      activeDeadlineSeconds: 1800
+      podSpec:
+        image: ${IMAGE}:${IMAGE_TAG}
+        command: ["bash"]
+        args: ["-c", "python -m ros.processor.empty_account_cleanup"]
+        resources:
+          requests:
+            cpu: ${CPU_REQUEST_ROSRHEL}
+            memory: ${MEMORY_REQUEST_ROSRHEL}
+          limits:
+            cpu: ${CPU_LIMIT_ROSRHEL}
+            memory: ${MEMORY_LIMIT_ROSRHEL}
+        env:
+          - name: CLOWDER_ENABLED
+            value: ${CLOWDER_ENABLED}
+          - name: EMPTY_ACCOUNT_CLEANUP_DRY_RUN
+            value: ${EMPTY_ACCOUNT_CLEANUP_DRY_RUN}
+          - name: DB_POOL_SIZE
+            value: ${DB_POOL_SIZE}
+          - name: DB_MAX_OVERFLOW
+            value: ${DB_MAX_OVERFLOW}
+
     database:
       name: ros
       version: 16
@@ -610,6 +638,11 @@ parameters:
 - description: Number of days after which an empty account (no systems) is considered obsolete
   name: DAYS_UNTIL_ACCOUNT_STALE
   value: "90"
+- description: >
+    TEMPORARY — dry-run for empty-account-cleanup one-shot Job.
+    Set to "False" to purge; remove the job from clowdapp after a successful run.
+  name: EMPTY_ACCOUNT_CLEANUP_DRY_RUN
+  value: "True"
 - description: Host for the EAN to OrgId translator.
   name: TENANT_TRANSLATOR_HOST
   required: true

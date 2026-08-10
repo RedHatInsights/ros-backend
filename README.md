@@ -73,6 +73,9 @@ These components are shared by both V1 and V2 architectures:
 #### **Garbage Collector**
 - Periodic cleanup of outdated system data and obsolete empty accounts
 - Configurable via `GARBAGE_COLLECTION_INTERVAL`, `DAYS_UNTIL_STALE`, and `DAYS_UNTIL_ACCOUNT_STALE`
+- One-time empty-account purge: ClowdApp job `empty-account-cleanup` (no schedule; runs on apply).
+  Use `EMPTY_ACCOUNT_CLEANUP_DRY_RUN=True` first, then `False` to purge, then **remove the job from `clowdapp.yaml`**.
+  Locally: `python -m ros.processor.empty_account_cleanup`
 - Works with data from both V1 and V2 processing
 
   
