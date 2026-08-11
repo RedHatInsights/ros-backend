@@ -90,11 +90,13 @@ class GarbageCollector():
                     )
                 )
                 db.session.commit()
-                LOG.info(
-                    f"{self.prefix} - Purged {deleted_accounts.rowcount} obsolete account(s) "
-                    f"with no systems and created_at older than {DAYS_UNTIL_ACCOUNT_STALE} days"
-                )
+                if deleted_accounts.rowcount > 0:
+                    LOG.info(
+                        f"{self.prefix} - Purged {deleted_accounts.rowcount} obsolete account(s) "
+                        f"with no systems and created_at older than {DAYS_UNTIL_ACCOUNT_STALE} days"
+                    )
             except Exception as error:  # pylint: disable=broad-except
+                db.session.rollback()
                 LOG.error(
                     f"{self.prefix} - Could not remove obsolete accounts "
                     f"due to the following error {error}."

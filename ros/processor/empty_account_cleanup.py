@@ -64,9 +64,10 @@ def run():
             return candidate_count, 0
 
         purged = delete_empty_accounts()
-        LOG.info(
-            f"{PREFIX} - Purged {purged} account(s) with no associated systems"
-        )
+        if purged > 0:
+            LOG.info(
+                f"{PREFIX} - Purged {purged} account(s) with no associated systems"
+            )
         return candidate_count, purged
 
 

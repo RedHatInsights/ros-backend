@@ -43,7 +43,7 @@ def test_delete_empty_accounts_purges_only_empty(db_setup, caplog, monkeypatch):
     assert db.session.get(System, 23) is not None
 
 
-def test_run_dry_run_does_not_delete(db_setup, monkeypatch):
+def test_run_dry_run_does_not_delete(db_setup, monkeypatch, caplog):
     monkeypatch.setattr(empty_account_cleanup, 'DRY_RUN', True)
     empty = RhAccount(id=24, account='dry', org_id='dry-org')
     db.session.add(empty)
@@ -54,6 +54,7 @@ def test_run_dry_run_does_not_delete(db_setup, monkeypatch):
     assert candidates == 1
     assert purged == 0
     assert db.session.get(RhAccount, 24) is not None
+    assert "Dry-run enabled; no accounts deleted" in caplog.text
 
 
 def test_run_deletes_all_empty_accounts(db_setup, monkeypatch, caplog):
