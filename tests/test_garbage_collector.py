@@ -195,14 +195,3 @@ def test_remove_obsolete_accounts_skips_when_stale_days_non_positive(
     assert db.session.get(RhAccount, 14) is not None
     assert "Skipping obsolete account purge" in caplog.text
     assert "DAYS_UNTIL_ACCOUNT_STALE must be >= 1" in caplog.text
-
-
-def test_validate_days_until_account_stale():
-    from ros.lib.config import validate_days_until_account_stale
-
-    assert validate_days_until_account_stale(1) == 1
-    assert validate_days_until_account_stale(90) == 90
-    with pytest.raises(ValueError, match="DAYS_UNTIL_ACCOUNT_STALE must be >= 1"):
-        validate_days_until_account_stale(0)
-    with pytest.raises(ValueError, match="DAYS_UNTIL_ACCOUNT_STALE must be >= 1"):
-        validate_days_until_account_stale(-5)

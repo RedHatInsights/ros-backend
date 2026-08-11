@@ -54,6 +54,7 @@ def test_run_dry_run_does_not_delete(db_setup, monkeypatch, caplog):
     assert candidates == 1
     assert purged == 0
     assert db.session.get(RhAccount, 24) is not None
+    assert "Dry-run candidate org_ids: ['dry-org']" in caplog.text
     assert "Dry-run enabled; no accounts deleted" in caplog.text
 
 
