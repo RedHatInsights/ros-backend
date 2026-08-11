@@ -277,6 +277,8 @@ objects:
             value: ${GARBAGE_COLLECTION_INTERVAL}
           - name: DAYS_UNTIL_STALE
             value: ${DAYS_UNTIL_STALE}
+          - name: DAYS_UNTIL_ACCOUNT_STALE
+            value: ${DAYS_UNTIL_ACCOUNT_STALE}
           - name: DB_POOL_SIZE
             value: ${DB_POOL_SIZE}
           - name: DB_MAX_OVERFLOW
@@ -311,6 +313,50 @@ objects:
                 name: service-account-for-kessel
                 key: client-secret
                 optional: true
+
+    # TEMPORARY: empty-account cleanup. Toggle EMPTY_ACCOUNT_CLEANUP_DRY_RUN from app-interface.
+    - name: empty-account-cleanup
+      replicas: 1
+      podSpec:
+        image: ${IMAGE}:${IMAGE_TAG}
+        command: ["bash"]
+        args: ["-c", "python -m ros.processor.empty_account_cleanup"]
+        resources:
+          requests:
+            cpu: ${CPU_REQUEST_ROSRHEL}
+            memory: ${MEMORY_REQUEST_ROSRHEL}
+          limits:
+            cpu: ${CPU_LIMIT_ROSRHEL}
+            memory: ${MEMORY_LIMIT_ROSRHEL}
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 9000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 9000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          successThreshold: 1
+          failureThreshold: 3
+          timeoutSeconds: 3
+        env:
+          - name: CLOWDER_ENABLED
+            value: ${CLOWDER_ENABLED}
+          - name: EMPTY_ACCOUNT_CLEANUP_DRY_RUN
+            value: ${EMPTY_ACCOUNT_CLEANUP_DRY_RUN}
+          - name: DB_POOL_SIZE
+            value: ${DB_POOL_SIZE}
+          - name: DB_MAX_OVERFLOW
+            value: ${DB_MAX_OVERFLOW}
 
     - name: suggestions-engine
       replicas: ${{SUGGESTIONS_ENGINE_REPLICA_COUNT}}
@@ -605,6 +651,14 @@ parameters:
 - description: Number of days after which data is considered to be outdated
   name: DAYS_UNTIL_STALE
   value: "45"
+- description: Number of days after which an empty account (no systems) is considered obsolete
+  name: DAYS_UNTIL_ACCOUNT_STALE
+  value: "90"
+- description: >
+    TEMPORARY — dry-run for empty-account-cleanup (toggle from app-interface like KESSEL_ENABLED).
+    Default True. Set False to purge, then remove this deployment after a successful run.
+  name: EMPTY_ACCOUNT_CLEANUP_DRY_RUN
+  value: "True"
 - description: Host for the EAN to OrgId translator.
   name: TENANT_TRANSLATOR_HOST
   required: true
