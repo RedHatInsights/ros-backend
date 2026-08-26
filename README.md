@@ -73,10 +73,6 @@ These components are shared by both V1 and V2 architectures:
 #### **Garbage Collector**
 - Periodic cleanup of outdated system data and obsolete empty accounts
 - Configurable via `GARBAGE_COLLECTION_INTERVAL`, `DAYS_UNTIL_STALE`, and `DAYS_UNTIL_ACCOUNT_STALE`
-- Temporary empty-account cleanup deployment (`empty-account-cleanup`):
-  - `EMPTY_ACCOUNT_CLEANUP_DRY_RUN` (default `True`, toggle from app-interface like `KESSEL_ENABLED`)
-  - Logs candidate `org_ids` in dry-run; set to `False` to purge
-  - Locally: `EMPTY_ACCOUNT_CLEANUP_DRY_RUN=true python -m ros.processor.empty_account_cleanup`
 - Works with data from both V1 and V2 processing
 
   
