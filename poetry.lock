@@ -1235,14 +1235,14 @@ files = [
 
 [[package]]
 name = "kessel-sdk"
-version = "2.7.0"
+version = "2.8.0"
 description = "Client SDK for Kessel."
 optional = false
 python-versions = ">=3.11"
 groups = ["main"]
 files = [
-    {file = "kessel_sdk-2.7.0-py3-none-any.whl", hash = "sha256:3efdb4d51d44ba646e36c75c42503b3109b9629df5dab22b704eb454068ff1e2"},
-    {file = "kessel_sdk-2.7.0.tar.gz", hash = "sha256:1506564e7ea363429720cd6efb2eebba32b0829800298e9571fa58a4cc12d173"},
+    {file = "kessel_sdk-2.8.0-py3-none-any.whl", hash = "sha256:2159e7b68fbd8b1c38d0e8dc8a314dea8ac8cf91688f2c5e789881e612efcc33"},
+    {file = "kessel_sdk-2.8.0.tar.gz", hash = "sha256:8f689484d2a1204ad7b93ae733cce95903cf95f457279ef22233a3ef7942f6e9"},
 ]
 
 [package.dependencies]
