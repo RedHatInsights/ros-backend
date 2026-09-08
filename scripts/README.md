@@ -28,6 +28,12 @@ The db-ros container just provides a PostgreSQL database for the ROS application
 docker-compose up --build insights-inventory-web db-ros insights-engine
 ```
 
+5. Create a local env file for MinIO (do not commit it). You are already in `scripts/` from step 3:
+```bash
+cp env.example .env
+```
+Fill in `MINIO_ACCESS_KEY` and `MINIO_SECRET_KEY`. Docker Compose reads `.env` in this directory. Do not git add this file.
+
 ## Usage
 Following commands are expected to be run from the repository root (not within the *scripts* directory).
 ### Enter into the poetry(poetry shell) environment

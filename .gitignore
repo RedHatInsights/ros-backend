@@ -97,7 +97,6 @@ celerybeat.pid
 
 # Environments
 .env
-!scripts/.env
 .venv
 env/
 venv/
