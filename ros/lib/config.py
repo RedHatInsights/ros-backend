@@ -36,7 +36,7 @@ DB_SSL_CERTPATH = None
 
 if CLOWDER_ENABLED:
     LOG.info("Using Clowder Operator...")
-    from app_common_python import LoadedConfig, KafkaTopics, KafkaServers
+    from app_common_python import LoadedConfig, KafkaTopics, KafkaServers, get_v2_dependency_endpoint
 
     TLS_CA_PATH = getattr(LoadedConfig, "tlsCAPath", None)
 
@@ -62,10 +62,26 @@ if CLOWDER_ENABLED:
     ENGINE_RESULT_TOPIC = KafkaTopics["platform.engine.results"].name
     NOTIFICATIONS_TOPIC = KafkaTopics["platform.notifications.ingress"].name
     ROS_EVENTS_TOPIC = KafkaTopics["ros.events"].name
-    for endpoint in LoadedConfig.endpoints:
-        if endpoint.app == "rbac":
-            RBAC_SVC_URL = f"{build_endpoint_url(endpoint)}"
-            break
+    v2_rbac = get_v2_dependency_endpoint("rbac", "service")
+    if v2_rbac and v2_rbac.uri:
+        RBAC_SVC_URL = v2_rbac.uri
+        RBAC_CA_PATH = v2_rbac.ca_certificate if v2_rbac.ca_certificate else None
+        RBAC_AUTHENTICATED = v2_rbac.authenticated if v2_rbac.authenticated else False
+        # Reject non-HTTPS URIs when the endpoint requires bearer authentication
+        if RBAC_AUTHENTICATED and not RBAC_SVC_URL.startswith("https://"):
+            raise RuntimeError(
+                f"RBAC V2 endpoint is authenticated but URI scheme is not HTTPS "
+                f"({RBAC_SVC_URL}). Refusing to send bearer tokens over an "
+                f"insecure connection."
+            )
+    else:
+        LOG.error(
+            "V2 RBAC dependency endpoint not available — check Clowder "
+            "ClowdApp dependencies configuration"
+        )
+        RBAC_SVC_URL = ""
+        RBAC_CA_PATH = TLS_CA_PATH
+        RBAC_AUTHENTICATED = False
     # Todo: Load Kessel app from clowdapp
     KESSEL_URL = os.getenv("KESSEL_URL", default="kessel-inventory-api:9000")
     # Kessel OAuth 2.0 Authentication
@@ -116,6 +132,8 @@ else:
     NOTIFICATIONS_TOPIC = os.getenv("NOTIFICATIONS_TOPIC", "platform.notifications.ingress")
     ROS_EVENTS_TOPIC = os.getenv("ROS_EVENTS_TOPIC", "ros.events")
     TLS_CA_PATH = os.getenv("TLS_CA_PATH", None)
+    RBAC_CA_PATH = TLS_CA_PATH
+    RBAC_AUTHENTICATED = False
     CW_ENABLED = str_to_bool(os.getenv('CW_ENABLED', 'False'))  # CloudWatch/Kibana Logging
     if CW_ENABLED is True:
         AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", None)
@@ -152,6 +170,22 @@ APP_NAME = os.getenv("APP_NAME", "ros")
 INSIGHTS_EXTRACT_LOGLEVEL = os.getenv("INSIGHTS_EXTRACT_LOGLEVEL", "ERROR")
 ENABLE_RBAC = str_to_bool(os.getenv("ENABLE_RBAC", "False"))
 ENABLE_KESSEL = str_to_bool(os.getenv("ENABLE_KESSEL", "False"))
+
+# Validate RBAC configuration at startup so misconfigured deployments fail
+# early with a clear error instead of returning 500s at request time.
+if ENABLE_RBAC and not RBAC_SVC_URL:
+    raise RuntimeError(
+        "ENABLE_RBAC is True but RBAC_SVC_URL is not configured. "
+        "V2 RBAC dependency endpoint not available — check Clowder "
+        "ClowdApp dependencies configuration."
+    )
+if ENABLE_RBAC and RBAC_AUTHENTICATED:
+    if not KESSEL_AUTH_CLIENT_ID or not KESSEL_AUTH_CLIENT_SECRET or not KESSEL_AUTH_OIDC_ISSUER:
+        raise RuntimeError(
+            "RBAC V2 endpoint is authenticated but required OAuth2 settings "
+            "are missing. Ensure KESSEL_AUTH_CLIENT_ID, KESSEL_AUTH_CLIENT_SECRET, "
+            "and KESSEL_AUTH_OIDC_ISSUER are configured."
+        )
 # Time interval after which garbage collector is involved to check for outdated data.
 GARBAGE_COLLECTION_INTERVAL = int(
     os.getenv("GARBAGE_COLLECTION_INTERVAL", '86400')
