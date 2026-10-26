@@ -25,6 +25,11 @@ def fetch_url(url, auth_header, logger, method="get"):
         )
     verify = RBAC_CA_PATH or True
     if RBAC_AUTHENTICATED:
+        # Defense-in-depth: reject non-HTTPS to prevent token leakage
+        if not url.startswith("https://"):
+            raise RuntimeError(
+                f"Refusing to send bearer token to non-HTTPS URL: {url}"
+            )
         from ros.lib.kessel.kessel_shared import get_cached_kessel_auth_credentials
         credentials = get_cached_kessel_auth_credentials()
         if not credentials:

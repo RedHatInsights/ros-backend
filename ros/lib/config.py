@@ -67,8 +67,18 @@ if CLOWDER_ENABLED:
         RBAC_SVC_URL = v2_rbac.uri
         RBAC_CA_PATH = v2_rbac.ca_certificate if v2_rbac.ca_certificate else None
         RBAC_AUTHENTICATED = v2_rbac.authenticated if v2_rbac.authenticated else False
+        # Reject non-HTTPS URIs when the endpoint requires bearer authentication
+        if RBAC_AUTHENTICATED and not RBAC_SVC_URL.startswith("https://"):
+            raise RuntimeError(
+                f"RBAC V2 endpoint is authenticated but URI scheme is not HTTPS "
+                f"({RBAC_SVC_URL}). Refusing to send bearer tokens over an "
+                f"insecure connection."
+            )
     else:
-        LOG.warning("V2 RBAC dependency endpoint not available — Clowder misconfiguration")
+        LOG.error(
+            "V2 RBAC dependency endpoint not available — check Clowder "
+            "ClowdApp dependencies configuration"
+        )
         RBAC_SVC_URL = ""
         RBAC_CA_PATH = TLS_CA_PATH
         RBAC_AUTHENTICATED = False
@@ -160,6 +170,22 @@ APP_NAME = os.getenv("APP_NAME", "ros")
 INSIGHTS_EXTRACT_LOGLEVEL = os.getenv("INSIGHTS_EXTRACT_LOGLEVEL", "ERROR")
 ENABLE_RBAC = str_to_bool(os.getenv("ENABLE_RBAC", "False"))
 ENABLE_KESSEL = str_to_bool(os.getenv("ENABLE_KESSEL", "False"))
+
+# Validate RBAC configuration at startup so misconfigured deployments fail
+# early with a clear error instead of returning 500s at request time.
+if ENABLE_RBAC and not RBAC_SVC_URL:
+    raise RuntimeError(
+        "ENABLE_RBAC is True but RBAC_SVC_URL is not configured. "
+        "V2 RBAC dependency endpoint not available — check Clowder "
+        "ClowdApp dependencies configuration."
+    )
+if ENABLE_RBAC and RBAC_AUTHENTICATED:
+    if not KESSEL_AUTH_CLIENT_ID or not KESSEL_AUTH_CLIENT_SECRET or not KESSEL_AUTH_OIDC_ISSUER:
+        raise RuntimeError(
+            "RBAC V2 endpoint is authenticated but required OAuth2 settings "
+            "are missing. Ensure KESSEL_AUTH_CLIENT_ID, KESSEL_AUTH_CLIENT_SECRET, "
+            "and KESSEL_AUTH_OIDC_ISSUER are configured."
+        )
 # Time interval after which garbage collector is involved to check for outdated data.
 GARBAGE_COLLECTION_INTERVAL = int(
     os.getenv("GARBAGE_COLLECTION_INTERVAL", '86400')

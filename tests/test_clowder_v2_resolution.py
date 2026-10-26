@@ -78,7 +78,44 @@ class TestV2EndpointResolution:
             assert config.RBAC_CA_PATH == "/global/ca.crt"
             assert config.RBAC_AUTHENTICATED is False
 
-    @patch.dict("os.environ", {"CLOWDER_ENABLED": "False"})
+    @patch.dict("os.environ", {"CLOWDER_ENABLED": "True"})
+    @patch("app_common_python.LoadedConfig")
+    @patch("app_common_python.KafkaTopics", {})
+    @patch("app_common_python.KafkaServers", [])
+    def test_v2_authenticated_http_uri_raises(self, mock_loaded_config):
+        """Authenticated endpoint with http:// URI → RuntimeError at config load."""
+        v2_endpoint = MagicMock()
+        v2_endpoint.uri = "http://rbac.example.com:8080"
+        v2_endpoint.ca_certificate = None
+        v2_endpoint.authenticated = True
+
+        with patch(
+            "app_common_python.get_v2_dependency_endpoint",
+            return_value=v2_endpoint,
+        ):
+            import importlib
+            from ros.lib import config
+
+            with pytest.raises(RuntimeError, match="not HTTPS"):
+                importlib.reload(config)
+
+    @patch.dict("os.environ", {
+        "CLOWDER_ENABLED": "False",
+        "ENABLE_RBAC": "True",
+        "RBAC_SVC_URL": "",
+    })
+    def test_enable_rbac_without_url_raises(self):
+        """ENABLE_RBAC=True with empty RBAC_SVC_URL → RuntimeError at startup."""
+        import importlib
+        from ros.lib import config
+
+        with pytest.raises(RuntimeError, match="RBAC_SVC_URL is not configured"):
+            importlib.reload(config)
+
+    @patch.dict("os.environ", {
+        "CLOWDER_ENABLED": "False",
+        "ENABLE_RBAC": "False",
+    })
     def test_non_clowder_defaults(self):
         """Non-Clowder path → existing env-var defaults, no bearer."""
         import importlib
@@ -248,3 +285,86 @@ class TestFetchUrlBearerAuth:
 
             # Original header should not have Authorization added
             assert "Authorization" not in original_header
+
+    def test_authenticated_http_url_raises(self):
+        """When authenticated, reject non-HTTPS URLs to prevent token leakage."""
+        with patch("ros.lib.rbac_interface.RBAC_AUTHENTICATED", True), \
+             patch("ros.lib.rbac_interface.RBAC_CA_PATH", None):
+
+            from ros.lib.rbac_interface import fetch_url
+
+            with pytest.raises(RuntimeError, match="non-HTTPS URL"):
+                fetch_url(
+                    "http://rbac.example.com/api/rbac/v1/access/",
+                    {"X-RH-IDENTITY": "some-identity"},
+                    MagicMock(),
+                )
+
+
+class TestOidcFailureBackoff:
+    """Test OIDC credential failure caching in kessel_shared.py."""
+
+    def setup_method(self):
+        """Reset singleton state before each test."""
+        import ros.lib.kessel.kessel_shared as ks
+        ks._AUTH_CREDENTIALS = None
+        ks._AUTH_FAILURE_TIMESTAMP = None
+
+    def test_failure_cached_returns_none_within_backoff(self):
+        """After OIDC failure, subsequent calls return None within backoff window."""
+        import ros.lib.kessel.kessel_shared as ks
+
+        call_count = 0
+
+        def mock_create():
+            nonlocal call_count
+            call_count += 1
+            return None  # Simulate OIDC failure
+
+        with patch("ros.lib.config.create_kessel_oauth2_credentials", mock_create):
+            # First call — triggers discovery, fails
+            result1 = ks.get_cached_kessel_auth_credentials()
+            assert result1 is None
+            assert call_count == 1
+
+            # Second call — should NOT re-attempt (within backoff)
+            result2 = ks.get_cached_kessel_auth_credentials()
+            assert result2 is None
+            assert call_count == 1  # No additional call
+
+    def test_failure_retried_after_backoff(self):
+        """After backoff window, retry OIDC discovery."""
+        import ros.lib.kessel.kessel_shared as ks
+
+        with patch("ros.lib.config.create_kessel_oauth2_credentials", return_value=None):
+            ks.get_cached_kessel_auth_credentials()
+
+        # Simulate backoff expiry
+        ks._AUTH_FAILURE_TIMESTAMP = ks._AUTH_FAILURE_TIMESTAMP - (
+            ks._AUTH_FAILURE_BACKOFF_SECS + 1
+        )
+
+        mock_creds = MagicMock()
+        with patch("ros.lib.config.create_kessel_oauth2_credentials", return_value=mock_creds):
+            result = ks.get_cached_kessel_auth_credentials()
+            assert result is mock_creds
+            assert ks._AUTH_FAILURE_TIMESTAMP is None
+
+    def test_success_cached_permanently(self):
+        """Successful credentials are cached and never re-fetched."""
+        import ros.lib.kessel.kessel_shared as ks
+
+        mock_creds = MagicMock()
+        call_count = 0
+
+        def mock_create():
+            nonlocal call_count
+            call_count += 1
+            return mock_creds
+
+        with patch("ros.lib.config.create_kessel_oauth2_credentials", mock_create):
+            result1 = ks.get_cached_kessel_auth_credentials()
+            result2 = ks.get_cached_kessel_auth_credentials()
+            assert result1 is mock_creds
+            assert result2 is mock_creds
+            assert call_count == 1

@@ -1,3 +1,5 @@
+import time
+
 import grpc
 from ros.lib.config import get_logger
 from ros.lib.config import KESSEL_INSECURE
@@ -9,21 +11,46 @@ LOG = get_logger(__name__)
 _GRPC_CHANNEL = None
 _GRPC_STUB = None
 _AUTH_CREDENTIALS = None
+_AUTH_FAILURE_TIMESTAMP = None
+_AUTH_FAILURE_BACKOFF_SECS = 30
 
 
 def get_cached_kessel_auth_credentials():
     """
     Get or create cached OAuth2 credentials to avoid expensive OIDC discovery calls.
     This is a shared cache used by both the gRPC singleton and KesselClient instances.
+
+    On failure (e.g. OIDC issuer unreachable), the failure is cached for
+    _AUTH_FAILURE_BACKOFF_SECS seconds so that each request does not repeat
+    the synchronous discovery attempt during an outage.
+
     Returns:
         OAuth2ClientCredentials object or None if creation fails
     """
-    global _AUTH_CREDENTIALS
-    if _AUTH_CREDENTIALS is None:
-        from ros.lib.config import create_kessel_oauth2_credentials
-        LOG.debug("Creating shared OAuth2 credentials cache (first time)")
-        _AUTH_CREDENTIALS = create_kessel_oauth2_credentials()
-    return _AUTH_CREDENTIALS
+    global _AUTH_CREDENTIALS, _AUTH_FAILURE_TIMESTAMP
+    if _AUTH_CREDENTIALS is not None:
+        return _AUTH_CREDENTIALS
+
+    # Avoid hammering OIDC if a recent attempt failed
+    if _AUTH_FAILURE_TIMESTAMP is not None:
+        elapsed = time.monotonic() - _AUTH_FAILURE_TIMESTAMP
+        if elapsed < _AUTH_FAILURE_BACKOFF_SECS:
+            LOG.warning(
+                "OAuth2 credential creation failed %.0fs ago, "
+                "backing off for %ds",
+                elapsed, _AUTH_FAILURE_BACKOFF_SECS,
+            )
+            return None
+
+    from ros.lib.config import create_kessel_oauth2_credentials
+    LOG.debug("Creating shared OAuth2 credentials cache")
+    result = create_kessel_oauth2_credentials()
+    if result is None:
+        _AUTH_FAILURE_TIMESTAMP = time.monotonic()
+    else:
+        _AUTH_CREDENTIALS = result
+        _AUTH_FAILURE_TIMESTAMP = None
+    return result
 
 
 def get_kessel_stub(host):
