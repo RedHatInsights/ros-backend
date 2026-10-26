@@ -2,7 +2,7 @@
 from urllib.parse import urljoin
 from http import HTTPStatus
 from flask_restful import abort
-from .config import RBAC_SVC_URL, TLS_CA_PATH
+from .config import RBAC_SVC_URL, RBAC_CA_PATH, RBAC_AUTHENTICATED
 import requests
 
 from ros.lib.config import get_logger
@@ -23,8 +23,20 @@ def fetch_url(url, auth_header, logger, method="get"):
         abort(
             HTTPStatus.METHOD_NOT_ALLOWED, message="'%s' is not valid HTTP method." % method
         )
+    verify = RBAC_CA_PATH or True
+    if RBAC_AUTHENTICATED:
+        from ros.lib.kessel.kessel_shared import get_cached_kessel_auth_credentials
+        credentials = get_cached_kessel_auth_credentials()
+        if not credentials:
+            raise RuntimeError(
+                "RBAC V2 endpoint requires bearer authentication but "
+                "OAuth2 credentials are not available"
+            )
+        token_response = credentials.get_token()
+        auth_header = dict(auth_header) if auth_header else {}
+        auth_header["Authorization"] = f"Bearer {token_response.access_token}"
     response = requests.request(
-        method, url, headers=auth_header, verify=TLS_CA_PATH)
+        method, url, headers=auth_header, verify=verify)
     _validate_service_response(response, logger, auth_header)
     return response.json()
 

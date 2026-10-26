@@ -49,14 +49,14 @@ files = [
 
 [[package]]
 name = "app-common-python"
-version = "0.2.9"
+version = "0.3.0"
 description = ""
 optional = false
 python-versions = "*"
 groups = ["main"]
 files = [
-    {file = "app_common_python-0.2.9-py3-none-any.whl", hash = "sha256:861bd93482edabd00a85eb6512e0d7df08597be6f76b864be8e53d6294f81389"},
-    {file = "app_common_python-0.2.9.tar.gz", hash = "sha256:74125371e2865bcba7a7c34f0700d4b8b97a0c0a9ff67bbb06fdb20a3da4b75c"},
+    {file = "app_common_python-0.3.0-py3-none-any.whl", hash = "sha256:1eec3bcebbdae79b13332dd300c16e2037bfd02948804a529f2005dac2a94f4d"},
+    {file = "app_common_python-0.3.0.tar.gz", hash = "sha256:aa00beda4abcc40fdceb0a104776dbe33bc2131ea89d908716dcf47106c94dcf"},
 ]
 
 [[package]]
@@ -2712,4 +2712,4 @@ type = ["pytest-mypy (>=1.0.1) ; platform_python_implementation != \"PyPy\""]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "31f4e74972209165addba687f28815891af0b26a36fadcebfbd59e1ccc4125be"
+content-hash = "fde41626563c149aee8b0668be185b03487b68ba7fb2522f7801a20d53370999"

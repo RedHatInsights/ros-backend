@@ -36,7 +36,7 @@ DB_SSL_CERTPATH = None
 
 if CLOWDER_ENABLED:
     LOG.info("Using Clowder Operator...")
-    from app_common_python import LoadedConfig, KafkaTopics, KafkaServers
+    from app_common_python import LoadedConfig, KafkaTopics, KafkaServers, get_v2_dependency_endpoint
 
     TLS_CA_PATH = getattr(LoadedConfig, "tlsCAPath", None)
 
@@ -62,10 +62,16 @@ if CLOWDER_ENABLED:
     ENGINE_RESULT_TOPIC = KafkaTopics["platform.engine.results"].name
     NOTIFICATIONS_TOPIC = KafkaTopics["platform.notifications.ingress"].name
     ROS_EVENTS_TOPIC = KafkaTopics["ros.events"].name
-    for endpoint in LoadedConfig.endpoints:
-        if endpoint.app == "rbac":
-            RBAC_SVC_URL = f"{build_endpoint_url(endpoint)}"
-            break
+    v2_rbac = get_v2_dependency_endpoint("rbac", "service")
+    if v2_rbac and v2_rbac.uri:
+        RBAC_SVC_URL = v2_rbac.uri
+        RBAC_CA_PATH = v2_rbac.ca_certificate if v2_rbac.ca_certificate else None
+        RBAC_AUTHENTICATED = v2_rbac.authenticated if v2_rbac.authenticated else False
+    else:
+        LOG.warning("V2 RBAC dependency endpoint not available — Clowder misconfiguration")
+        RBAC_SVC_URL = ""
+        RBAC_CA_PATH = TLS_CA_PATH
+        RBAC_AUTHENTICATED = False
     # Todo: Load Kessel app from clowdapp
     KESSEL_URL = os.getenv("KESSEL_URL", default="kessel-inventory-api:9000")
     # Kessel OAuth 2.0 Authentication
@@ -116,6 +122,8 @@ else:
     NOTIFICATIONS_TOPIC = os.getenv("NOTIFICATIONS_TOPIC", "platform.notifications.ingress")
     ROS_EVENTS_TOPIC = os.getenv("ROS_EVENTS_TOPIC", "ros.events")
     TLS_CA_PATH = os.getenv("TLS_CA_PATH", None)
+    RBAC_CA_PATH = TLS_CA_PATH
+    RBAC_AUTHENTICATED = False
     CW_ENABLED = str_to_bool(os.getenv('CW_ENABLED', 'False'))  # CloudWatch/Kibana Logging
     if CW_ENABLED is True:
         AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", None)
