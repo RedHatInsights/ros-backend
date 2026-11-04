@@ -12,6 +12,7 @@ from ros.lib.kessel.kessel_shared import get_cached_kessel_auth_credentials
 RBAC_SVC_ENDPOINT = "/api/rbac/v1/access/?application=%s"
 AUTH_HEADER_NAME = "X-RH-IDENTITY"
 VALID_HTTP_VERBS = ["get", "options", "head", "post", "put", "patch", "delete"]
+RBAC_TIMEOUT = (5, 10)  # (connect, read) seconds; RBAC runs before every API request
 LOG = get_logger(__name__)
 host_group_attr = 'host_groups'
 access_all_systems = 'able_to_access_all_systems'
@@ -37,8 +38,12 @@ def fetch_url(url, auth_header, logger, method="get"):
             logger.error(f"RBAC endpoint requires authentication but no token could be obtained: {err}")
             abort(HTTPStatus.BAD_GATEWAY, message="Unable to authenticate to backend service")
         auth = oauth2_auth_request(credentials)
-    response = requests.request(
-        method, url, headers=auth_header, auth=auth, verify=RBAC_CA_PATH or True)
+    try:
+        response = requests.request(
+            method, url, headers=auth_header, auth=auth, verify=RBAC_CA_PATH or True, timeout=RBAC_TIMEOUT)
+    except requests.exceptions.RequestException as err:
+        logger.error(f"RBAC request failed: {err}")
+        abort(HTTPStatus.BAD_GATEWAY, message="Error received from backend service")
     _validate_service_response(response, logger, auth_header)
     return response.json()
 

@@ -27,6 +27,8 @@ def resolve_rbac_endpoint():
     v2 = get_v2_dependency_endpoint("rbac", "service")
     if not (v2 and v2.uri):
         raise ValueError("rbac v2 dependency endpoint not found in Clowder config")
+    if v2.authenticated and not v2.uri.startswith("https://"):
+        raise ValueError(f"rbac v2 endpoint is authenticated but not HTTPS ({v2.uri}); refusing to send bearer tokens")
     return v2.uri, v2.ca_certificate, bool(v2.authenticated)
 
 
