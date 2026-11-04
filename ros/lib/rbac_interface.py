@@ -2,14 +2,17 @@
 from urllib.parse import urljoin
 from http import HTTPStatus
 from flask_restful import abort
-from .config import RBAC_SVC_URL, TLS_CA_PATH
+from .config import RBAC_SVC_URL, RBAC_CA_PATH, RBAC_AUTHENTICATED
 import requests
+from kessel.auth import oauth2_auth_request
 
 from ros.lib.config import get_logger
+from ros.lib.kessel.kessel_shared import get_cached_kessel_auth_credentials
 
 RBAC_SVC_ENDPOINT = "/api/rbac/v1/access/?application=%s"
 AUTH_HEADER_NAME = "X-RH-IDENTITY"
 VALID_HTTP_VERBS = ["get", "options", "head", "post", "put", "patch", "delete"]
+RBAC_TIMEOUT = (5, 10)  # (connect, read) seconds; RBAC runs before every API request
 LOG = get_logger(__name__)
 host_group_attr = 'host_groups'
 access_all_systems = 'able_to_access_all_systems'
@@ -23,8 +26,24 @@ def fetch_url(url, auth_header, logger, method="get"):
         abort(
             HTTPStatus.METHOD_NOT_ALLOWED, message="'%s' is not valid HTTP method." % method
         )
-    response = requests.request(
-        method, url, headers=auth_header, verify=TLS_CA_PATH)
+    auth = None
+    if RBAC_AUTHENTICATED:
+        credentials = get_cached_kessel_auth_credentials()
+        try:
+            if credentials is None:
+                raise ValueError("no OAuth2 credentials available")
+            # Fetch eagerly so token failures fail closed with a 502; the auth handler reuses the cached token.
+            credentials.get_token()
+        except Exception as err:
+            logger.error(f"RBAC endpoint requires authentication but no token could be obtained: {err}")
+            abort(HTTPStatus.BAD_GATEWAY, message="Unable to authenticate to backend service")
+        auth = oauth2_auth_request(credentials)
+    try:
+        response = requests.request(
+            method, url, headers=auth_header, auth=auth, verify=RBAC_CA_PATH or True, timeout=RBAC_TIMEOUT)
+    except requests.exceptions.RequestException as err:
+        logger.error(f"RBAC request failed: {err}")
+        abort(HTTPStatus.BAD_GATEWAY, message="Error received from backend service")
     _validate_service_response(response, logger, auth_header)
     return response.json()
 
