@@ -22,11 +22,14 @@ def get_logger(name):
     return logging.getLogger(name)
 
 
-def build_endpoint_url(ep):
-    """check for TLS certs path."""
-    protocol = 'https' if LoadedConfig.tlsCAPath else 'http'
-    port = ep.tlsPort if LoadedConfig.tlsCAPath else ep.port
-    return f"{protocol}://{ep.hostname}:{port}"
+def resolve_rbac_endpoint():
+    """Return (url, ca_path, authenticated) for rbac from Clowder v2 dependencyEndpoints."""
+    v2 = get_v2_dependency_endpoint("rbac", "service")
+    if not (v2 and v2.uri):
+        raise ValueError("rbac v2 dependency endpoint not found in Clowder config")
+    if v2.authenticated and not v2.uri.startswith("https://"):
+        raise ValueError(f"rbac v2 endpoint is authenticated but not HTTPS ({v2.uri}); refusing to send bearer tokens")
+    return v2.uri, v2.ca_certificate, bool(v2.authenticated)
 
 
 LOG = logging.getLogger(__name__)
@@ -36,9 +39,7 @@ DB_SSL_CERTPATH = None
 
 if CLOWDER_ENABLED:
     LOG.info("Using Clowder Operator...")
-    from app_common_python import LoadedConfig, KafkaTopics, KafkaServers
-
-    TLS_CA_PATH = getattr(LoadedConfig, "tlsCAPath", None)
+    from app_common_python import LoadedConfig, KafkaTopics, KafkaServers, get_v2_dependency_endpoint
 
     DB_NAME = LoadedConfig.database.name
     DB_USER = LoadedConfig.database.username
@@ -62,10 +63,7 @@ if CLOWDER_ENABLED:
     ENGINE_RESULT_TOPIC = KafkaTopics["platform.engine.results"].name
     NOTIFICATIONS_TOPIC = KafkaTopics["platform.notifications.ingress"].name
     ROS_EVENTS_TOPIC = KafkaTopics["ros.events"].name
-    for endpoint in LoadedConfig.endpoints:
-        if endpoint.app == "rbac":
-            RBAC_SVC_URL = f"{build_endpoint_url(endpoint)}"
-            break
+    RBAC_SVC_URL, RBAC_CA_PATH, RBAC_AUTHENTICATED = resolve_rbac_endpoint()
     # Todo: Load Kessel app from clowdapp
     KESSEL_URL = os.getenv("KESSEL_URL", default="kessel-inventory-api:9000")
     # Kessel OAuth 2.0 Authentication
@@ -110,12 +108,14 @@ else:
     RBAC_HOST = os.getenv("RBAC_HOST", "localhost")
     RBAC_PORT = os.getenv("RBAC_PORT", "8114")
     RBAC_SVC_URL = os.getenv("RBAC_SVC_URL", f"http://{RBAC_HOST}:{RBAC_PORT}/")
+    RBAC_AUTHENTICATED = False
     KESSEL_HOST = os.getenv("KESSEL_HOST", "localhost")
     KESSEL_PORT = os.getenv("KESSEL_PORT", "9081")
     KESSEL_URL = os.getenv("KESSEL_URL", f"{KESSEL_HOST}:{KESSEL_PORT}")
     NOTIFICATIONS_TOPIC = os.getenv("NOTIFICATIONS_TOPIC", "platform.notifications.ingress")
     ROS_EVENTS_TOPIC = os.getenv("ROS_EVENTS_TOPIC", "ros.events")
     TLS_CA_PATH = os.getenv("TLS_CA_PATH", None)
+    RBAC_CA_PATH = TLS_CA_PATH
     CW_ENABLED = str_to_bool(os.getenv('CW_ENABLED', 'False'))  # CloudWatch/Kibana Logging
     if CW_ENABLED is True:
         AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", None)
