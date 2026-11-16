@@ -1,3 +1,5 @@
+import time
+
 import grpc
 from ros.lib.config import get_logger
 from ros.lib.config import KESSEL_INSECURE
@@ -9,20 +11,27 @@ LOG = get_logger(__name__)
 _GRPC_CHANNEL = None
 _GRPC_STUB = None
 _AUTH_CREDENTIALS = None
+_AUTH_FAILED_AT = None
+AUTH_FAILURE_BACKOFF_SECS = 30
 
 
 def get_cached_kessel_auth_credentials():
     """
     Get or create cached OAuth2 credentials to avoid expensive OIDC discovery calls.
     This is a shared cache used by both the gRPC singleton and KesselClient instances.
+    A failed creation is not retried for AUTH_FAILURE_BACKOFF_SECS, so an identity
+    provider outage doesn't trigger discovery on every request.
     Returns:
         OAuth2ClientCredentials object or None if creation fails
     """
-    global _AUTH_CREDENTIALS
+    global _AUTH_CREDENTIALS, _AUTH_FAILED_AT
     if _AUTH_CREDENTIALS is None:
+        if _AUTH_FAILED_AT is not None and time.monotonic() - _AUTH_FAILED_AT < AUTH_FAILURE_BACKOFF_SECS:
+            return None
         from ros.lib.config import create_kessel_oauth2_credentials
-        LOG.debug("Creating shared OAuth2 credentials cache (first time)")
+        LOG.debug("Creating shared OAuth2 credentials cache")
         _AUTH_CREDENTIALS = create_kessel_oauth2_credentials()
+        _AUTH_FAILED_AT = time.monotonic() if _AUTH_CREDENTIALS is None else None
     return _AUTH_CREDENTIALS
 
 
