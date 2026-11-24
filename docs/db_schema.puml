@@ -75,20 +75,7 @@ entity rules {
   condition : text
 }
 
-entity recommendation_rating{
-  *id <<PK>> : int
-  --
-  system_id <<FK>> : int
-  rated_by : text
-  rating : int
-  created_at : timestamp
-  updated_at : timestamp
-}
-
-
-
 systems }o..|| rh_accounts
 systems ||..|| performance_profile
 systems ||..|| performance_profile_history
-systems ||..o{ recommendation_rating
 @enduml

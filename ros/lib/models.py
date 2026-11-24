@@ -1,7 +1,6 @@
 from ros.extensions import db
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 import datetime
-import enum
 
 
 class PerformanceProfile(db.Model):
@@ -101,30 +100,6 @@ class System(db.Model):
                          f"{self.operating_system.get('minor')}"
 
         return os_data
-
-
-class RatingChoicesEnum(enum.IntEnum):
-    Dislike = -1
-    Neutral = 0
-    Like = 1
-
-
-class RecommendationRating(db.Model):
-    __tablename__ = 'recommendation_rating'
-    id = db.Column(db.Integer, primary_key=True)
-    system_id = db.Column(db.Integer, index=True)
-    rated_by = db.Column(db.Text, nullable=False, index=True)
-    rating = db.Column(db.SmallInteger, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-
-    __table_args__ = (
-        db.ForeignKeyConstraint(
-            ['system_id'], ['systems.id'],
-            name='recommendation_rating_system_id_fkey',
-            ondelete='CASCADE'
-        ),
-    )
 
 
 class RhAccount(db.Model):
