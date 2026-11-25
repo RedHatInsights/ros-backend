@@ -14,13 +14,10 @@ from ros.lib.models import (
     System,
     RhAccount,
     PerformanceProfile,
-    RecommendationRating,
     PerformanceProfileHistory,
 )
 from ros.lib.utils import (
     is_valid_uuid,
-    identity,
-    user_data_from_identity,
     systems_ids_for_existing_profiles,
     sort_io_dict,
     system_ids_by_org_id,
@@ -251,7 +248,6 @@ class HostDetailsApi(Resource):
         'inventory_id': fields.String,
         'display_name': fields.String,
         'performance_utilization': fields.Nested(performance_utilization_fields),
-        'rating': fields.Integer,
         'number_of_suggestions': fields.Integer(attribute='number_of_recommendations'),
         'state': fields.String,
         'report_date': fields.DateTime(dt_format='iso8601'),
@@ -267,19 +263,11 @@ class HostDetailsApi(Resource):
         if not is_valid_uuid(host_id):
             abort(404, message='Invalid host_id, Id should be in form of UUID4')
 
-        ident = identity(request)['identity']
-        user = user_data_from_identity(ident)
-        username = user['username'] if 'username' in user else None
         org_id = org_id_from_identity_header(request)
         system_query = group_filtered_query(system_ids_by_org_id(org_id).filter(System.inventory_id == host_id))
 
         profile = PerformanceProfile.query.filter(
             PerformanceProfile.system_id.in_(system_query)).first()
-
-        rating_record = RecommendationRating.query.filter(
-            RecommendationRating.system_id.in_(system_query),
-            RecommendationRating.rated_by == username
-        ).first()
 
         system = db.session.scalar(db.select(System).filter(System.inventory_id == host_id))
 
@@ -287,7 +275,6 @@ class HostDetailsApi(Resource):
         if profile:
             record = {key: system.__dict__[key] for key in SystemsTableColumn.SYSTEM_COLUMNS.value}
             record['performance_utilization'] = sort_io_dict(profile.performance_utilization)
-            record['rating'] = rating_record.rating if rating_record else None
             record['report_date'] = profile.report_date
             record['idling_time'] = profile.idling_time
             record['os'] = system.deserialize_host_os_data

@@ -223,85 +223,6 @@
               }
            }
         },
-        "/rating": {
-            "post": {
-                "summary": "submit suggestion rating",
-                "description": "submit suggestion rating",
-                "operationId": "addSuggestionRatingToSystem",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Rating"
-                            }
-                        }
-
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Rating"
-                                }
-                            }
-                        }
-                    },
-                    "200": {
-                        "description": "Updated an existing rating submitted by same user",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Rating"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Invalid choice of input for rating",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Message"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Message"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Message"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Message"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/suggested_instance_types": {
             "get": {
                 "summary": "List all suggested instance types for the system",
@@ -523,10 +444,6 @@
                                 "type": "object"
                             }
                         }
-                    },
-                    "rating": {
-                        "type": "integer",
-                        "enum": [-1, 0, 1]
                     },
                     "number_of_suggestions": {
                         "type": "integer"
@@ -845,18 +762,6 @@
                     },
                     "psi_enabled": {
                         "type": "boolean"
-                    }
-                }
-            },
-            "Rating": {
-                "type": "object",
-                "properties": {
-                    "inventory_id": {
-                        "type": "string"
-                    },
-                    "rating": {
-                        "type": "integer",
-                        "enum": [-1, 0, 1]
                     }
                 }
             },
